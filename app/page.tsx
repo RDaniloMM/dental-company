@@ -56,7 +56,7 @@ export default function Home() {
 
 import Link from "next/link";
 import Image from "next/image";
-import { Braces, Smile, Bone, MessageSquareQuote } from "lucide-react";
+import { Smile, Bone, MessageSquareQuote } from "lucide-react";
 
 // Dependencias del carrusel
 import useEmblaCarousel from "embla-carousel-react";
