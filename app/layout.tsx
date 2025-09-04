@@ -45,7 +45,7 @@ export default function RootLayout({
 
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import "./globals.css"; // Asegúrate que la ruta a tus estilos globales sea correcta
+import "./globals.css";
 
 // Configuración de la fuente
 const poppins = Poppins({
@@ -54,9 +54,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Dental Company - Tu Sonrisa, Nuestra Pasión",
+  title: "Dental Company - Tu Sonrisa es nuestra sonrisa.",
   description:
-    "Clínica odontológica líder en Tacna. Ofrecemos servicios de ortodoncia, implantes, estética dental y más.",
+    "Centro odontológico integral de última generación que combina excelencia clínica, tecnología avanzada y calidez humana. Nos dedicamos a proporcionar tratamientos dentales de la más alta calidad con un enfoque preventivo, personalizado y multidisciplinario.",
 };
 
 export default function PublicLayout({
@@ -67,9 +67,6 @@ export default function PublicLayout({
   return (
     <html lang='es'>
       <body className={poppins.className}>
-        {/* El Header y Footer se colocarán directamente en la page.tsx 
-            para este ejemplo, pero podrían ir aquí si fueran compartidos 
-            por MÁS páginas públicas (ej. /nosotros, /servicios). */}
         {children}
       </body>
     </html>
