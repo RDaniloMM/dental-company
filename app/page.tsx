@@ -65,7 +65,7 @@ import { EmblaOptionsType } from "embla-carousel";
 // --- Componente Header ---
 const Header = () => (
   <header className='bg-white shadow-md fixed top-0 left-0 right-0 z-50'>
-    <div className='container mx-auto px-6 py-4 flex justify-between items-center'>
+    <div className='container mx-auto px-6 py-2 flex justify-between items-center'>
       <Link
         href='/'
         className='text-2xl font-bold text-blue-600'
@@ -74,8 +74,8 @@ const Header = () => (
         <Image
           src='/logo.png'
           alt='Dental Company Logo'
-          width={140}
-          height={25}
+          width={160}
+          height={40}
         />
       </Link>
       <nav className='hidden md:flex space-x-8 items-center'>
@@ -253,7 +253,7 @@ export default function LandingPage() {
         <section>
           <Carousel loop />
         </section>
-        {/* 3. Servicios (SECCIÓN ACTUALIZADA) */}
+        {/* 3. Servicios*/}
         <section
           id='servicios'
           className='py-20 bg-white'
@@ -311,7 +311,7 @@ export default function LandingPage() {
               {/* Dentista 2 */}
               <div className='text-center'>
                 <Image
-                  src='/team/doctor2.jpg'
+                  src='/dentista.png'
                   alt='Dra. Gabriela Condori'
                   width={150}
                   height={150}
@@ -325,7 +325,7 @@ export default function LandingPage() {
               {/* Dentista 3 */}
               <div className='text-center'>
                 <Image
-                  src='/team/doctor3.jpg'
+                  src='/dentista.png'
                   alt='Dra. Paola Peñaloza'
                   width={150}
                   height={150}
@@ -366,7 +366,7 @@ export default function LandingPage() {
             <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
               {/* Columna 1: Información */}
               <div>
-                <h3 className='text-xl font-bold mb-4 mt-4'>Dental Company</h3>
+                <h3 className='text-xl font-bold mb-4 mt-10'>Dental Company</h3>
                 <p className='text-gray-400'>
                   DENTAL COMPANY es un centro odontológico integral de última
                   generación que combina excelencia clínica, tecnología avanzada
@@ -390,7 +390,8 @@ export default function LandingPage() {
                     <strong>Email:</strong> d.c.com@hotmail.com
                   </li>
                   <li>
-                    <strong>Horario:</strong> Lun - Vie: 9am - 7pm, Sábados 9am - 1pm
+                    <strong>Horario:</strong> Lun - Vie: 9am - 7pm, Sábados 9am
+                    - 1pm
                   </li>
                 </ul>
               </div>
