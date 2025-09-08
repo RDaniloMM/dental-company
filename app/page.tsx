@@ -1,4 +1,4 @@
-/* import { DeployButton } from "@/components/deploy-button";
+import { DeployButton } from "@/components/deploy-button";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { Hero } from "@/components/hero";
@@ -48,10 +48,11 @@ export default function Home() {
       </div>
     </main>
   );
-} */
+}
 
 // app/(public)/page.tsx
 
+/* 
 "use client"; // Necesario para el carrusel interactivo
 
 import Link from "next/link";
@@ -70,7 +71,6 @@ const Header = () => (
         href='/'
         className='text-2xl font-bold text-blue-600'
       >
-        {/* Reemplaza con tu logo */}
         <Image
           src='/logo.png'
           alt='Dental Company Logo'
@@ -104,7 +104,6 @@ const Header = () => (
           Reservas
         </Link>
       </nav>
-      {/* Aquí podrías agregar un botón de menú para móviles */}
     </div>
   </header>
 );
@@ -229,8 +228,7 @@ export default function LandingPage() {
       <Header />
       <main className='pt-20'>
         {" "}
-        {/* Padding top para compensar el header fijo */}
-        {/* 1. Título y Hero Section */}
+
         <section
           id='inicio'
           className='relative text-center bg-gray-100 py-20 md:py-32 flex flex-col items-center justify-center'
@@ -249,11 +247,9 @@ export default function LandingPage() {
             Agenda tu Cita
           </Link>
         </section>
-        {/* 2. Carrusel de Fotos */}
         <section>
           <Carousel loop />
         </section>
-        {/* 3. Servicios*/}
         <section
           id='servicios'
           className='py-20 bg-white'
@@ -284,7 +280,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        {/* 4. Equipo de Dentistas */}
         <section
           id='nosotros'
           className='py-20 bg-blue-50'
@@ -294,7 +289,6 @@ export default function LandingPage() {
               Conoce a Nuestros Especialistas
             </h2>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
-              {/* Dentista 1 */}
               <div className='text-center'>
                 <Image
                   src='/ulises_penaloza.jpeg'
@@ -308,7 +302,6 @@ export default function LandingPage() {
                   Especialista en Periodoncia e Implantología
                 </p>
               </div>
-              {/* Dentista 2 */}
               <div className='text-center'>
                 <Image
                   src='/dentista.png'
@@ -322,7 +315,6 @@ export default function LandingPage() {
                   Especialista en Ortodoncia y Ortopedia Maxilar
                 </p>
               </div>
-              {/* Dentista 3 */}
               <div className='text-center'>
                 <Image
                   src='/dentista.png'
@@ -339,7 +331,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        {/* 5. Espacio para Chatbot IA */}
+
         <section
           id='reservas'
           className='py-20 bg-white'
@@ -360,11 +352,10 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        {/* 6. Footer */}
+
         <footer className='bg-gray-800 text-white'>
           <div className='container mx-auto px-6 py-12'>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-              {/* Columna 1: Información */}
               <div>
                 <h3 className='text-xl font-bold mb-4 mt-10'>Dental Company</h3>
                 <p className='text-gray-400'>
@@ -375,7 +366,7 @@ export default function LandingPage() {
                   personalizado y multidisciplinario.
                 </p>
               </div>
-              {/* Columna 2: Contacto */}
+
               <div>
                 <h3 className='text-xl font-bold mb-4'>Contacto</h3>
                 <ul className='space-y-2 text-gray-400'>
@@ -395,7 +386,7 @@ export default function LandingPage() {
                   </li>
                 </ul>
               </div>
-              {/* Columna 3: Mapa */}
+
               <div>
                 <h3 className='text-xl font-bold mb-4'>Ubicación</h3>
                 <div className='aspect-w-16 aspect-h-9 rounded-lg overflow-hidden'>
@@ -421,3 +412,4 @@ export default function LandingPage() {
     </>
   );
 }
+*/

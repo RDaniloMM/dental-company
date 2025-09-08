@@ -1,4 +1,4 @@
-/* import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
@@ -39,10 +39,10 @@ export default function RootLayout({
     </html>
   );
 }
- */
+
 
 // app/(public)/layout.tsx
-
+/* 
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
@@ -72,3 +72,4 @@ export default function PublicLayout({
     </html>
   );
 }
+ */
