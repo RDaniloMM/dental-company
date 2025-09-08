@@ -1,4 +1,4 @@
-import { DeployButton } from "@/components/deploy-button";
+/* import { DeployButton } from "@/components/deploy-button";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { Hero } from "@/components/hero";
@@ -48,11 +48,11 @@ export default function Home() {
       </div>
     </main>
   );
-}
+} */
 
 // app/(public)/page.tsx
 
-/* 
+
 "use client"; // Necesario para el carrusel interactivo
 
 import Link from "next/link";
@@ -109,8 +109,7 @@ const Header = () => (
   </header>
 );
 
-// --- Componente Carrusel (Embla) ---
-// --- Componente Carrusel (Embla) ---
+
 type EmblaCarouselProps = EmblaOptionsType;
 
 const Carousel = (options: EmblaCarouselProps) => {
@@ -158,7 +157,7 @@ import {
   FileSearch,
 } from "lucide-react";
 
-// --- Array de Datos de Servicios (NUEVO Y ACTUALIZADO) ---
+// --- Array de Datos de Servicios ---
 const servicesData = [
   {
     icon: Stethoscope,
@@ -489,4 +488,3 @@ export default function LandingPage() {
     </>
   );
 }
-*/
