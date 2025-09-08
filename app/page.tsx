@@ -63,6 +63,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { EmblaOptionsType } from "embla-carousel";
 
 // --- Componente Header ---
+const WHATSAPP_NUMBER = "51914340074";
 const Header = () => (
   <header className='bg-white shadow-md fixed top-0 left-0 right-0 z-50'>
     <div className='container mx-auto px-6 py-2 flex justify-between items-center'>
@@ -358,6 +359,83 @@ export default function LandingPage() {
                 Pregúntale a nuestro Asistente (Próximamente)
               </button>
             </div>
+          </div>
+        </section>
+        {/* Consulta por WhatsApp */}
+        
+        <section className='py-16 bg-blue-100'>
+          <div className='container mx-auto px-6 max-w-xl'>
+            <h2 className='text-2xl font-bold mb-6 text-center text-blue-800'>Contáctanos</h2>
+            
+            <form
+              className='bg-white rounded-lg shadow-md p-8 space-y-5'
+              onSubmit={e => {
+                e.preventDefault();
+                const nombre = (e.currentTarget.nombre as HTMLInputElement).value;
+                const email = (e.currentTarget.email as HTMLInputElement).value;
+                const mensaje = (e.currentTarget.mensaje as HTMLTextAreaElement).value;
+                const texto = encodeURIComponent(
+                  `Hola, soy ${nombre} ${email}.\n${mensaje}`
+                );
+                window.open(
+                  `https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`,
+                  '_blank'
+                );
+              }}
+            >
+              <div>
+                <label htmlFor='nombre' className='block text-gray-700 font-medium mb-1'>
+                  Nombre
+                </label>
+                <input
+                  type='text'
+                  id='nombre'
+                  name='nombre'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  placeholder='Tu nombre'
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor='email' className='block text-gray-700 font-medium mb-1'>
+                  Email
+                </label>
+                <input
+                  type='email'
+                  id='email'
+                  name='email'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  placeholder='tucorreo@email.com'
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor='mensaje' className='block text-gray-700 font-medium mb-1'>
+                  Mensaje
+                </label>
+                <textarea
+                  id='mensaje'
+                  name='mensaje'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  rows={4}
+                  placeholder='¿En qué podemos ayudarte?'
+                  required
+                />
+              </div>
+              <button
+              type='submit'
+              className='w-full bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'
+            >
+              <Image
+                src='/whatsapp.png'
+                alt='WhatsApp'
+                width={24}
+                height={24}
+                className='invert'
+              />
+              Enviar mensaje
+            </button>
+            </form>
           </div>
         </section>
         {/* 6. Footer */}
