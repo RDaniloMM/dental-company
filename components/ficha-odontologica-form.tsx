@@ -18,14 +18,14 @@ type FormData = {
   estado_civil: string;
   telefono: string;
   email: string;
-  antecedentes: {
-    [key: string]: any; // Index signature to allow string indexing
+  antecedentes: { //revisar tipos, fix temporal
+    [key: string]: boolean | string;
   };
   alergias: {
-    [key: string]: any;
+    [key: string]: boolean | string;
   };
   habitos: {
-    [key: string]: any;
+    [key: string]: string;
   };
 };
 
