@@ -362,10 +362,10 @@ export default function LandingPage() {
               onSubmit={e => {
                 e.preventDefault();
                 const nombre = (e.currentTarget.nombre as HTMLInputElement).value;
-                const email = (e.currentTarget.email as HTMLInputElement).value;
+                const motivo = (e.currentTarget.motivo as HTMLInputElement).value;
                 const mensaje = (e.currentTarget.mensaje as HTMLTextAreaElement).value;
                 const texto = encodeURIComponent(
-                  `Hola, soy ${nombre} ${email}.\n${mensaje}`
+                  `Hola doctor, soy ${nombre}.\n*Motivo de la consulta:* ${motivo}\n\n${mensaje}`
                 );
                 window.open(
                   `https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`,
@@ -381,21 +381,22 @@ export default function LandingPage() {
                   type='text'
                   id='nombre'
                   name='nombre'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
+
                   placeholder='Tu nombre'
                   required
                 />
               </div>
               <div>
-                <label htmlFor='email' className='block text-gray-700 font-medium mb-1'>
-                  Email
+                <label htmlFor='motivo' className='block text-gray-700 font-medium mb-1'>
+                  Motivo
                 </label>
                 <input
-                  type='email'
-                  id='email'
-                  name='email'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
-                  placeholder='tucorreo@email.com'
+                  type='text'
+                  id='motivo'
+                  name='motivo'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
+                  placeholder='Motivo de consulta'
                   required
                 />
               </div>
@@ -406,7 +407,7 @@ export default function LandingPage() {
                 <textarea
                   id='mensaje'
                   name='mensaje'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
                   rows={4}
                   placeholder='¿En qué podemos ayudarte?'
                   required
