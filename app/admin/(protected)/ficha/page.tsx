@@ -11,7 +11,7 @@ export default async function FichaOdontologicaPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/auth/login");
+    return redirect("/admin/login");
   }
 
   return (
