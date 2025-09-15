@@ -13,6 +13,7 @@ import { User, HeartPulse, Cigarette, Stethoscope, ListChecks, FileDown, Trash2 
 import { CheckboxWithInputVertical } from "./ui/checkbox-with-input-vertical";
 import { cn } from "@/lib/utils";
 import { FormData, SeguimientoRow, AntecedentesData } from "@/lib/supabase/ficha";
+import Odontograma from "@/components/odontograma/OdontoPage";
 
 const initialState: FormData = {
   filiacion: {
@@ -501,6 +502,7 @@ export function FichaOdontologicaForm() {
             </div>
           </div>
         </CardContent>
+        <Odontograma />
       </Card>
 
       {/* SECCIÓN 5: SEGUIMIENTO */}
