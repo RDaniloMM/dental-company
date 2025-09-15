@@ -53,7 +53,6 @@ const Header = () => (
   </header>
 );
 
-
 type EmblaCarouselProps = EmblaOptionsType;
 
 const Carousel = (options: EmblaCarouselProps) => {
@@ -171,13 +170,11 @@ export default function LandingPage() {
     <>
       <Header />
       <main className='pt-20'>
-        {" "}
-
         <section
           id='inicio'
           className='relative text-center bg-gray-100 py-20 md:py-32 flex flex-col items-center justify-center'
         >
-          <div className='absolute inset-0 bg-blue-500 opacity-10'></div>
+          <div className='absolute inset-0 bg-sky-800 opacity-20'></div>
           <h1 className='text-4xl md:text-6xl font-bold text-gray-800 z-10'>
             Clínica Dental <span className='text-blue-600'>Company</span>
           </h1>
@@ -296,29 +293,37 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        
+
         <section className='py-16 bg-blue-100'>
           <div className='container mx-auto px-6 max-w-xl'>
-            <h2 className='text-2xl font-bold mb-6 text-center text-blue-800'>Contáctanos</h2>
-            
+            <h2 className='text-2xl font-bold mb-6 text-center text-blue-800'>
+              Contáctanos
+            </h2>
+
             <form
               className='bg-white rounded-lg shadow-md p-8 space-y-5'
-              onSubmit={e => {
+              onSubmit={(e) => {
                 e.preventDefault();
-                const nombre = (e.currentTarget.nombre as HTMLInputElement).value;
-                const motivo = (e.currentTarget.motivo as HTMLInputElement).value;
-                const mensaje = (e.currentTarget.mensaje as HTMLTextAreaElement).value;
+                const nombre = (e.currentTarget.nombre as HTMLInputElement)
+                  .value;
+                const motivo = (e.currentTarget.motivo as HTMLInputElement)
+                  .value;
+                const mensaje = (e.currentTarget.mensaje as HTMLTextAreaElement)
+                  .value;
                 const texto = encodeURIComponent(
                   `Hola doctor, soy ${nombre}.\n*Motivo de la consulta:* ${motivo}\n\n${mensaje}`
                 );
                 window.open(
                   `https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`,
-                  '_blank'
+                  "_blank"
                 );
               }}
             >
               <div>
-                <label htmlFor='nombre' className='block text-gray-700 font-medium mb-1'>
+                <label
+                  htmlFor='nombre'
+                  className='block text-gray-700 font-medium mb-1'
+                >
                   Nombre
                 </label>
                 <input
@@ -326,13 +331,15 @@ export default function LandingPage() {
                   id='nombre'
                   name='nombre'
                   className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
-
                   placeholder='Tu nombre'
                   required
                 />
               </div>
               <div>
-                <label htmlFor='motivo' className='block text-gray-700 font-medium mb-1'>
+                <label
+                  htmlFor='motivo'
+                  className='block text-gray-700 font-medium mb-1'
+                >
                   Motivo
                 </label>
                 <input
@@ -345,7 +352,10 @@ export default function LandingPage() {
                 />
               </div>
               <div>
-                <label htmlFor='mensaje' className='block text-gray-700 font-medium mb-1'>
+                <label
+                  htmlFor='mensaje'
+                  className='block text-gray-700 font-medium mb-1'
+                >
                   Mensaje
                 </label>
                 <textarea
@@ -358,18 +368,18 @@ export default function LandingPage() {
                 />
               </div>
               <button
-              type='submit'
-              className='w-full bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'
-            >
-              <Image
-                src='/whatsapp.png'
-                alt='WhatsApp'
-                width={24}
-                height={24}
-                className='invert'
-              />
-              Enviar mensaje
-            </button>
+                type='submit'
+                className='w-full bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'
+              >
+                <Image
+                  src='/whatsapp.png'
+                  alt='WhatsApp'
+                  width={24}
+                  height={24}
+                  className='invert'
+                />
+                Enviar mensaje
+              </button>
             </form>
           </div>
         </section>
