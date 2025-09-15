@@ -15,9 +15,9 @@ export default async function FichaOdontologicaPage() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col items-center px-4 sm:px-8 pb-8">
-      <div className="w-full max-w-4xl">
-        <h1 className="text-2xl font-bold mb-6 mt-4">Ficha Odontológica</h1>
+    <div className='flex-1 w-full flex flex-col items-center px-4'>
+      <div className='w-full max-w-4xl'>
+        <h1 className='text-2xl font-bold mb-6'>Ficha Odontológica</h1>
         <FichaOdontologicaForm />
       </div>
     </div>

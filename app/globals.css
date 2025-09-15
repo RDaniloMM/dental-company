@@ -4,52 +4,88 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Fondo principal: Blanco puro para una apariencia limpia y espaciosa.
+     (Original: 90% de luminosidad)
+  */
+    --background: 0 0% 95%;
+
+    /* Texto principal: Un azul muy oscuro y desaturado en lugar de negro puro, para un look más suave.
+     (Original: 3.9% de luminosidad)
+  */
+    --foreground: 222.2 47.4% 11.2%;
+
+    /* Cards y Popovers: Se mantienen en blanco, confiando en los bordes para la separación.
+  */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 222.2 47.4% 11.2%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    /* Primario: Mismo color que el texto principal para consistencia de marca.
+  */
+    --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+
+    /* Secundario y Muted: Un gris muy claro con un ligero tono azulado.
+     (Original: 96.1% de luminosidad)
+  */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* Un gris más oscuro para mejor contraste */
+
+    /* Acento: Mismo color que el secundario para mantener la armonía.
+  */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Destructivo: Se mantiene el color rojo original para alertas.
+  */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+
+    /* Bordes e Inputs: Un gris claro que contrasta sutilmente con el fondo blanco.
+     (Original: 89.8% de luminosidad)
+  */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    /* Anillo de Foco: Usa el color primario para un foco de marca consistente.
+  */
+    --ring: 222.2 47.4% 11.2%;
+
+    /* Colores de Gráficos: Se mantienen los colores vibrantes originales.
+  */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    /* Radio de los bordes: Se mantiene el valor original.
+  */
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 240 5.9% 15.9%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    --card: 240 5.9% 12%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 240 5.9% 10%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
+    --primary-foreground: 240 5.9% 12%;
+    --secondary: 240 4.8% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+    --muted: 240 4.8% 15.9%;
+    --muted-foreground: 240 3.7% 40.9%;
+    --accent: 240 4.8% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --border: 240 4.8% 25%;
+    --input: 240 4.8% 15.9%;
+    --ring: 240 4.9% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
