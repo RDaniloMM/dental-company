@@ -147,7 +147,7 @@ export default function Page() {
                       </AccordionTrigger>
                       <AccordionContent className='pl-2 pb-3 space-y-1'>
                         <Link
-                          href='#'
+                          href='/admin/usuarios'
                           className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
                         >
                           Usuarios
