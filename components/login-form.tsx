@@ -95,7 +95,7 @@ export function LoginForm({
                   <Label htmlFor='password'>Contraseña</Label>
                   {/* Puedes descomentar esto si implementas recuperación de contraseña */}
                   {/* <Link
-                    href="/auth/forgot-password"
+                    href="/admin/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     ¿Olvidaste tu contraseña?
