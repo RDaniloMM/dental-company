@@ -20,18 +20,15 @@ export default function Odontograma() {
     x: number;
     y: number;
   } | null>(null);
-  const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
 
   // ---------------- Handlers ----------------
   const handlePartClick = (toothId: string, part: string, x: number, y: number) => {
     setMenuState({ toothId, part, x, y });
   };
-
+  
   const handleNumberClick = (toothId: string) => {
     setNotes((prev) => ({ ...prev, [toothId]: prev[toothId] ?? "" }));
-    setSelectedTooth(toothId);
   };
-
   const handleSelectCondition = (val: CondicionValue) => {
     if (!menuState?.toothId || !menuState?.part) return;
     const tid = menuState.toothId;
@@ -136,9 +133,39 @@ export default function Odontograma() {
             teethList={teethList}
             data={data}
             onPartClick={handlePartClick}
-            //onNumberClick={handleNumberClick}
+            onNumberClick={handleNumberClick}
           />
         </section>
+        <aside className="w-72">
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <h2 className="text-lg font-semibold mb-4 text-slate-700">Notas</h2>
+            {Object.keys(notes).length > 0 ? (
+              <div className="space-y-4">
+                {Object.entries(notes).map(([toothId, text]) => (
+                  <div key={toothId}>
+                    <label
+                      htmlFor={`note-${toothId}`}
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Diente {toothId}
+                    </label>
+                    <textarea
+                      id={`note-${toothId}`}
+                      value={text}
+                      onChange={(e) => handleNotesChange(toothId, e.target.value)}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      rows={2}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Haz clic en el número de un diente para agregar una nota.
+              </p>
+            )}
+          </div>
+        </aside>
       </div>
 
       {menuState && menuState.toothId && menuState.part && (

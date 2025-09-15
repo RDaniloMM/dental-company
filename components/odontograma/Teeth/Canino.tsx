@@ -24,10 +24,10 @@ export default function Canino({ toothId, data, onPartClick, onNumberClick }: Pr
   // ============================
   // Medidas del rectángulo principal (base)
   // ============================
-  const baseX = 56;
-  const baseY = 150;
-  const baseW = 102.11;
-  const baseH = 55.18;
+  //const baseX = 56;
+  //const baseY = 150;
+  //const baseW = 102.11;
+  //const baseH = 55.18;
 
   // ============================
   // Tamaño y posición del cuadrado central
