@@ -60,6 +60,7 @@ export default function Odontograma() {
   };
 
   // Exportar JSON
+  {/*
   const handleExport = () => {
     const payload = { data, notes };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -69,9 +70,10 @@ export default function Odontograma() {
     a.download = "odontograma.json";
     a.click();
     URL.revokeObjectURL(url);
-  };
+  };*/}
 
   // Importar JSON
+  {/*
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -97,7 +99,7 @@ export default function Odontograma() {
     };
     reader.readAsText(file);
   };
-
+*/}
   // ---------------- Render ----------------
   return (
     <div className="p-6 bg-white text-slate-800 rounded-lg">
