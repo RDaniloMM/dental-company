@@ -244,8 +244,8 @@ export function FichaOdontologicaForm() {
       .single();
 
     if (pacienteError) {
-      console.error("Error creating patient:", pacienteError);
-      alert(`Error al crear el paciente: ${pacienteError.message}`);
+      //console.error("Error creating patient:", pacienteError);
+      //alert(`Error al crear el paciente: ${pacienteError.message}`);
       return;
     }
     const pacienteId = pacienteData.id;
@@ -496,11 +496,7 @@ export function FichaOdontologicaForm() {
             </div>
             <div className="space-y-2"><Label>Presión Arterial (P.A.)</Label><Input name="examen_clinico.pa" value={formData.examen_clinico.pa} onChange={handleChange}/></div>
           </div>
-          <div className="space-y-2">
-            <div className="w-full h-48 border-2 border-dashed rounded-md flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                <p className="text-muted-foreground text-xl font-semibold">Odontograma próximamente</p>
-            </div>
-          </div>
+          
         </CardContent>
         <Odontograma />
       </Card>

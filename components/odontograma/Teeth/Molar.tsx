@@ -29,9 +29,9 @@ export default function Molar({
   // ============================
   // Medidas de referencia
   // ============================
-  const baseX = 56;
+  //onst baseX = 56;
   const baseY = 150;
-  const baseW = 102.11;
+  //const baseW = 102.11;
   const baseH = 55.18;
 
   const centerW = 102.11989;

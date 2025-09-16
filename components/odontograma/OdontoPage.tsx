@@ -102,6 +102,7 @@ export default function Odontograma() {
   return (
     <div className="p-6 bg-white text-slate-800 rounded-lg">
       <header className="max-w-6xl mx-auto mb-6 flex items-center justify-between">
+        {/*
         <h1 className="text-2xl font-bold text-blue-900">Odontograma — Prototipo</h1>
         <div className="flex items-center gap-3">
           <button
@@ -125,10 +126,12 @@ export default function Odontograma() {
             Limpiar
           </button>
         </div>
+        */}
       </header>
-
-      <div className="max-w-6xl mx-auto flex gap-6">
-        <section className="flex-1 bg-white p-6 rounded-lg border border-blue-100 shadow-sm">
+        
+        <div className="max-w-6xl mx-auto flex flex-col gap-6">
+        {/* Odontograma */}
+        <section className="bg-white p-6 rounded-lg border border-blue-100 shadow-sm">
           <OdontogramaSVG
             teethList={teethList}
             data={data}
@@ -136,37 +139,38 @@ export default function Odontograma() {
             onNumberClick={handleNumberClick}
           />
         </section>
-        <aside className="w-72">
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <h2 className="text-lg font-semibold mb-4 text-slate-700">Notas</h2>
-            {Object.keys(notes).length > 0 ? (
-              <div className="space-y-4">
-                {Object.entries(notes).map(([toothId, text]) => (
-                  <div key={toothId}>
-                    <label
-                      htmlFor={`note-${toothId}`}
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Diente {toothId}
-                    </label>
-                    <textarea
-                      id={`note-${toothId}`}
-                      value={text}
-                      onChange={(e) => handleNotesChange(toothId, e.target.value)}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      rows={2}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">
-                Haz clic en el número de un diente para agregar una nota.
-              </p>
-            )}
-          </div>
-        </aside>
-      </div>
+
+        {/* Notas debajo */}
+        <section className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <h2 className="text-lg font-semibold mb-4 text-slate-700">Notas</h2>
+          {Object.keys(notes).length > 0 ? (
+            <div className="space-y-4">
+              {Object.entries(notes).map(([toothId, text]) => (
+                <div key={toothId}>
+                  <label
+                    htmlFor={`note-${toothId}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Diente {toothId}
+                  </label>
+                  <textarea
+                    id={`note-${toothId}`}
+                    value={text}
+                    onChange={(e) => handleNotesChange(toothId, e.target.value)}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    rows={2}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Haz clic en el número de un diente para agregar una nota.
+            </p>
+          )}
+        </section>
+      </div>  
+
 
       {menuState && menuState.toothId && menuState.part && (
         <CondicionMenu
