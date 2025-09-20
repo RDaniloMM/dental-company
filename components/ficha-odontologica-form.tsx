@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { generateFichaPDF } from "@/lib/pdf-generator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -207,14 +206,37 @@ export function FichaOdontologicaForm() {
     window.scrollTo(0, 0);
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     setIsPrinting(true);
     try {
-      // Aquí podrías pasar un ID de ficha real si lo tuvieras
-      generateFichaPDF(formData);
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Error en el servidor al generar el PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const patientName = `${formData.filiacion.nombres}_${formData.filiacion.apellidos}`.replace(/ /g, '_') || 'ficha_odontologica';
+      a.download = `${patientName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
     } catch (error) {
       console.error("Error al generar el PDF:", error);
-      alert("Hubo un error al generar el PDF. Por favor, inténtelo de nuevo.");
+      const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
+      alert(`Hubo un error al generar el PDF: ${errorMessage}`);
     } finally {
       setIsPrinting(false);
     }
@@ -229,8 +251,8 @@ export function FichaOdontologicaForm() {
     const { data: pacienteData, error: pacienteError } = await supabase
       .from('paciente')
       .insert({
-        nombres: filiacion.nombres,
-        apellidos: filiacion.apellidos,
+        nombres: filiacion.nombres.toUpperCase(),
+        apellidos: filiacion.apellidos.toUpperCase(),
         sexo: filiacion.sexo,
         fecha_nacimiento: filiacion.fecha_nacimiento || null,
         ocupacion: filiacion.ocupacion,

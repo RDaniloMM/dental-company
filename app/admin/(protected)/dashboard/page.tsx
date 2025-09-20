@@ -1,6 +1,7 @@
-"use client";
 
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+
 import {
   Accordion,
   AccordionItem,
@@ -15,8 +16,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import PatientSearch from "@/components/patient-search";
 
-export default function Page() {
+export default async function Page() {
+  const supabase = await createClient();
+  const { data: patients } = await supabase
+    .from("pacientes")
+    .select("id, nombres, apellidos, numero_historia");
+
   return (
     <div className='flex min-h-svh w-full'>
       <Sheet>
@@ -40,7 +47,7 @@ export default function Page() {
           <div className='flex items-center justify-between gap-4'>
             <h1 className='text-2xl font-bold'>Dashboard</h1>
             <Link
-              href='/admin/ficha'
+              href='/admin/ficha-odontologica'
               className='inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700'
             >
               Ir a Ficha Odontológica
@@ -61,6 +68,13 @@ export default function Page() {
               </p>
             </div>
           </div>
+
+          <hr className="my-8" />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <PatientSearch patients={patients || []} />
+          </div>
+
         </main>
 
         {/* Menú lateral en Sheet */}
@@ -101,7 +115,7 @@ export default function Page() {
                       </AccordionTrigger>
                       <AccordionContent className='pl-2 pb-3 space-y-1'>
                         <Link
-                          href='/admin/ficha'
+                          href='/admin/ficha-odontologica'
                           className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
                         >
                           Ficha odontológica

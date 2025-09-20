@@ -65,4 +65,15 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Eliminar el fondo azul del autocompletado en Chrome/Safari */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+    box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+    /* Asegurar que el color del texto sea el correcto */
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
 }
