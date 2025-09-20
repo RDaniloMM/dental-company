@@ -1,0 +1,178 @@
+/* =======================
+   ESTILOS GENERALES DEL CALENDARIO
+======================= */
+.fc {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+/* =======================
+   TÍTULO DEL CALENDARIO
+======================= */
+.fc-toolbar-title {
+  color: #1e40af;
+  font-weight: 700;
+}
+
+/* =======================
+   BOTONES DEL CALENDARIO
+======================= */
+.fc .fc-toolbar-chunk {
+  display: flex;
+  gap: 8px;
+}
+
+.fc .fc-button {
+  background-color: #2563eb !important;
+  border: none !important;
+  color: white !important;
+  border-radius: 6px !important;
+  font-weight: 600;
+  margin-right: 8px;
+  transition: background 0.2s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.fc-toolbar .fc-toolbar-chunk .fc-button:last-child {
+  margin-right: 0;
+}
+
+.fc-button:hover {
+  background-color: #1e40af !important;
+  transform: scale(1.05);
+}
+
+/* =======================
+   DÍA DE HOY
+======================= */
+.fc-day-today {
+  background-color: #fde047 !important;
+  border-radius: 6px;
+}
+
+/* =======================
+   EVENTOS (ODONTOLÓGICOS / MÉDICOS)
+======================= */
+.fc-event-limpieza { background-color: #3b82f6 !important; color: white !important; }
+.fc-event-revision { background-color: #10b981 !important; color: white !important; }
+.fc-event-urgente { background-color: #f97316 !important; color: white !important; }
+.fc-event-otros { background-color: #8b5cf6 !important; color: white !important; }
+
+/* Animaciones y hover generales */
+.fc-event {
+  border: none !important;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-weight: 600;
+  transition: transform 0.1s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Hover específico por tipo de evento */
+.fc-event-limpieza:hover { background-color: #60a5fa !important; }
+.fc-event-revision:hover { background-color: #34d399 !important; }
+.fc-event-urgente:hover { background-color: #fb923c !important; }
+.fc-event-otros:hover { background-color: #a78bfa !important; }
+
+/* Hover solo en vista día (timeGrid) */
+.fc-timegrid-event.fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* =======================
+   CABECERAS DEL CALENDARIO
+======================= */
+/* Cabeceras de días (mes) */
+.fc .fc-col-header {
+  background-color: #dbeafe;
+  border-bottom: 1px solid #93c5fd;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #1e40af;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Cabeceras de lista (list view) */
+.fc .fc-list-table th {
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+  border-bottom: 1px solid #93c5fd;
+}
+/* =======================
+   Modal de detalles del evento
+======================= */
+.odont-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease forwards;
+}
+
+.odont-modal-backdrop.fadeOut {
+  animation: fadeOut 0.25s ease forwards;
+}
+
+.odont-modal-content {
+  background-color: #f0f9ff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  max-width: 400px;
+  width: 90%;
+  animation: scaleIn 0.25s ease forwards;
+  border-top: 4px solid #3b82f6;
+  text-align: center;
+}
+
+.odont-modal-content.scaleOut {
+  animation: scaleOut 0.25s ease forwards;
+}
+
+.odont-modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+}
+
+.odont-modal-date {
+  color: #2563eb;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.odont-modal-close {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.odont-modal-close:hover {
+  background-color: #1e40af;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes scaleIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes scaleOut { from { transform: scale(1); opacity: 1; } to { transform: scale(0.85); opacity: 0; } }

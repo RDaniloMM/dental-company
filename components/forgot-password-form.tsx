@@ -88,12 +88,12 @@ export function ForgotPasswordForm({
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
-                Already have an account?{" "}
+                ¿Ya tienes una cuenta?{" "}
                 <Link
-                  href="/auth/login"
+                  href="/admin/login"
                   className="underline underline-offset-4"
                 >
-                  Login
+                  Iniciar sesión
                 </Link>
               </div>
             </form>

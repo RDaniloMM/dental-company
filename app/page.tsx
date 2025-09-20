@@ -1,59 +1,4 @@
-/* import { DeployButton } from "@/components/deploy-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
-import { hasEnvVars } from "@/lib/utils";
-import Link from "next/link";
-
-export default function Home() {
-  return (
-    <main className="min-h-screen flex flex-col items-center">
-      <div className="flex-1 w-full flex flex-col gap-20 items-center">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Next.js Supabase Starter</Link>
-              <div className="flex items-center gap-2">
-                <DeployButton />
-              </div>
-            </div>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
-          </div>
-        </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-          </main>
-        </div>
-
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-          <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
-          </p>
-          <ThemeSwitcher />
-        </footer>
-      </div>
-    </main>
-  );
-} */
-
-// app/(public)/page.tsx
-
-"use client"; // Necesario para el carrusel interactivo
-
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Smile, Bone, MessageSquareQuote } from "lucide-react";
@@ -71,7 +16,6 @@ const Header = () => (
         href='/'
         className='text-2xl font-bold text-blue-600'
       >
-        {/* Reemplaza con tu logo */}
         <Image
           src='/logo.png'
           alt='Dental Company Logo'
@@ -105,13 +49,10 @@ const Header = () => (
           Reservas
         </Link>
       </nav>
-      {/* Aquí podrías agregar un botón de menú para móviles */}
     </div>
   </header>
 );
 
-// --- Componente Carrusel (Embla) ---
-// --- Componente Carrusel (Embla) ---
 type EmblaCarouselProps = EmblaOptionsType;
 
 const Carousel = (options: EmblaCarouselProps) => {
@@ -159,7 +100,7 @@ import {
   FileSearch,
 } from "lucide-react";
 
-// --- Array de Datos de Servicios (NUEVO Y ACTUALIZADO) ---
+// --- Array de Datos de Servicios ---
 const servicesData = [
   {
     icon: Stethoscope,
@@ -229,14 +170,11 @@ export default function LandingPage() {
     <>
       <Header />
       <main className='pt-20'>
-        {" "}
-        {/* Padding top para compensar el header fijo */}
-        {/* 1. Título y Hero Section */}
         <section
           id='inicio'
           className='relative text-center bg-gray-100 py-20 md:py-32 flex flex-col items-center justify-center'
         >
-          <div className='absolute inset-0 bg-blue-500 opacity-10'></div>
+          <div className='absolute inset-0 bg-sky-800 opacity-20'></div>
           <h1 className='text-4xl md:text-6xl font-bold text-gray-800 z-10'>
             Clínica Dental <span className='text-blue-600'>Company</span>
           </h1>
@@ -250,11 +188,9 @@ export default function LandingPage() {
             Agenda tu Cita
           </Link>
         </section>
-        {/* 2. Carrusel de Fotos */}
         <section>
           <Carousel loop />
         </section>
-        {/* 3. Servicios*/}
         <section
           id='servicios'
           className='py-20 bg-white'
@@ -285,7 +221,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        {/* 4. Equipo de Dentistas */}
         <section
           id='nosotros'
           className='py-20 bg-blue-50'
@@ -295,7 +230,6 @@ export default function LandingPage() {
               Conoce a Nuestros Especialistas
             </h2>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
-              {/* Dentista 1 */}
               <div className='text-center'>
                 <Image
                   src='/ulises_penaloza.jpeg'
@@ -309,7 +243,6 @@ export default function LandingPage() {
                   Especialista en Periodoncia e Implantología
                 </p>
               </div>
-              {/* Dentista 2 */}
               <div className='text-center'>
                 <Image
                   src='/dentista.png'
@@ -323,7 +256,6 @@ export default function LandingPage() {
                   Especialista en Ortodoncia y Ortopedia Maxilar
                 </p>
               </div>
-              {/* Dentista 3 */}
               <div className='text-center'>
                 <Image
                   src='/dentista.png'
@@ -340,7 +272,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        {/* 5. Espacio para Chatbot IA */}
+
         <section
           id='reservas'
           className='py-20 bg-white'
@@ -361,88 +293,100 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-        {/* Consulta por WhatsApp */}
-        
+
         <section className='py-16 bg-blue-100'>
           <div className='container mx-auto px-6 max-w-xl'>
-            <h2 className='text-2xl font-bold mb-6 text-center text-blue-800'>Contáctanos</h2>
-            
+            <h2 className='text-2xl font-bold mb-6 text-center text-blue-800'>
+              Contáctanos
+            </h2>
+
             <form
               className='bg-white rounded-lg shadow-md p-8 space-y-5'
-              onSubmit={e => {
+              onSubmit={(e) => {
                 e.preventDefault();
-                const nombre = (e.currentTarget.nombre as HTMLInputElement).value;
-                const email = (e.currentTarget.email as HTMLInputElement).value;
-                const mensaje = (e.currentTarget.mensaje as HTMLTextAreaElement).value;
+                const nombre = (e.currentTarget.nombre as HTMLInputElement)
+                  .value;
+                const motivo = (e.currentTarget.motivo as HTMLInputElement)
+                  .value;
+                const mensaje = (e.currentTarget.mensaje as HTMLTextAreaElement)
+                  .value;
                 const texto = encodeURIComponent(
-                  `Hola, soy ${nombre} ${email}.\n${mensaje}`
+                  `Hola doctor, soy ${nombre}.\n*Motivo de la consulta:* ${motivo}\n\n${mensaje}`
                 );
                 window.open(
                   `https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`,
-                  '_blank'
+                  "_blank"
                 );
               }}
             >
               <div>
-                <label htmlFor='nombre' className='block text-gray-700 font-medium mb-1'>
+                <label
+                  htmlFor='nombre'
+                  className='block text-gray-700 font-medium mb-1'
+                >
                   Nombre
                 </label>
                 <input
                   type='text'
                   id='nombre'
                   name='nombre'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
                   placeholder='Tu nombre'
                   required
                 />
               </div>
               <div>
-                <label htmlFor='email' className='block text-gray-700 font-medium mb-1'>
-                  Email
+                <label
+                  htmlFor='motivo'
+                  className='block text-gray-700 font-medium mb-1'
+                >
+                  Motivo
                 </label>
                 <input
-                  type='email'
-                  id='email'
-                  name='email'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
-                  placeholder='tucorreo@email.com'
+                  type='text'
+                  id='motivo'
+                  name='motivo'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
+                  placeholder='Motivo de consulta'
                   required
                 />
               </div>
               <div>
-                <label htmlFor='mensaje' className='block text-gray-700 font-medium mb-1'>
+                <label
+                  htmlFor='mensaje'
+                  className='block text-gray-700 font-medium mb-1'
+                >
                   Mensaje
                 </label>
                 <textarea
                   id='mensaje'
                   name='mensaje'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-blue-400'
+                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
                   rows={4}
                   placeholder='¿En qué podemos ayudarte?'
                   required
                 />
               </div>
               <button
-              type='submit'
-              className='w-full bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'
-            >
-              <Image
-                src='/whatsapp.png'
-                alt='WhatsApp'
-                width={24}
-                height={24}
-                className='invert'
-              />
-              Enviar mensaje
-            </button>
+                type='submit'
+                className='w-full bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'
+              >
+                <Image
+                  src='/whatsapp.png'
+                  alt='WhatsApp'
+                  width={24}
+                  height={24}
+                  className='invert'
+                />
+                Enviar mensaje
+              </button>
             </form>
           </div>
         </section>
-        {/* 6. Footer */}
+
         <footer className='bg-gray-800 text-white'>
           <div className='container mx-auto px-6 py-12'>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-              {/* Columna 1: Información */}
               <div>
                 <h3 className='text-xl font-bold mb-4 mt-10'>Dental Company</h3>
                 <p className='text-gray-400'>
@@ -453,7 +397,7 @@ export default function LandingPage() {
                   personalizado y multidisciplinario.
                 </p>
               </div>
-              {/* Columna 2: Contacto */}
+
               <div>
                 <h3 className='text-xl font-bold mb-4'>Contacto</h3>
                 <ul className='space-y-2 text-gray-400'>
@@ -473,7 +417,7 @@ export default function LandingPage() {
                   </li>
                 </ul>
               </div>
-              {/* Columna 3: Mapa */}
+
               <div>
                 <h3 className='text-xl font-bold mb-4'>Ubicación</h3>
                 <div className='aspect-w-16 aspect-h-9 rounded-lg overflow-hidden'>
