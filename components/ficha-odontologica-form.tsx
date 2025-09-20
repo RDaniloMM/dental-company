@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { generateFichaPDF } from "@/lib/pdf-generator";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { User, HeartPulse, Cigarette, Stethoscope, ListChecks, FileDown, Trash2 
 import { CheckboxWithInputVertical } from "./ui/checkbox-with-input-vertical";
 import { cn } from "@/lib/utils";
 import { FormData, SeguimientoRow, AntecedentesData } from "@/lib/supabase/ficha";
+import Odontograma from "@/components/odontograma/OdontoPage";
 
 const initialState: FormData = {
   filiacion: {
@@ -206,14 +206,37 @@ export function FichaOdontologicaForm() {
     window.scrollTo(0, 0);
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     setIsPrinting(true);
     try {
-      // Aquí podrías pasar un ID de ficha real si lo tuvieras
-      generateFichaPDF(formData);
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Error en el servidor al generar el PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const patientName = `${formData.filiacion.nombres}_${formData.filiacion.apellidos}`.replace(/ /g, '_') || 'ficha_odontologica';
+      a.download = `${patientName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
     } catch (error) {
       console.error("Error al generar el PDF:", error);
-      alert("Hubo un error al generar el PDF. Por favor, inténtelo de nuevo.");
+      const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
+      alert(`Hubo un error al generar el PDF: ${errorMessage}`);
     } finally {
       setIsPrinting(false);
     }
@@ -228,8 +251,8 @@ export function FichaOdontologicaForm() {
     const { data: pacienteData, error: pacienteError } = await supabase
       .from('paciente')
       .insert({
-        nombres: filiacion.nombres,
-        apellidos: filiacion.apellidos,
+        nombres: filiacion.nombres.toUpperCase(),
+        apellidos: filiacion.apellidos.toUpperCase(),
         sexo: filiacion.sexo,
         fecha_nacimiento: filiacion.fecha_nacimiento || null,
         ocupacion: filiacion.ocupacion,
@@ -243,8 +266,8 @@ export function FichaOdontologicaForm() {
       .single();
 
     if (pacienteError) {
-      console.error("Error creating patient:", pacienteError);
-      alert(`Error al crear el paciente: ${pacienteError.message}`);
+      //console.error("Error creating patient:", pacienteError);
+      //alert(`Error al crear el paciente: ${pacienteError.message}`);
       return;
     }
     const pacienteId = pacienteData.id;
@@ -495,12 +518,9 @@ export function FichaOdontologicaForm() {
             </div>
             <div className="space-y-2"><Label>Presión Arterial (P.A.)</Label><Input name="examen_clinico.pa" value={formData.examen_clinico.pa} onChange={handleChange}/></div>
           </div>
-          <div className="space-y-2">
-            <div className="w-full h-48 border-2 border-dashed rounded-md flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                <p className="text-muted-foreground text-xl font-semibold">Odontograma próximamente</p>
-            </div>
-          </div>
+          
         </CardContent>
+        <Odontograma />
       </Card>
 
       {/* SECCIÓN 5: SEGUIMIENTO */}

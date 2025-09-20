@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import fs from 'fs';
+import path from 'path';
 import { FormData, SeguimientoRow } from "@/lib/supabase/ficha";
-import logo from '@/public/logo.png';
 
 // Extiende la interfaz de jsPDF para incluir la propiedad lastAutoTable
 interface jsPDFWithAutoTable extends jsPDF {
@@ -10,7 +11,7 @@ interface jsPDFWithAutoTable extends jsPDF {
   };
 }
 
-export const generateFichaPDF = (formData: FormData, fichaId?: string) => {
+export const generateFichaPDF = (formData: FormData, fichaId?: string): ArrayBuffer => {
   const doc: jsPDFWithAutoTable = new jsPDF();
   let finalY = 40; // Mantiene la posición Y del último elemento añadido
 
@@ -23,7 +24,9 @@ export const generateFichaPDF = (formData: FormData, fichaId?: string) => {
 
   // --- ENCABEZADO ---
   // Añade el logo en la esquina superior izquierda
-  doc.addImage(logo.src, 'PNG', margin, 10, 30, 15);
+  const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+  const logoImage = fs.readFileSync(logoPath);
+  doc.addImage(logoImage, 'PNG', margin, 10, 30, 15);
 
   doc.setFontSize(titleFontSize);
   doc.setFont('helvetica', 'bold');
@@ -175,7 +178,6 @@ export const generateFichaPDF = (formData: FormData, fichaId?: string) => {
     }
   }
 
-  // --- GUARDAR EL DOCUMENTO ---
-  const patientName = `${formData.filiacion.nombres}_${formData.filiacion.apellidos}`.replace(/ /g, '_') || 'ficha_odontologica';
-  doc.save(`${patientName}.pdf`);
+  // --- DEVOLVER EL DOCUMENTO COMO BUFFER ---
+  return doc.output('arraybuffer');
 };
