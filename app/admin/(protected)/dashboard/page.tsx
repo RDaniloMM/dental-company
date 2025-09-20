@@ -1,5 +1,7 @@
+
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+
 import {
   Accordion,
   AccordionItem,
@@ -72,6 +74,7 @@ export default async function Page() {
           <div className="grid gap-4 md:grid-cols-2">
             <PatientSearch patients={patients || []} />
           </div>
+
         </main>
 
         {/* Menú lateral en Sheet */}
