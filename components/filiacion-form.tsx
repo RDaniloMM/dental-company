@@ -37,24 +37,35 @@ type PatientData = {
   observaciones: string;
 };
 
+// Tipo para el paciente que puede venir con valores null desde la base de datos
+type PatientInput = Partial<PatientData> & {
+  id?: string;
+  contacto_emergencia?: {
+    nombre?: string;
+    parentesco?: string;
+    domicilio?: string;
+    telefono?: string;
+  } | null;
+};
+
 // Función para calcular la edad
 const calculateAge = (birthDate: string) => {
-  if (!birthDate) return "";
   const today = new Date();
   const birthDateObj = new Date(birthDate);
   let age = today.getFullYear() - birthDateObj.getFullYear();
   const monthDifference = today.getMonth() - birthDateObj.getMonth();
+  
   if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDateObj.getDate())) {
     age--;
   }
   return age.toString();
 };
 
-export default function FiliacionForm({ patient }: { patient: any }) {
+export default function FiliacionForm({ patient }: { patient: PatientInput }) {
   const supabase = createClient();
   
   // Función para convertir valores null a cadenas vacías
-  const sanitizePatientData = (data: any): PatientData => {
+  const sanitizePatientData = (data: PatientInput): PatientData => {
     return {
       id: data.id || "",
       apellidos: data.apellidos || "",

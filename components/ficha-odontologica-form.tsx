@@ -188,7 +188,7 @@ export function FichaOdontologicaForm({
   numero_historia,
 }: FichaOdontologicaFormProps) {
   // TODO: Usar numero_historia para cargar datos específicos del paciente
-  console.log('Historia:', numero_historia); // Temporary usage to avoid warning
+  console.log("Historia:", numero_historia); // Temporary usage to avoid warning
   const supabase = createClient();
   const [formData, setFormData] = useState<FormData>(initialState);
   const [imcClassification, setImcClassification] = useState({
