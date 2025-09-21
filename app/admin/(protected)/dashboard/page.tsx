@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,7 +46,7 @@ export default async function Page() {
           <div className='flex items-center justify-between gap-4'>
             <h1 className='text-2xl font-bold'>Dashboard</h1>
             <Link
-              href='/admin/ficha-odontologica'
+              href='/admin/ficha'
               className='inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700'
             >
               Ir a Ficha Odontológica
@@ -69,12 +68,11 @@ export default async function Page() {
             </div>
           </div>
 
-          <hr className="my-8" />
+          <hr className='my-8' />
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className='grid gap-4 md:grid-cols-2'>
             <PatientSearch patients={patients || []} />
           </div>
-
         </main>
 
         {/* Menú lateral en Sheet */}
