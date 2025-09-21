@@ -4,12 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { FichaOdontologicaForm } from "@/components/ficha-odontologica-form";
 
 type FichaOdontologicaPageProps = {
-  params: { numero_historia: string };
+  params: Promise<{ numero_historia: string }>;
 };
 
 export default async function FichaOdontologicaPage({
   params,
 }: FichaOdontologicaPageProps) {
+  const resolvedParams = await params;
   const supabase = await createClient();
 
   const {
@@ -24,7 +25,9 @@ export default async function FichaOdontologicaPage({
     <div className='flex-1 w-full flex flex-col items-center px-4'>
       <div className='w-full max-w-4xl'>
         <h1 className='text-2xl font-bold mb-6'>Ficha Odontológica</h1>
-        <FichaOdontologicaForm numero_historia={params.numero_historia} />
+        <FichaOdontologicaForm
+          numero_historia={resolvedParams.numero_historia}
+        />
       </div>
     </div>
   );
