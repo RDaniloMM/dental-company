@@ -6,7 +6,6 @@ import Incisivo from "./Teeth/Incisivo";
 import type { CondicionValue } from "./CondicionMenu";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
 interface Props {
   teethList: string[];
   data: Record<string, Record<string, CondicionValue | undefined>>;
