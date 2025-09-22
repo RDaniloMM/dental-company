@@ -13,13 +13,11 @@ CREATE TYPE public.estado_civil AS ENUM ('Soltero', 'Casado', 'Divorciado', 'Viu
 
 CREATE TABLE public.personal (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  nombre_completo TEXT NOT NULL,
+  nombres TEXT NOT NULL,
+  apellidos TEXT NOT NULL,
   rol public.rol NOT NULL,
   especialidad TEXT,
-  telefono TEXT,
-  email TEXT UNIQUE,
-  activo BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE public.pacientes (
@@ -111,9 +109,9 @@ CREATE TABLE public.plan_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plan_id UUID NOT NULL REFERENCES public.planes_procedimiento(id) ON DELETE CASCADE,
     procedimiento_id UUID NOT NULL REFERENCES public.procedimientos(id),
-    moneda_id UUID NOT NULL REFERENCES public.monedas(id),
+    -- moneda_id UUID NOT NULL REFERENCES public.monedas(id),
     estado public.item_status DEFAULT 'Pendiente',
-    costo DECIMAL(10, 2) NOT NULL,
+    -- costo DECIMAL(10, 2) NOT NULL,
     cantidad INTEGER DEFAULT 1, -- Cuántas veces se realizará el procedimiento
     pieza_dental TEXT, -- Específica para este plan item
     notas TEXT,
@@ -137,12 +135,8 @@ CREATE TABLE public.citas (
 
 CREATE TABLE public.seguimientos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  paciente_id UUID NOT NULL REFERENCES public.pacientes(id) ON DELETE CASCADE,
-  odontologo_id UUID NOT NULL REFERENCES public.personal(id),
   cita_id UUID REFERENCES public.citas(id) ON DELETE SET NULL,
-  fecha_seguimiento DATE NOT NULL DEFAULT CURRENT_DATE,
   procedimiento_id UUID REFERENCES public.procedimientos(id),
-  observaciones TEXT,
   fecha_proxima_cita DATE
 );
 
@@ -160,8 +154,8 @@ CREATE TABLE public.transacciones_financieras (
   cita_id UUID REFERENCES public.citas(id) ON DELETE SET NULL,
   monto DECIMAL(10, 2) NOT NULL,
   moneda_id UUID NOT NULL REFERENCES public.monedas(id),
-  tipo TEXT NOT NULL,
-  descripcion TEXT,
+  procedimiento_id UUID NOT NULL REFERENCES public.procedimientos(id),
+  notas_transaccion TEXT,
   fecha_transaccion TIMESTAMPTZ DEFAULT NOW()
 );
 
