@@ -1,94 +1,186 @@
 "use client";
-import React, { useEffect, useRef } from "react";
-import { X, Trash2, Smile, Droplet, HardDrive, Crown, Shield } from "lucide-react";
+import React, { useState } from "react";
 
-export type CondicionValue =
-  | "sano"
-  | "caries"
-  | "resina"
-  | "amalgama"
-  | "extraccion_programada"
-  | "diente_ausente"
-  | "corona"
-  | "sellante";
-
-interface Props {
-  x: number;
-  y: number;
-  onSelect: (val: CondicionValue) => void;
-  onDeletePart: () => void;
+interface CondicionMenuProps {
+  toothId: string;
+  selectedCondition: string | null; // <-- agregar
+  selectedColor: "red" | "blue" | null;
+  selectedZone: string | null;
+  setSelectedCondition: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedColor: (c: "red" | "blue") => void;
+  setZoneColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  updateTooth: (
+    toothId: string,
+    data: {
+      zonas?: { zona: string; condicion: string; color: string }[];
+      generales?: { condicion: string; icon: string }[];
+    }
+  ) => void;
   onClose: () => void;
 }
 
-const OPTIONS: { label: string; value: CondicionValue; colorClass: string; icon: React.ReactNode }[] = [
-  { label: "Caries", value: "caries", colorClass: "text-red-600", icon: <Droplet className="w-4 h-4 inline mr-2" /> },
-  { label: "Resina", value: "resina", colorClass: "text-blue-600", icon: <HardDrive className="w-4 h-4 inline mr-2" /> },
-  { label: "Amalgama", value: "amalgama", colorClass: "text-gray-600", icon: <Shield className="w-4 h-4 inline mr-2" /> },
-  { label: "Corona", value: "corona", colorClass: "text-yellow-600", icon: <Crown className="w-4 h-4 inline mr-2" /> },
-  { label: "Sellante", value: "sellante", colorClass: "text-green-600", icon: <Smile className="w-4 h-4 inline mr-2" /> },
-  { label: "Extracción programada", value: "extraccion_programada", colorClass: "text-purple-600", icon: <X className="w-4 h-4 inline mr-2" /> },
-  { label: "Diente ausente", value: "diente_ausente", colorClass: "text-gray-400", icon: <X className="w-4 h-4 inline mr-2" /> },
+const condiciones = [
+  "Aparato ortodóntico fijo",
+  "Aparato ortodóntico removible",
+  "Corona",
+  "Corona temporal",
+  "Defectos de desarrollo del esmalte (DDE)",
+  "Diastema",
+  "Edéntulo total superior/inferior",
+  "Espigomuñón",
+  "Fosas y fisuras profundas",
+  "Fractura dental",
+  "Fusión",
+  "Geminación",
+  "Giroversión",
+  "Impactación",
+  "Implante dental",
+  "Lesión de caries dental",
+  "Macrodoncia",
+  "Microdoncia",
+  "Movilidad patológica",
+  "Pieza dentaria ausente",
+  "Pieza dentaria en clavija",
+  "Pieza dentaria ectópica",
+  "Pieza dentaria en erupción",
+  "Pieza dentaria extruida",
+  "Pieza dentaria intruida",
+  "Pieza dentaria supernumeraria",
+  "Pulpotomía",
+  "Posición anormal dentaria",
+  "Prótesis dental parcial fija",
+  "Prótesis dental completa superior/inferior",
+  "Prótesis dental parcial removible",
+  "Remanente radicular",
+  "Restauración definitiva",
+  "Restauración temporal",
+  "Sellantes",
+  "Superficie desgastada",
+  "Tratamiento de conducto (TC) / Pulpectomía (PC)",
+  "Transposición dentaria",
 ];
-const MENU_OFFSET_Y = 50; // distancia en píxeles hacia arriba
 
-export default function CondicionMenu({ x, y, onSelect, onDeletePart, onClose }: Props) {
-  const menuRef = useRef<HTMLDivElement>(null);
+export default function CondicionMenu({
+  toothId,
+  selectedColor,
+  selectedZone,
+  setSelectedColor,
+  setZoneColors,
+  updateTooth,
+  onClose,
+}: CondicionMenuProps) {
+  const [selectedCondicion, setSelectedCondicion] = useState<string | null>(
+    null
+  );
 
-  // Cerrar al hacer clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  const handleColorSelect = (color: "red" | "blue") => {
+    if (!selectedZone) {
+      alert("Selecciona primero una zona del diente.");
+      return;
+    }
+
+    setSelectedColor(color);
+
+    const key = `${toothId}_${selectedZone}`;
+
+    setZoneColors((prev) => ({
+      ...prev,
+      [key]: color,
+    }));
+
+    // <-- Mostrar en consola
+    console.log(
+      `Diente: ${toothId}, Zona: ${selectedZone}, Color seleccionado: ${color}`
+    );
+  };
+
+  const handleSave = () => {
+    if (!selectedCondicion) {
+      alert("Debes seleccionar una condición.");
+      return;
+    }
+
+    if (selectedZone && selectedColor) {
+      // Guardar en zonas
+      updateTooth(toothId, {
+        zonas: [
+          {
+            zona: selectedZone,
+            condicion: selectedCondicion,
+            color: selectedColor,
+          },
+        ],
+      });
+    } else {
+      // Guardar en generales (sin color → icon)
+      updateTooth(toothId, {
+        generales: [
+          {
+            condicion: selectedCondicion,
+            icon: `${selectedCondicion.toLowerCase().replace(/\s+/g, "_")}.svg`,
+          },
+        ],
+      });
+    }
+
+    console.log("Guardado en JSON");
+    onClose();
+  };
 
   return (
+    <div className="bg-white rounded-2xl w-full h-full flex flex-col">
+      <h2 className="text-lg font-semibold text-blue-700 p-4 border-b sticky top-0 bg-white z-10">
+        Condición del diente {toothId}
+      </h2>
 
-<div
-  ref={menuRef}
-  role="dialog"
-  aria-label="Menú de condición"
-  className="fixed z-50 w-60 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden transition-transform duration-150 transform scale-95 opacity-0 animate-menuFade"
-  style={{ top: y - MENU_OFFSET_Y, left: x }}
->
-  <ul className="divide-y divide-gray-100">
-    {OPTIONS.map((opt) => (
-  <li
-    key={opt.value}
-    onClick={(e) => {
-      e.stopPropagation();
-      onSelect(opt.value);
-    }}
-    className={`px-4 py-3 cursor-pointer text-base flex items-center transition-all duration-200 ease-in-out rounded-lg
-      ${opt.colorClass} hover:opacity-80 hover:bg-gray-100`}
-  >
-    {opt.icon} {opt.label}
-  </li>
-))}
-
-
-    <li
-      className="px-4 py-3 hover:bg-red-50 cursor-pointer text-base text-red-600 flex items-center transition-all duration-200 ease-in-out rounded-lg"
-      onClick={onDeletePart}
-    >
-      <Trash2 className="w-4 h-4 inline mr-2" /> Eliminar condición
-    </li>
-  </ul>
-
-  {/* Animación */}
-  <style jsx>{`
-    @keyframes menuFade {
-      0% { opacity: 0; transform: scale(0.95); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .animate-menuFade {
-      animation: menuFade 0.15s ease-out forwards;
-    }
-  `}</style>
-</div>
-
+      {/* Lista scrollable */}
+      {!selectedCondicion ? (
+        <ul className="flex-1 overflow-y-auto p-4 grid grid-cols-1 gap-2">
+          {condiciones.map((c) => (
+            <li
+              key={c}
+              className="p-2 border rounded-lg cursor-pointer hover:bg-blue-100 text-sm"
+              onClick={() => setSelectedCondicion(c)}
+            >
+              {c}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="flex flex-col items-center justify-center flex-1 gap-4 p-4">
+          <p className="text-sm text-gray-700">
+            {`Elige un color para "${selectedCondicion}"`}
+          </p>
+          <div className="flex gap-4">
+            <button
+              className="bg-red-500 text-white px-4 py-2 rounded-lg"
+              onClick={() => handleColorSelect("red")}
+            >
+              Rojo
+            </button>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+              onClick={() => handleColorSelect("blue")}
+            >
+              Azul
+            </button>
+          </div>
+          <div className="flex flex-col gap-2 mt-4">
+            <button
+              className="bg-green-500 text-white px-4 py-2 rounded-lg"
+              onClick={() => setSelectedCondicion(null)}
+            >
+              Volver a condiciones
+            </button>
+            <button
+              className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
+              onClick={handleSave}
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

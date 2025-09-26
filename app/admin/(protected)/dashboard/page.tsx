@@ -113,7 +113,7 @@ export default async function Page() {
                       </AccordionTrigger>
                       <AccordionContent className='pl-2 pb-3 space-y-1'>
                         <Link
-                          href='/admin/ficha-odontologica'
+                          href='/admin/ficha'
                           className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
                         >
                           Ficha odontológica
@@ -123,6 +123,12 @@ export default async function Page() {
                           className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
                         >
                           Historial
+                        </Link>
+                        <Link
+                          href='/admin/pruebas'
+                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
+                        >
+                          Odontograma-Prueba
                         </Link>
                       </AccordionContent>
                     </AccordionItem>
