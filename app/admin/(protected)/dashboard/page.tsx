@@ -26,15 +26,15 @@ export default async function Page() {
   return (
     <div className='flex min-h-svh w-full'>
       <Sheet>
-        {/* Botón flotante de menú (esquina superior izquierda) */}
+        {/* Botón flotante de menú (responsivo) */}
         <SheetTrigger asChild>
           <button
-            className='fixed left-4 top-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-md border bg-white text-slate-700 shadow hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500'
+            className='fixed left-2 top-2 sm:left-4 sm:top-4 z-50 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-md border border-border bg-background text-foreground shadow-md hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-colors'
             aria-label='Abrir menú'
             title='Menú'
           >
             <Menu
-              className='h-5 w-5'
+              className='h-4 w-4 sm:h-5 sm:w-5'
               aria-hidden='true'
             />
             <span className='sr-only'>Abrir menú</span>
@@ -42,27 +42,29 @@ export default async function Page() {
         </SheetTrigger>
 
         {/* Contenido principal */}
-        <main className='flex-1 p-6 md:p-10'>
-          <div className='flex items-center justify-between gap-4'>
-            <h1 className='text-2xl font-bold'>Dashboard</h1>
+        <main className='flex-1 p-4 sm:p-6 md:p-8 lg:p-10 pt-16 sm:pt-20'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+            <h1 className='text-xl sm:text-2xl font-bold'>Dashboard</h1>
             <Link
               href='/admin/ficha'
-              className='inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700'
+              className='inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base text-white hover:bg-blue-700 transition-colors w-full sm:w-auto justify-center sm:justify-start'
             >
               Ir a Ficha Odontológica
             </Link>
           </div>
 
-          <div className='mt-6 grid gap-4 md:grid-cols-2'>
-            <div className='rounded-lg border bg-white p-4'>
-              <h3 className='font-semibold text-slate-800'>Resumen</h3>
-              <p className='text-sm text-slate-600'>
+          <div className='mt-6 grid gap-4 sm:grid-cols-1 md:grid-cols-2'>
+            <div className='rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground'>
+              <h3 className='font-semibold text-base sm:text-lg'>Resumen</h3>
+              <p className='text-sm sm:text-base text-muted-foreground mt-1'>
                 Métricas y estado general.
               </p>
             </div>
-            <div className='rounded-lg border bg-white p-4'>
-              <h3 className='font-semibold text-slate-800'>Próximas citas</h3>
-              <p className='text-sm text-slate-600'>
+            <div className='rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground'>
+              <h3 className='font-semibold text-base sm:text-lg'>
+                Próximas citas
+              </h3>
+              <p className='text-sm sm:text-base text-muted-foreground mt-1'>
                 Listado de próximas atenciones.
               </p>
             </div>
@@ -70,7 +72,7 @@ export default async function Page() {
 
           <hr className='my-8' />
 
-          <div className='grid gap-4 md:grid-cols-2'>
+          <div className='grid gap-4 sm:grid-cols-1 lg:grid-cols-2'>
             <PatientSearch patients={patients || []} />
           </div>
         </main>
@@ -78,107 +80,83 @@ export default async function Page() {
         {/* Menú lateral en Sheet */}
         <SheetContent
           side='left'
-          className='w-72 p-0'
+          className='w-full sm:w-80 md:w-72 p-0'
         >
-          <SheetHeader className='px-4 py-3 border-b'>
-            <SheetTitle>Menú</SheetTitle>
+          <SheetHeader className='px-4 py-3 border-b border-border'>
+            <SheetTitle className='text-left'>Menú</SheetTitle>
           </SheetHeader>
-          <nav className='px-2 py-3'>
-            {/* Barra completa desplegable */}
+          <nav className='px-3 py-4 sm:px-4'>
+            {/* Menús principales sin acordeón padre */}
             <Accordion
-              type='single'
-              collapsible
-              defaultValue='menu'
-              className='w-full'
+              type='multiple'
+              className='w-full space-y-3'
             >
               <AccordionItem
-                value='menu'
-                className='border rounded-lg'
+                value='pacientes'
+                className='border border-border rounded-lg bg-card'
               >
-                <AccordionTrigger className='px-2 py-2 text-slate-700'>
-                  Barra de menú
+                <AccordionTrigger className='px-4 py-3 text-card-foreground hover:text-accent-foreground text-sm sm:text-base font-medium'>
+                  Pacientes
                 </AccordionTrigger>
-                <AccordionContent className='pt-2'>
-                  {/* Submenús */}
-                  <Accordion
-                    type='multiple'
-                    className='w-full'
+                <AccordionContent className='px-2 pb-3 space-y-1'>
+                  <Link
+                    href='/admin/ficha-odontologica'
+                    className='block rounded px-4 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors'
                   >
-                    <AccordionItem
-                      value='pacientes'
-                      className='border rounded-lg mb-2'
-                    >
-                      <AccordionTrigger className='px-2 py-2 text-slate-700'>
-                        Pacientes
-                      </AccordionTrigger>
-                      <AccordionContent className='pl-2 pb-3 space-y-1'>
-                        <Link
-                          href='/admin/ficha'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Ficha odontológica
-                        </Link>
-                        <Link
-                          href='#'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Historial
-                        </Link>
-                        <Link
-                          href='/admin/pruebas'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Odontograma-Prueba
-                        </Link>
-                      </AccordionContent>
-                    </AccordionItem>
+                    Ficha odontológica
+                  </Link>
+                  <Link
+                    href='#'
+                    className='block rounded px-4 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors'
+                  >
+                    Historial
+                  </Link>
+                </AccordionContent>
+              </AccordionItem>
 
-                    <AccordionItem
-                      value='citas'
-                      className='border rounded-lg mb-2'
-                    >
-                      <AccordionTrigger className='px-2 py-2 text-slate-700'>
-                        Citas
-                      </AccordionTrigger>
-                      <AccordionContent className='pl-2 pb-3 space-y-1'>
-                        <Link
-                          href='#'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Calendario
-                        </Link>
-                        <Link
-                          href='#'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Nueva cita
-                        </Link>
-                      </AccordionContent>
-                    </AccordionItem>
+              <AccordionItem
+                value='citas'
+                className='border border-border rounded-lg bg-card'
+              >
+                <AccordionTrigger className='px-4 py-3 text-card-foreground hover:text-accent-foreground text-sm sm:text-base font-medium'>
+                  Citas
+                </AccordionTrigger>
+                <AccordionContent className='px-2 pb-3 space-y-1'>
+                  <Link
+                    href='#'
+                    className='block rounded px-4 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors'
+                  >
+                    Calendario
+                  </Link>
+                  <Link
+                    href='#'
+                    className='block rounded px-4 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors'
+                  >
+                    Nueva cita
+                  </Link>
+                </AccordionContent>
+              </AccordionItem>
 
-                    <AccordionItem
-                      value='config'
-                      className='border rounded-lg'
-                    >
-                      <AccordionTrigger className='px-2 py-2 text-slate-700'>
-                        Configuración
-                      </AccordionTrigger>
-                      <AccordionContent className='pl-2 pb-3 space-y-1'>
-                        <Link
-                          href='/admin/usuarios'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Usuarios
-                        </Link>
-                        <Link
-                          href='#'
-                          className='block rounded px-2 py-1 text-sm text-slate-700 hover:bg-slate-100'
-                        >
-                          Preferencias
-                        </Link>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+              <AccordionItem
+                value='config'
+                className='border border-border rounded-lg bg-card'
+              >
+                <AccordionTrigger className='px-4 py-3 text-card-foreground hover:text-accent-foreground text-sm sm:text-base font-medium'>
+                  Configuración
+                </AccordionTrigger>
+                <AccordionContent className='px-2 pb-3 space-y-1'>
+                  <Link
+                    href='/admin/usuarios'
+                    className='block rounded px-4 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors'
+                  >
+                    Usuarios
+                  </Link>
+                  <Link
+                    href='#'
+                    className='block rounded px-4 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors'
+                  >
+                    Preferencias
+                  </Link>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

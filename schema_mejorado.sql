@@ -21,26 +21,36 @@ CREATE TABLE public.personal (
 );
 
 CREATE TABLE public.pacientes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nombres TEXT NOT NULL,
-  apellidos TEXT NOT NULL,
-  fecha_nacimiento DATE NOT NULL,
-  dni TEXT UNIQUE NOT NULL,
-  genero TEXT,
-  ocupacion TEXT,
-  estado_civil public.estado_civil,
-  telefono TEXT,
-  email TEXT UNIQUE,
-  direccion TEXT,
-  lugar_procedencia TEXT,
-  alerta_medica TEXT,
-  antecedentes_patologicos JSONB,
-  habitos JSONB,
-  talla_m DECIMAL(3, 2),
-  peso_kg DECIMAL(5, 2),
-  imc DECIMAL(4, 2),
-  presion_arterial TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nombres text NOT NULL,
+  apellidos text NOT NULL,
+  fecha_nacimiento date NOT NULL,
+  dni text NOT NULL UNIQUE,
+  genero text,
+  ocupacion text,
+  telefono text,
+  email text UNIQUE,
+  direccion text,
+  lugar_procedencia text,
+  alerta_medica text,
+  antecedentes_patologicos jsonb,
+  habitos jsonb,
+  talla_m numeric,
+  peso_kg numeric,
+  imc numeric,
+  presion_arterial text,
+  created_at timestamp with time zone DEFAULT now(),
+  numero_historia text UNIQUE,
+  grado_instruccion text,
+  pais text,
+  departamento text,
+  provincia text,
+  distrito text,
+  contacto_emergencia jsonb,
+  recomendado_por text,
+  observaciones text,
+  estado_civil character varying,
+  CONSTRAINT pacientes_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE public.odontogramas (
@@ -158,6 +168,40 @@ CREATE TABLE public.transacciones_financieras (
   notas_transaccion TEXT,
   fecha_transaccion TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TYPE public.tipo_ajuste AS ENUM (
+    'color',      -- Para valores de color (ej. #FFFFFF o 59 130 246)
+    'texto',      -- Para textos cortos (títulos, etiquetas de botones)
+    'textarea',   -- Para textos largos (párrafos, descripciones)
+    'numero',     -- Para valores numéricos (ej. número de WhatsApp)
+    'booleano'    -- Para activar/desactivar funcionalidades (ej. mostrar_banner_promocional)
+);
+
+-- 2. La tabla principal para todos los ajustes de la aplicación
+CREATE TABLE public.ajustes_aplicacion (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- La 'clave' es el identificador único que usarás en tu código para llamar a un valor.
+    -- Usar una notación con puntos (ej. 'theme.color.primary') es una excelente práctica.
+    clave TEXT UNIQUE NOT NULL,
+    -- El 'valor' que el administrador podrá editar.
+    valor TEXT,
+    -- El 'grupo' sirve para organizar los ajustes en el panel de administración.
+    grupo TEXT NOT NULL,
+    -- El 'tipo' le dice a tu panel de admin qué tipo de input mostrar.
+    tipo public.tipo_ajuste NOT NULL,
+    -- Una descripción amigable para que el administrador sepa qué está cambiando.
+    descripcion TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- MEJORA: Añadir un índice en la columna 'clave' para búsquedas ultra rápidas.
+CREATE INDEX idx_ajustes_aplicacion_clave ON public.ajustes_aplicacion(clave);
+
+-- MEJORA: Añadir comentarios para documentar la tabla.
+COMMENT ON TABLE public.ajustes_aplicacion IS 'Almacena configuraciones clave-valor para la personalización de la UI y funcionalidades de la aplicación desde un panel de administración.';
+COMMENT ON COLUMN public.ajustes_aplicacion.clave IS 'Identificador único usado en el código para obtener un ajuste. Ej: theme.color.primary';
+COMMENT ON COLUMN public.ajustes_aplicacion.grupo IS 'Categoría para agrupar ajustes en el panel de admin. Ej: Tema, Landing Page, Contacto';
+
 
 -- =================================================================
 -- FUNCIONES PARA CÁLCULO AUTOMÁTICO DE COSTOS
