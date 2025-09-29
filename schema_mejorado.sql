@@ -6,7 +6,6 @@
 
 CREATE TYPE public.estado_cita AS ENUM ('Programada', 'Confirmada', 'Cancelada', 'Completada', 'No Asistió');
 CREATE TYPE public.rol AS ENUM ('Admin', 'Odontólogo');
-CREATE TYPE public.plan_status AS ENUM ('Propuesto', 'En Progreso', 'Completado', 'Cancelado');
 CREATE TYPE public.item_status AS ENUM ('Pendiente', 'En Progreso', 'Completado', 'Cancelado');
 CREATE TYPE public.medida_tratamiento AS ENUM ('No específica', 'General', 'Pieza', 'Radiografía', 'Prótesis', 'Corona', 'Consulta', 'Cirugías');
 CREATE TYPE public.estado_civil AS ENUM ('Soltero', 'Casado', 'Divorciado', 'Viudo', 'Unión Libre');
@@ -82,7 +81,7 @@ CREATE TABLE public.procedimientos (
     grupo_id UUID REFERENCES public.grupos_procedimiento(id),
     medida public.medida_tratamiento,
     tipo TEXT, -- Campo flexible para futuras categorizaciones
-    comision_porcentaje DECIMAL(5, 2) DEFAULT 0.00,
+    -- comision_porcentaje DECIMAL(5, 2) DEFAULT 0.00,
     activo BOOLEAN DEFAULT TRUE,
     fecha_registro TIMESTAMPTZ DEFAULT NOW()
 );
@@ -111,7 +110,8 @@ CREATE TABLE public.planes_procedimiento (
     nombre TEXT NOT NULL,
     costo_total DECIMAL(10, 2),
     moneda_id UUID REFERENCES public.monedas(id),
-    estado public.plan_status DEFAULT 'Propuesto',
+    estado public.item_status DEFAULT 'Pendiente',
+    fecha_tratamiento DATE,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -124,8 +124,7 @@ CREATE TABLE public.plan_items (
     -- costo DECIMAL(10, 2) NOT NULL,
     cantidad INTEGER DEFAULT 1, -- Cuántas veces se realizará el procedimiento
     pieza_dental TEXT, -- Específica para este plan item
-    notas TEXT,
-    orden_ejecucion INTEGER -- Para definir secuencia de procedimientos
+    notas TEXT
 );
 
 CREATE TABLE public.citas (

@@ -49,19 +49,32 @@ type PatientInput = Partial<PatientData> & {
 };
 
 // Función para calcular la edad
-const calculateAge = (birthDate: string) => {
-  const today = new Date();
+const calculateAge = (birthDate: string): string => {
+  if (!birthDate) {
+    return "";
+  }
   const birthDateObj = new Date(birthDate);
+  // Comprueba si la fecha es inválida
+  if (isNaN(birthDateObj.getTime())) {
+    return "";
+  }
+  const today = new Date();
   let age = today.getFullYear() - birthDateObj.getFullYear();
   const monthDifference = today.getMonth() - birthDateObj.getMonth();
-  
-  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDateObj.getDate())) {
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDateObj.getDate())
+  ) {
     age--;
   }
   return age.toString();
 };
 
-export default function FiliacionForm({ patient }: { patient: PatientInput }) {
+interface FiliacionFormProps {
+  patient: PatientInput;
+}
+
+export default function FiliacionForm({ patient }: FiliacionFormProps) {
   const supabase = createClient();
   
   // Función para convertir valores null a cadenas vacías
