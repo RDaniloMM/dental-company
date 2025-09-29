@@ -50,11 +50,11 @@ const calculateAge = (birthDate: string) => {
   return age.toString();
 };
 
-export default function FiliacionForm({ patient }: { patient: any }) {
+export default function FiliacionForm({ patient }: { patient: Partial<PatientData> }) {
   const supabase = createClient();
   
   // Función para convertir valores null a cadenas vacías
-  const sanitizePatientData = (data: any): PatientData => {
+  const sanitizePatientData = (data: Partial<PatientData>): PatientData => {
     return {
       id: data.id || "",
       apellidos: data.apellidos || "",

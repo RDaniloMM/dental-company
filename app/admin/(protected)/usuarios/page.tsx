@@ -201,7 +201,7 @@ export default function UsuariosPage() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   return (
     <div className='p-6'>

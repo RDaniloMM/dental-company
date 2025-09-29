@@ -2,11 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
 
-export default async function FichaOdontologicaPage({
-  params,
-}: {
-  params: { numero_historia: string };
-}) {
+export default async function FichaOdontologicaPage() {
   const supabase = await createClient();
 
   const {

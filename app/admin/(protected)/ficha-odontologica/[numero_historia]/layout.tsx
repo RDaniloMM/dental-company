@@ -8,9 +8,9 @@ export default async function HistoriaLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ numero_historia: string }>;
+  params: { numero_historia: string };
 }) {
-  const { numero_historia } = await params;
+  const { numero_historia } = params;
   const supabase = await createClient();
   
   // Buscar el paciente por número de historia
