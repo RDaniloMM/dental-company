@@ -71,7 +71,7 @@ export default async function Page() {
 
           <hr className="my-8" />
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="w-full">
             <PatientSearch patients={patients || []} />
           </div>
 

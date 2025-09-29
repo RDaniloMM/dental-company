@@ -1,7 +1,6 @@
-// Force re-evaluation by TypeScript server
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { FichaOdontologicaForm } from "@/components/ficha-odontologica-form";
+import Image from "next/image";
 
 export default async function FichaOdontologicaPage({
   params,
@@ -19,10 +18,18 @@ export default async function FichaOdontologicaPage({
   }
 
   return (
-    <div className='flex-1 w-full flex flex-col items-center px-4'>
-      <div className='w-full max-w-4xl'>
-        <h1 className='text-2xl font-bold mb-6'>Ficha Odontológica</h1>
-        <FichaOdontologicaForm />
+    <div className='flex-1 w-full flex flex-col items-center justify-center h-full'>
+      <div className='text-center'>
+        <Image
+          src="/logo.png"
+          alt="Logo de la clínica dental"
+          width={200}
+          height={200}
+          className="mx-auto mb-4"
+        />
+        <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">
+          Tu sonrisa es nuestra sonrisa
+        </p>
       </div>
     </div>
   );

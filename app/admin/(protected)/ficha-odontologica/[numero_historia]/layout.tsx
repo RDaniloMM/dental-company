@@ -28,7 +28,7 @@ export default async function HistoriaLayout({
     <div className="flex min-h-screen w-full bg-muted/40">
       <FichaSidebar patientId={patient.id} numeroHistoria={numero_historia} />
       <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
+        <div className="p-4">
           {children}
         </div>
       </main>

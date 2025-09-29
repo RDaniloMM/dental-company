@@ -13,6 +13,7 @@ import { CheckboxWithInputVertical } from "./ui/checkbox-with-input-vertical";
 import { cn } from "@/lib/utils";
 import { FormData, SeguimientoRow, AntecedentesData } from "@/lib/supabase/ficha";
 import Odontograma from "@/components/odontograma/OdontoPage";
+import { Toaster, toast } from 'sonner';
 
 const initialState: FormData = {
   filiacion: {
@@ -317,13 +318,14 @@ export function FichaOdontologicaForm() {
       return;
     }
     
-    alert("Paciente y Ficha Odontológica creados con éxito!");
+    toast.success("Paciente y Ficha Odontológica creados con éxito!");
     setFormData(initialState);
     window.scrollTo(0, 0);
   };
 
   return (
     <form className="space-y-8" onSubmit={handleSubmit} ref={formRef}>
+      <Toaster position="bottom-center" />
       {/* SECCIÓN 1: FILIACIÓN */}
       <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader><CardTitle className="flex items-center gap-3 text-xl"><User className="text-blue-600"/>1. Filiación del Paciente</CardTitle></CardHeader>

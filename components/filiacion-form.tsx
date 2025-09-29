@@ -127,7 +127,7 @@ export default function FiliacionForm({ patient }: { patient: any }) {
 
   return (
     <div className="w-full max-w-none">
-      <Toaster />
+      <Toaster position="bottom-center" />
       <h2 className="text-2xl font-semibold uppercase mb-4">Datos del Paciente</h2>
       <Card>
         <CardContent className="pt-6">
