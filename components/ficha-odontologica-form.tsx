@@ -31,7 +31,6 @@ import {
   AntecedentesData,
 } from "@/lib/supabase/ficha";
 import Odontograma from "@/components/odontograma/OdontoPage";
-import { Toaster, toast } from 'sonner';
 
 const initialState: FormData = {
   filiacion: {
