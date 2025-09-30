@@ -11,40 +11,41 @@ import { EmblaOptionsType } from "embla-carousel";
 const WHATSAPP_NUMBER = "51914340074";
 const Header = () => (
   <header className='bg-white shadow-md fixed top-0 left-0 right-0 z-50'>
-    <div className='container mx-auto px-6 py-2 flex justify-between items-center'>
+    <div className='container mx-auto px-4 sm:px-6 py-3 sm:py-4 lg:py-6 flex justify-between items-center'>
       <Link
         href='/'
-        className='text-2xl font-bold text-blue-600'
+        className='text-xl sm:text-2xl font-bold text-blue-600'
       >
         <Image
           src='/logo.png'
           alt='Dental Company Logo'
-          width={160}
-          height={40}
+          width={150}
+          height={180}
+          className=''
         />
       </Link>
-      <nav className='hidden md:flex space-x-8 items-center'>
+      <nav className='hidden md:flex space-x-4 lg:space-x-8 items-center'>
         <Link
           href='#inicio'
-          className='text-gray-600 hover:text-blue-500 transition-colors'
+          className='text-gray-600 hover:text-blue-500 transition-colors text-sm lg:text-base'
         >
           Inicio
         </Link>
         <Link
           href='#nosotros'
-          className='text-gray-600 hover:text-blue-500 transition-colors'
+          className='text-gray-600 hover:text-blue-500 transition-colors text-sm lg:text-base'
         >
           Nosotros
         </Link>
         <Link
           href='#servicios'
-          className='text-gray-600 hover:text-blue-500 transition-colors'
+          className='text-gray-600 hover:text-blue-500 transition-colors text-sm lg:text-base'
         >
           Servicios
         </Link>
         <Link
           href='#reservas'
-          className='bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition-transform duration-300 ease-in-out hover:scale-105'
+          className='bg-blue-500 text-white px-4 lg:px-5 py-2 rounded-full hover:bg-blue-600 transition-transform duration-300 ease-in-out hover:scale-105 text-sm lg:text-base'
         >
           Reservas
         </Link>
@@ -73,7 +74,9 @@ const Carousel = (options: EmblaCarouselProps) => {
           <div
             className='relative flex-[0_0_100%]'
             key={index}
-            style={{ height: "60vh" }}
+            style={{ height: "40vh" }}
+            // Responsive heights
+            data-height='sm:h-[50vh] md:h-[60vh] lg:h-[70vh]'
           >
             <Image
               src={src}
@@ -81,6 +84,7 @@ const Carousel = (options: EmblaCarouselProps) => {
               fill
               style={{ objectFit: "cover" }}
               priority={index === 0}
+              sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
             />
           </div>
         ))}
@@ -169,21 +173,21 @@ export default function LandingPage() {
   return (
     <>
       <Header />
-      <main className='pt-20'>
+      <main className='pt-16 sm:pt-20'>
         <section
           id='inicio'
-          className='relative text-center bg-gray-100 py-20 md:py-32 flex flex-col items-center justify-center'
+          className='relative text-center bg-gray-100 py-12 sm:py-16 md:py-20 lg:py-32 flex flex-col items-center justify-center px-4 sm:px-6'
         >
           <div className='absolute inset-0 bg-sky-800 opacity-20'></div>
-          <h1 className='text-4xl md:text-6xl font-bold text-gray-800 z-10'>
+          <h1 className='text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-gray-800 z-10 max-w-4xl'>
             Clínica Dental <span className='text-blue-600'>Company</span>
           </h1>
-          <p className='mt-4 text-lg md:text-xl text-gray-600 z-10 max-w-2xl'>
+          <p className='mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-gray-600 z-10 max-w-2xl px-4'>
             Tu sonrisa es nuestra sonrisa.
           </p>
           <Link
             href='#reservas'
-            className='mt-8 bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-transform duration-300 ease-in-out hover:scale-105 z-10'
+            className='mt-6 sm:mt-8 bg-blue-500 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-blue-600 transition-transform duration-300 ease-in-out hover:scale-105 z-10'
           >
             Agenda tu Cita
           </Link>
@@ -193,28 +197,32 @@ export default function LandingPage() {
         </section>
         <section
           id='servicios'
-          className='py-20 bg-white'
+          className='py-12 sm:py-16 md:py-20 bg-white'
         >
-          <div className='container mx-auto px-6 text-center'>
-            <h2 className='text-3xl font-bold mb-2'>Nuestros Servicios</h2>
-            <p className='text-gray-600 mb-12 max-w-3xl mx-auto'>
+          <div className='container mx-auto px-4 sm:px-6 text-center'>
+            <h2 className='text-2xl sm:text-3xl font-bold mb-2 text-black'>
+              Nuestros Servicios
+            </h2>
+            <p className='text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto text-sm sm:text-base px-4'>
               Desde revisiones de rutina hasta procedimientos especializados,
               ofrecemos una gama completa de tratamientos para asegurar tu
               bienestar dental.
             </p>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 text-black'>
               {servicesData.map((service, index) => {
                 const Icon = service.icon;
                 return (
                   <div
                     key={index}
-                    className='bg-gray-50 p-8 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col items-center text-center'
+                    className='bg-gray-50 p-6 sm:p-8 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col items-center text-center'
                   >
-                    <Icon className='h-12 w-12 text-blue-500 mb-4' />
-                    <h3 className='text-xl font-semibold mb-2'>
+                    <Icon className='h-10 w-10 sm:h-12 sm:w-12 text-blue-500 mb-3 sm:mb-4' />
+                    <h3 className='text-lg sm:text-xl font-semibold mb-2'>
                       {service.title}
                     </h3>
-                    <p className='text-gray-600'>{service.description}</p>
+                    <p className='text-gray-600 text-sm sm:text-base leading-relaxed'>
+                      {service.description}
+                    </p>
                   </div>
                 );
               })}
@@ -223,23 +231,25 @@ export default function LandingPage() {
         </section>
         <section
           id='nosotros'
-          className='py-20 bg-blue-50'
+          className='py-12 sm:py-16 md:py-20 bg-blue-50'
         >
-          <div className='container mx-auto px-6 text-center'>
-            <h2 className='text-3xl font-bold mb-12'>
+          <div className='container mx-auto px-4 sm:px-6 text-center'>
+            <h2 className='text-2xl sm:text-3xl font-bold mb-8 sm:mb-12 text-black'>
               Conoce a Nuestros Especialistas
             </h2>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 text-black'>
               <div className='text-center'>
                 <Image
                   src='/ulises_penaloza.jpeg'
                   alt='Dr. Ulises Peñaloza'
-                  width={150}
-                  height={150}
-                  className='rounded-full mx-auto mb-4 border-4 border-white shadow-md'
+                  width={120}
+                  height={120}
+                  className='sm:w-[150px] sm:h-[150px] rounded-full mx-auto mb-4 border-4 border-white shadow-md'
                 />
-                <h3 className='text-xl font-bold'>Dr. Ulises Peñaloza</h3>
-                <p className='text-blue-600 font-medium'>
+                <h3 className='text-lg sm:text-xl font-bold'>
+                  Dr. Ulises Peñaloza
+                </h3>
+                <p className='text-blue-600 font-medium text-sm sm:text-base'>
                   Especialista en Periodoncia e Implantología
                 </p>
               </div>
@@ -247,25 +257,29 @@ export default function LandingPage() {
                 <Image
                   src='/dentista.png'
                   alt='Dra. Gabriela Condori'
-                  width={150}
-                  height={150}
-                  className='rounded-full mx-auto mb-4 border-4 border-white shadow-md'
+                  width={120}
+                  height={120}
+                  className='sm:w-[150px] sm:h-[150px] rounded-full mx-auto mb-4 border-4 border-white shadow-md'
                 />
-                <h3 className='text-xl font-bold'>Dra. Gabriela Condori</h3>
-                <p className='text-blue-600 font-medium'>
+                <h3 className='text-lg sm:text-xl font-bold'>
+                  Dra. Gabriela Condori
+                </h3>
+                <p className='text-blue-600 font-medium text-sm sm:text-base'>
                   Especialista en Ortodoncia y Ortopedia Maxilar
                 </p>
               </div>
-              <div className='text-center'>
+              <div className='text-center sm:col-span-2 lg:col-span-1'>
                 <Image
                   src='/dentista.png'
                   alt='Dra. Paola Peñaloza'
-                  width={150}
-                  height={150}
-                  className='rounded-full mx-auto mb-4 border-4 border-white shadow-md'
+                  width={120}
+                  height={120}
+                  className='sm:w-[150px] sm:h-[150px] rounded-full mx-auto mb-4 border-4 border-white shadow-md'
                 />
-                <h3 className='text-xl font-bold'>Dra. Paola Peñaloza</h3>
-                <p className='text-blue-600 font-medium'>
+                <h3 className='text-lg sm:text-xl font-bold'>
+                  Dra. Paola Peñaloza
+                </h3>
+                <p className='text-blue-600 font-medium text-sm sm:text-base'>
                   Cirujano dentista con experiencia en salud pública
                 </p>
               </div>
@@ -275,33 +289,33 @@ export default function LandingPage() {
 
         <section
           id='reservas'
-          className='py-20 bg-white'
+          className='py-12 sm:py-16 md:py-20 bg-white'
         >
-          <div className='container mx-auto px-6 text-center'>
-            <div className='max-w-2xl mx-auto bg-gray-100 p-10 rounded-lg shadow-inner'>
-              <MessageSquareQuote className='h-16 w-16 mx-auto text-blue-500 mb-4' />
-              <h2 className='text-3xl font-bold mb-4'>
+          <div className='container mx-auto px-4 sm:px-6 text-center'>
+            <div className='max-w-2xl mx-auto bg-gray-100 p-6 sm:p-8 md:p-10 rounded-lg shadow-inner'>
+              <MessageSquareQuote className='h-12 w-12 sm:h-16 sm:w-16 mx-auto text-blue-500 mb-3 sm:mb-4' />
+              <h2 className='text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-black'>
                 ¿Tienes una consulta rápida?
               </h2>
-              <p className='text-gray-600 mb-6'>
+              <p className='text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base px-2'>
                 Nuestro asistente virtual con IA puede ayudarte a resolver dudas
                 frecuentes y agendar tu próxima cita al instante.
               </p>
-              <button className='bg-gray-800 text-white px-8 py-3 rounded-full font-semibold hover:bg-black transition-colors'>
+              <button className='bg-gray-800 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-black transition-colors text-sm sm:text-base'>
                 Pregúntale a nuestro Asistente (Próximamente)
               </button>
             </div>
           </div>
         </section>
 
-        <section className='py-16 bg-blue-100'>
-          <div className='container mx-auto px-6 max-w-xl'>
-            <h2 className='text-2xl font-bold mb-6 text-center text-blue-800'>
+        <section className='py-12 sm:py-16 bg-blue-100'>
+          <div className='container mx-auto px-4 sm:px-6 max-w-xl'>
+            <h2 className='text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-blue-800'>
               Contáctanos
             </h2>
 
             <form
-              className='bg-white rounded-lg shadow-md p-8 space-y-5'
+              className='bg-white rounded-lg shadow-md p-6 sm:p-8 space-y-4 sm:space-y-5'
               onSubmit={(e) => {
                 e.preventDefault();
                 const nombre = (e.currentTarget.nombre as HTMLInputElement)
@@ -330,7 +344,7 @@ export default function LandingPage() {
                   type='text'
                   id='nombre'
                   name='nombre'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
+                  className='w-full border border-gray-300 rounded px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900 text-sm sm:text-base'
                   placeholder='Tu nombre'
                   required
                 />
@@ -346,7 +360,7 @@ export default function LandingPage() {
                   type='text'
                   id='motivo'
                   name='motivo'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
+                  className='w-full border border-gray-300 rounded px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900 text-sm sm:text-base'
                   placeholder='Motivo de consulta'
                   required
                 />
@@ -361,7 +375,7 @@ export default function LandingPage() {
                 <textarea
                   id='mensaje'
                   name='mensaje'
-                  className='w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900'
+                  className='w-full border border-gray-300 rounded px-3 sm:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900 text-sm sm:text-base'
                   rows={4}
                   placeholder='¿En qué podemos ayudarte?'
                   required
@@ -369,7 +383,7 @@ export default function LandingPage() {
               </div>
               <button
                 type='submit'
-                className='w-full bg-green-600 text-white font-semibold py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2'
+                className='w-full bg-green-600 text-white font-semibold py-2.5 sm:py-3 rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base'
               >
                 <Image
                   src='/whatsapp.png'
@@ -385,11 +399,13 @@ export default function LandingPage() {
         </section>
 
         <footer className='bg-gray-800 text-white'>
-          <div className='container mx-auto px-6 py-12'>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-              <div>
-                <h3 className='text-xl font-bold mb-4 mt-10'>Dental Company</h3>
-                <p className='text-gray-400'>
+          <div className='container mx-auto px-4 sm:px-6 py-8 sm:py-12'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8'>
+              <div className='text-center md:text-left'>
+                <h3 className='text-lg sm:text-xl font-bold mb-3 sm:mb-4'>
+                  Dental Company
+                </h3>
+                <p className='text-gray-400 text-sm sm:text-base leading-relaxed'>
                   DENTAL COMPANY es un centro odontológico integral de última
                   generación que combina excelencia clínica, tecnología avanzada
                   y calidez humana. Nos dedicamos a proporcionar tratamientos
@@ -398,9 +414,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div>
-                <h3 className='text-xl font-bold mb-4'>Contacto</h3>
-                <ul className='space-y-2 text-gray-400'>
+              <div className='text-center md:text-left'>
+                <h3 className='text-lg sm:text-xl font-bold mb-3 sm:mb-4'>
+                  Contacto
+                </h3>
+                <ul className='space-y-2 text-gray-400 text-sm sm:text-base'>
                   <li>
                     <strong>Dirección:</strong> Av. General Suarez N° 312,
                     Tacna, Perú
@@ -418,8 +436,10 @@ export default function LandingPage() {
                 </ul>
               </div>
 
-              <div>
-                <h3 className='text-xl font-bold mb-4'>Ubicación</h3>
+              <div className='text-center md:text-left'>
+                <h3 className='text-lg sm:text-xl font-bold mb-3 sm:mb-4'>
+                  Ubicación
+                </h3>
                 <div className='aspect-w-16 aspect-h-9 rounded-lg overflow-hidden'>
                   <iframe
                     src='https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3794.2145713407194!2d-70.2482761889066!3d-18.015242982912067!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x915acf7e65086b5d%3A0x8f6c0cc6e1e00105!2sDENTAL%20COMPANY%20TACNA!5e0!3m2!1ses!2spe!4v1756918317841!5m2!1ses!2spe'
@@ -433,7 +453,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            <div className='text-center text-gray-500 mt-10 border-t border-gray-700 pt-6'>
+            <div className='text-center text-gray-500 mt-6 sm:mt-10 border-t border-gray-700 pt-4 sm:pt-6 text-sm sm:text-base'>
               © {new Date().getFullYear()} Dental Company. Todos los derechos
               reservados.
             </div>

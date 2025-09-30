@@ -6,43 +6,50 @@
 
 CREATE TYPE public.estado_cita AS ENUM ('Programada', 'Confirmada', 'Cancelada', 'Completada', 'No Asistió');
 CREATE TYPE public.rol AS ENUM ('Admin', 'Odontólogo');
-CREATE TYPE public.plan_status AS ENUM ('Propuesto', 'En Progreso', 'Completado', 'Cancelado');
 CREATE TYPE public.item_status AS ENUM ('Pendiente', 'En Progreso', 'Completado', 'Cancelado');
 CREATE TYPE public.medida_tratamiento AS ENUM ('No específica', 'General', 'Pieza', 'Radiografía', 'Prótesis', 'Corona', 'Consulta', 'Cirugías');
 CREATE TYPE public.estado_civil AS ENUM ('Soltero', 'Casado', 'Divorciado', 'Viudo', 'Unión Libre');
 
 CREATE TABLE public.personal (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  nombre_completo TEXT NOT NULL,
+  nombres TEXT NOT NULL,
+  apellidos TEXT NOT NULL,
   rol public.rol NOT NULL,
   especialidad TEXT,
-  telefono TEXT,
-  email TEXT UNIQUE,
-  activo BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE public.pacientes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nombres TEXT NOT NULL,
-  apellidos TEXT NOT NULL,
-  fecha_nacimiento DATE NOT NULL,
-  dni TEXT UNIQUE NOT NULL,
-  genero TEXT,
-  ocupacion TEXT,
-  estado_civil public.estado_civil,
-  telefono TEXT,
-  email TEXT UNIQUE,
-  direccion TEXT,
-  lugar_procedencia TEXT,
-  alerta_medica TEXT,
-  antecedentes_patologicos JSONB,
-  habitos JSONB,
-  talla_m DECIMAL(3, 2),
-  peso_kg DECIMAL(5, 2),
-  imc DECIMAL(4, 2),
-  presion_arterial TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nombres text NOT NULL,
+  apellidos text NOT NULL,
+  fecha_nacimiento date NOT NULL,
+  dni text NOT NULL UNIQUE,
+  genero text,
+  ocupacion text,
+  telefono text,
+  email text UNIQUE,
+  direccion text,
+  lugar_procedencia text,
+  alerta_medica text,
+  antecedentes_patologicos jsonb,
+  habitos jsonb,
+  talla_m numeric,
+  peso_kg numeric,
+  imc numeric,
+  presion_arterial text,
+  created_at timestamp with time zone DEFAULT now(),
+  numero_historia text UNIQUE,
+  grado_instruccion text,
+  pais text,
+  departamento text,
+  provincia text,
+  distrito text,
+  contacto_emergencia jsonb,
+  recomendado_por text,
+  observaciones text,
+  estado_civil character varying,
+  CONSTRAINT pacientes_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE public.odontogramas (
@@ -74,7 +81,7 @@ CREATE TABLE public.procedimientos (
     grupo_id UUID REFERENCES public.grupos_procedimiento(id),
     medida public.medida_tratamiento,
     tipo TEXT, -- Campo flexible para futuras categorizaciones
-    comision_porcentaje DECIMAL(5, 2) DEFAULT 0.00,
+    -- comision_porcentaje DECIMAL(5, 2) DEFAULT 0.00,
     activo BOOLEAN DEFAULT TRUE,
     fecha_registro TIMESTAMPTZ DEFAULT NOW()
 );
@@ -103,7 +110,8 @@ CREATE TABLE public.planes_procedimiento (
     nombre TEXT NOT NULL,
     costo_total DECIMAL(10, 2),
     moneda_id UUID REFERENCES public.monedas(id),
-    estado public.plan_status DEFAULT 'Propuesto',
+    estado public.item_status DEFAULT 'Pendiente',
+    fecha_tratamiento DATE,
     fecha_creacion TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -111,13 +119,12 @@ CREATE TABLE public.plan_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plan_id UUID NOT NULL REFERENCES public.planes_procedimiento(id) ON DELETE CASCADE,
     procedimiento_id UUID NOT NULL REFERENCES public.procedimientos(id),
-    moneda_id UUID NOT NULL REFERENCES public.monedas(id),
+    -- moneda_id UUID NOT NULL REFERENCES public.monedas(id),
     estado public.item_status DEFAULT 'Pendiente',
-    costo DECIMAL(10, 2) NOT NULL,
+    -- costo DECIMAL(10, 2) NOT NULL,
     cantidad INTEGER DEFAULT 1, -- Cuántas veces se realizará el procedimiento
     pieza_dental TEXT, -- Específica para este plan item
-    notas TEXT,
-    orden_ejecucion INTEGER -- Para definir secuencia de procedimientos
+    notas TEXT
 );
 
 CREATE TABLE public.citas (
@@ -137,12 +144,8 @@ CREATE TABLE public.citas (
 
 CREATE TABLE public.seguimientos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  paciente_id UUID NOT NULL REFERENCES public.pacientes(id) ON DELETE CASCADE,
-  odontologo_id UUID NOT NULL REFERENCES public.personal(id),
   cita_id UUID REFERENCES public.citas(id) ON DELETE SET NULL,
-  fecha_seguimiento DATE NOT NULL DEFAULT CURRENT_DATE,
   procedimiento_id UUID REFERENCES public.procedimientos(id),
-  observaciones TEXT,
   fecha_proxima_cita DATE
 );
 
@@ -160,10 +163,44 @@ CREATE TABLE public.transacciones_financieras (
   cita_id UUID REFERENCES public.citas(id) ON DELETE SET NULL,
   monto DECIMAL(10, 2) NOT NULL,
   moneda_id UUID NOT NULL REFERENCES public.monedas(id),
-  tipo TEXT NOT NULL,
-  descripcion TEXT,
+  procedimiento_id UUID NOT NULL REFERENCES public.procedimientos(id),
+  notas_transaccion TEXT,
   fecha_transaccion TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TYPE public.tipo_ajuste AS ENUM (
+    'color',      -- Para valores de color (ej. #FFFFFF o 59 130 246)
+    'texto',      -- Para textos cortos (títulos, etiquetas de botones)
+    'textarea',   -- Para textos largos (párrafos, descripciones)
+    'numero',     -- Para valores numéricos (ej. número de WhatsApp)
+    'booleano'    -- Para activar/desactivar funcionalidades (ej. mostrar_banner_promocional)
+);
+
+-- 2. La tabla principal para todos los ajustes de la aplicación
+CREATE TABLE public.ajustes_aplicacion (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- La 'clave' es el identificador único que usarás en tu código para llamar a un valor.
+    -- Usar una notación con puntos (ej. 'theme.color.primary') es una excelente práctica.
+    clave TEXT UNIQUE NOT NULL,
+    -- El 'valor' que el administrador podrá editar.
+    valor TEXT,
+    -- El 'grupo' sirve para organizar los ajustes en el panel de administración.
+    grupo TEXT NOT NULL,
+    -- El 'tipo' le dice a tu panel de admin qué tipo de input mostrar.
+    tipo public.tipo_ajuste NOT NULL,
+    -- Una descripción amigable para que el administrador sepa qué está cambiando.
+    descripcion TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- MEJORA: Añadir un índice en la columna 'clave' para búsquedas ultra rápidas.
+CREATE INDEX idx_ajustes_aplicacion_clave ON public.ajustes_aplicacion(clave);
+
+-- MEJORA: Añadir comentarios para documentar la tabla.
+COMMENT ON TABLE public.ajustes_aplicacion IS 'Almacena configuraciones clave-valor para la personalización de la UI y funcionalidades de la aplicación desde un panel de administración.';
+COMMENT ON COLUMN public.ajustes_aplicacion.clave IS 'Identificador único usado en el código para obtener un ajuste. Ej: theme.color.primary';
+COMMENT ON COLUMN public.ajustes_aplicacion.grupo IS 'Categoría para agrupar ajustes en el panel de admin. Ej: Tema, Landing Page, Contacto';
+
 
 -- =================================================================
 -- FUNCIONES PARA CÁLCULO AUTOMÁTICO DE COSTOS

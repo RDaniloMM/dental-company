@@ -44,15 +44,37 @@ export function SignUpForm({
       // NOTA: Construimos un email a partir del username para Supabase.
       // Se puede cambiar "@clinica.local" a cualquier dominio.
       const email = `${username}@dental.company`;
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/protected`,
         },
       });
+
       if (error) throw error;
-      //router.push("/admin/sign-up-success");
+
+      // Si el usuario fue creado exitosamente, agregar registro en la tabla personal
+      if (data.user) {
+        const { error: personalError } = await supabase
+          .from("personal")
+          .insert({
+            id: data.user.id,
+            nombre_completo: username, // Usamos el username como nombre inicial
+            rol: "Odontólogo",
+            email: email,
+            activo: true,
+          });
+
+        if (personalError) {
+          // Si hay error al crear el registro personal, mostrar advertencia pero continuar
+          console.warn("Error al crear registro de personal:", personalError);
+          setError(
+            "Usuario creado pero hubo un problema al configurar el perfil. Contacta al administrador."
+          );
+        }
+      }
+
       router.push("/admin/login");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

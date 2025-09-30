@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 //import { User } from "@supabase/supabase-js";
 import {
@@ -32,42 +32,47 @@ import {
 import { Plus, Edit2, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
-interface UserProfile {
+interface Personal {
   id: string;
-  email: string;
-  username?: string;
-  role: "admin" | "user" | "dentist";
+  nombre_completo: string;
+  rol: "Admin" | "Odontólogo";
+  especialidad?: string;
+  telefono?: string;
+  email?: string;
+  activo: boolean;
   created_at: string;
-  last_sign_in_at?: string;
-  is_active: boolean;
 }
 
 export default function UsuariosPage() {
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<Personal[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [editingUser, setEditingUser] = useState<Personal | null>(null);
   const [formData, setFormData] = useState<{
+    nombre_completo: string;
     email: string;
-    username: string;
-    role: "admin" | "user" | "dentist";
-    is_active: boolean;
+    rol: "Admin" | "Odontólogo";
+    especialidad: string;
+    telefono: string;
+    activo: boolean;
   }>({
+    nombre_completo: "",
     email: "",
-    username: "",
-    role: "user",
-    is_active: true,
+    rol: "Odontólogo",
+    especialidad: "",
+    telefono: "",
+    activo: true,
   });
 
   const supabase = createClient();
 
   // Cargar usuarios
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("users") // Asume que tienes una tabla profiles
+        .from("personal")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -80,7 +85,7 @@ export default function UsuariosPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
 
   // Crear usuario
   const createUser = async () => {
@@ -88,29 +93,27 @@ export default function UsuariosPage() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: "temp123456", // Contraseña temporal
-        options: {
-          data: {
-            username: formData.username,
-            role: formData.role,
-          },
-        },
       });
 
       if (authError) throw authError;
 
-      // Insertar en tabla profiles
-      const { error: profileError } = await supabase.from("users").insert({
+      // Insertar en tabla personal
+      const { error: personalError } = await supabase.from("personal").insert({
         id: authData.user?.id,
+        nombre_completo: formData.nombre_completo,
+        rol: formData.rol,
+        especialidad: formData.especialidad,
+        telefono: formData.telefono,
         email: formData.email,
-        username: formData.username,
-        role: formData.role,
-        is_active: formData.is_active,
+        activo: formData.activo,
       });
 
-      if (profileError) throw profileError;
+      if (personalError) throw personalError;
 
+      toast.success("Usuario creado exitosamente");
       resetForm();
       loadUsers();
+      setDialogOpen(false);
     } catch (error) {
       if (error instanceof Error) {
         toast.error("Error al crear usuario: " + error.message);
@@ -124,11 +127,14 @@ export default function UsuariosPage() {
 
     try {
       const { error } = await supabase
-        .from("users")
+        .from("personal")
         .update({
-          username: formData.username,
-          role: formData.role,
-          is_active: formData.is_active,
+          nombre_completo: formData.nombre_completo,
+          rol: formData.rol,
+          especialidad: formData.especialidad,
+          telefono: formData.telefono,
+          email: formData.email,
+          activo: formData.activo,
         })
         .eq("id", editingUser.id);
 
@@ -145,17 +151,14 @@ export default function UsuariosPage() {
     }
   };
 
-  // Eliminar usuario
+  // Eliminar usuario (desactivar)
   const deleteUser = async (userId: string) => {
-    if (!confirm("¿Estás seguro de eliminar este usuario?")) return;
+    if (!confirm("¿Estás seguro de desactivar este usuario?")) return;
 
     try {
-      // No se puede eliminar el usuario de auth directamente desde el cliente
-      // por seguridad. Se recomienda hacerlo desde una función de Supabase (Edge Function).
-      // Por ahora, solo desactivaremos el usuario.
       const { error } = await supabase
-        .from("users")
-        .update({ is_active: false })
+        .from("personal")
+        .update({ activo: false })
         .eq("id", userId);
 
       if (error) throw error;
@@ -164,7 +167,7 @@ export default function UsuariosPage() {
       loadUsers();
     } catch (error) {
       if (error instanceof Error) {
-        toast.error("Error al eliminar usuario: " + error.message);
+        toast.error("Error al desactivar usuario: " + error.message);
       }
     }
   };
@@ -172,22 +175,26 @@ export default function UsuariosPage() {
   // Resetear formulario
   const resetForm = () => {
     setFormData({
+      nombre_completo: "",
       email: "",
-      username: "",
-      role: "user",
-      is_active: true,
+      rol: "Odontólogo",
+      especialidad: "",
+      telefono: "",
+      activo: true,
     });
     setEditingUser(null);
   };
 
   // Abrir modal para editar
-  const openEditDialog = (user: UserProfile) => {
+  const openEditDialog = (user: Personal) => {
     setEditingUser(user);
     setFormData({
-      email: user.email,
-      username: user.username || "",
-      role: user.role,
-      is_active: user.is_active,
+      nombre_completo: user.nombre_completo,
+      email: user.email || "",
+      rol: user.rol,
+      especialidad: user.especialidad || "",
+      telefono: user.telefono || "",
+      activo: user.activo,
     });
     setDialogOpen(true);
   };
@@ -195,8 +202,8 @@ export default function UsuariosPage() {
   // Filtrar usuarios
   const filteredUsers = users.filter(
     (user) =>
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      user.nombre_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   useEffect(() => {
@@ -206,13 +213,13 @@ export default function UsuariosPage() {
   return (
     <div className='p-6'>
       <div className='mb-6'>
-        <h1 className='text-2xl font-bold mb-4'>Administración de Usuarios</h1>
+        <h1 className='text-2xl font-bold mb-4'>Administración de Personal</h1>
 
         <div className='flex items-center justify-between gap-4'>
           <div className='relative flex-1 max-w-sm'>
             <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4' />
             <Input
-              placeholder='Buscar usuarios...'
+              placeholder='Buscar personal...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className='pl-9'
@@ -226,25 +233,39 @@ export default function UsuariosPage() {
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
                 <Plus className='h-4 w-4 mr-2' />
-                Nuevo Usuario
+                Nuevo Personal
               </Button>
             </DialogTrigger>
             <DialogContent className='sm:max-w-[425px]'>
               <DialogHeader>
                 <DialogTitle>
-                  {editingUser ? "Editar Usuario" : "Crear Nuevo Usuario"}
+                  {editingUser ? "Editar Personal" : "Crear Nuevo Personal"}
                 </DialogTitle>
                 <DialogDescription>
                   {editingUser
-                    ? "Modifica los datos del usuario"
-                    : "Completa los datos para crear un nuevo usuario"}
+                    ? "Modifica los datos del personal"
+                    : "Completa los datos para crear nuevo personal"}
                 </DialogDescription>
               </DialogHeader>
               <div className='grid gap-4 py-4'>
                 <div className='grid gap-2'>
+                  <Label htmlFor='nombre_completo'>Nombre Completo</Label>
+                  <Input
+                    id='nombre_completo'
+                    value={formData.nombre_completo}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        nombre_completo: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className='grid gap-2'>
                   <Label htmlFor='email'>Email</Label>
                   <Input
                     id='email'
+                    type='email'
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -253,44 +274,53 @@ export default function UsuariosPage() {
                   />
                 </div>
                 <div className='grid gap-2'>
-                  <Label htmlFor='username'>Usuario</Label>
-                  <Input
-                    id='username'
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                  />
-                </div>
-                <div className='grid gap-2'>
-                  <Label htmlFor='role'>Rol</Label>
+                  <Label htmlFor='rol'>Rol</Label>
                   <Select
-                    value={formData.role}
-                    onValueChange={(value: "admin" | "user" | "dentist") =>
-                      setFormData({ ...formData, role: value })
+                    value={formData.rol}
+                    onValueChange={(value: "Admin" | "Odontólogo") =>
+                      setFormData({ ...formData, rol: value })
                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='user'>Usuario</SelectItem>
-                      <SelectItem value='dentist'>Dentista</SelectItem>
-                      <SelectItem value='admin'>Administrador</SelectItem>
+                      <SelectItem value='Odontólogo'>Odontólogo</SelectItem>
+                      <SelectItem value='Admin'>Administrador</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className='grid gap-2'>
+                  <Label htmlFor='especialidad'>Especialidad</Label>
+                  <Input
+                    id='especialidad'
+                    value={formData.especialidad}
+                    onChange={(e) =>
+                      setFormData({ ...formData, especialidad: e.target.value })
+                    }
+                  />
+                </div>
+                <div className='grid gap-2'>
+                  <Label htmlFor='telefono'>Teléfono</Label>
+                  <Input
+                    id='telefono'
+                    value={formData.telefono}
+                    onChange={(e) =>
+                      setFormData({ ...formData, telefono: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='flex items-center space-x-2'>
                   <input
                     type='checkbox'
-                    id='is_active'
-                    checked={formData.is_active}
+                    id='activo'
+                    checked={formData.activo}
                     onChange={(e) =>
-                      setFormData({ ...formData, is_active: e.target.checked })
+                      setFormData({ ...formData, activo: e.target.checked })
                     }
                     className='rounded'
                   />
-                  <Label htmlFor='is_active'>Usuario activo</Label>
+                  <Label htmlFor='activo'>Personal activo</Label>
                 </div>
               </div>
               <div className='flex justify-end gap-2'>
@@ -318,9 +348,11 @@ export default function UsuariosPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Nombre Completo</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Usuario</TableHead>
                 <TableHead>Rol</TableHead>
+                <TableHead>Especialidad</TableHead>
+                <TableHead>Teléfono</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Creado</TableHead>
                 <TableHead className='text-right'>Acciones</TableHead>
@@ -330,43 +362,43 @@ export default function UsuariosPage() {
               {filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={8}
                     className='text-center py-8'
                   >
-                    No se encontraron usuarios
+                    No se encontró personal
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className='font-medium'>{user.email}</TableCell>
-                    <TableCell>{user.username || "Sin usuario"}</TableCell>
+                    <TableCell className='font-medium'>
+                      {user.nombre_completo}
+                    </TableCell>
+                    <TableCell>{user.email || "Sin email"}</TableCell>
                     <TableCell>
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.role === "admin"
+                          user.rol === "Admin"
                             ? "bg-red-100 text-red-800"
-                            : user.role === "dentist"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
+                            : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {user.role === "admin"
-                          ? "Administrador"
-                          : user.role === "dentist"
-                          ? "Dentista"
-                          : "Usuario"}
+                        {user.rol}
                       </span>
                     </TableCell>
                     <TableCell>
+                      {user.especialidad || "Sin especialidad"}
+                    </TableCell>
+                    <TableCell>{user.telefono || "Sin teléfono"}</TableCell>
+                    <TableCell>
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.is_active
+                          user.activo
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {user.is_active ? "Activo" : "Inactivo"}
+                        {user.activo ? "Activo" : "Inactivo"}
                       </span>
                     </TableCell>
                     <TableCell>
