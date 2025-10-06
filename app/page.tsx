@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Smile, Bone, MessageSquareQuote } from "lucide-react";
 
-// Dependencias del carrusel
 import useEmblaCarousel from "embla-carousel-react";
 import { EmblaOptionsType } from "embla-carousel";
 
