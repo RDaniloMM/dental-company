@@ -420,7 +420,8 @@ export const PromptInput = ({
 
     // Convert blob URLs to data URLs asynchronously
     Promise.all(
-      items.map(async ({ id, ...item }) => {
+      //items.map(async ({id, ...item }) => {
+      items.map(async ({ ...item }) => {
         if (item.url && item.url.startsWith("blob:")) {
           return {
             ...item,
