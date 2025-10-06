@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import FiliacionForm from "@/components/filiacion-form";
 import HistoriaClinicaForm from "@/components/historia-clinica-form";
@@ -38,8 +38,9 @@ type PatientData = {
 export default function FichaOdontologicaPage({
   params,
 }: {
-  params: { numero_historia: string };
+  params: Promise<{ numero_historia: string }>;
 }) {
+  const resolvedParams = use(params);
   const [activeView, setActiveView] = useState("welcome");
   const [patient, setPatient] = useState<Partial<PatientData>>({});
   const supabase = createClient();
@@ -49,7 +50,7 @@ export default function FichaOdontologicaPage({
       const { data, error } = await supabase
         .from("pacientes")
         .select("*")
-        .eq("numero_historia", params.numero_historia)
+        .eq("numero_historia", resolvedParams.numero_historia)
         .single();
 
       if (error) {
@@ -59,10 +60,10 @@ export default function FichaOdontologicaPage({
       }
     };
 
-    if (params.numero_historia) {
+    if (resolvedParams.numero_historia) {
       fetchPatient();
     }
-  }, [params.numero_historia, supabase]);
+  }, [resolvedParams.numero_historia, supabase]);
 
   const renderContent = () => {
     if (!patient.id) {
@@ -102,7 +103,7 @@ export default function FichaOdontologicaPage({
     <div className="flex min-h-screen w-full bg-muted/40">
       <FichaSidebar
         patientId={patient.id || ""}
-        numeroHistoria={params.numero_historia}
+        numeroHistoria={resolvedParams.numero_historia}
         onSelectView={setActiveView}
       />
       <main className="flex-1 overflow-y-auto">
