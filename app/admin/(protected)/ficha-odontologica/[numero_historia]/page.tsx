@@ -7,7 +7,7 @@ import HistoriaClinicaForm from "@/components/historia-clinica-form";
 import FichaSidebar from "@/components/ficha-sidebar";
 import Image from "next/image";
 
-// Definición local del tipo Paciente para evitar errores de linting
+// Definición local del tipo Paciente
 type PatientData = {
   id: string;
   apellidos: string;
@@ -55,7 +55,7 @@ export default function FichaOdontologicaPage({
 
       if (error) {
         console.error("Error fetching patient:", error);
-      } else {
+      } else if (data) {
         setPatient(data);
       }
     };
@@ -66,6 +66,7 @@ export default function FichaOdontologicaPage({
   }, [resolvedParams.numero_historia, supabase]);
 
   const renderContent = () => {
+    // La comprobación de patient.id asegura a TypeScript que patient.id existe en las ramas inferiores
     if (!patient.id) {
       return (
         <div className="flex h-full w-full flex-col items-center justify-center">
@@ -76,8 +77,10 @@ export default function FichaOdontologicaPage({
 
     switch (activeView) {
       case "filiacion":
-        return <FiliacionForm patient={patient} />;
+        // patient aquí es de tipo PatientData (completo), no parcial
+        return <FiliacionForm patient={patient as PatientData} />;
       case "historia-clinica":
+        // patient.id está garantizado que existe por el chequeo anterior
         return <HistoriaClinicaForm pacienteId={patient.id} />;
       default:
         return (
@@ -102,7 +105,7 @@ export default function FichaOdontologicaPage({
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
       <FichaSidebar
-        patientId={patient.id || ""}
+        patientId={patient?.id || ""}
         numeroHistoria={resolvedParams.numero_historia}
         onSelectView={setActiveView}
       />
