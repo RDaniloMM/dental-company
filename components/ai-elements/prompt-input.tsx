@@ -26,6 +26,7 @@ import {
   SquareIcon,
   XIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { nanoid } from "nanoid";
 import {
   type ChangeEventHandler,
@@ -90,7 +91,7 @@ export function PromptInputAttachment({
       {...props}
     >
       {data.mediaType?.startsWith("image/") && data.url ? (
-        <img
+        <Image
           alt={data.filename || "attachment"}
           className="size-full rounded-md object-cover"
           height={56}
@@ -420,7 +421,7 @@ export const PromptInput = ({
 
     // Convert blob URLs to data URLs asynchronously
     Promise.all(
-      items.map(async ({ id, ...item }) => {
+      items.map(async ({ ...item }) => {
         if (item.url && item.url.startsWith("blob:")) {
           return {
             ...item,
