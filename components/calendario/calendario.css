@@ -1,6 +1,3 @@
-/* =======================
-   ESTILOS GENERALES DEL CALENDARIO
-======================= */
 .fc {
   background-color: #ffffff;
   border-radius: 12px;
@@ -10,17 +7,16 @@
   color: #111827;
 }
 
-/* =======================
-   TÍTULO DEL CALENDARIO
-======================= */
 .fc-toolbar-title {
   color: #1e40af;
   font-weight: 700;
 }
 
-/* =======================
-   BOTONES DEL CALENDARIO
-======================= */
+.fc-daygrid-day-bg::after {
+  content: none !important;
+}
+
+
 .fc .fc-toolbar-chunk {
   display: flex;
   gap: 8px;
@@ -45,23 +41,16 @@
   transform: scale(1.05);
 }
 
-/* =======================
-   DÍA DE HOY
-======================= */
 .fc-day-today {
   background-color: #fde047 !important;
   border-radius: 6px;
 }
 
-/* =======================
-   EVENTOS (ODONTOLÓGICOS / MÉDICOS)
-======================= */
 .fc-event-limpieza { background-color: #3b82f6 !important; color: white !important; }
 .fc-event-revision { background-color: #10b981 !important; color: white !important; }
 .fc-event-urgente { background-color: #f97316 !important; color: white !important; }
 .fc-event-otros { background-color: #8b5cf6 !important; color: white !important; }
 
-/* Animaciones y hover generales */
 .fc-event {
   border: none !important;
   border-radius: 6px;
@@ -70,27 +59,16 @@
   transition: transform 0.1s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.2s ease-in-out;
 }
 
-.fc-event:hover {
-  transform: scale(1.02);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-/* Hover específico por tipo de evento */
 .fc-event-limpieza:hover { background-color: #60a5fa !important; }
 .fc-event-revision:hover { background-color: #34d399 !important; }
 .fc-event-urgente:hover { background-color: #fb923c !important; }
 .fc-event-otros:hover { background-color: #a78bfa !important; }
 
-/* Hover solo en vista día (timeGrid) */
 .fc-timegrid-event.fc-event:hover {
   transform: scale(1.02);
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* =======================
-   CABECERAS DEL CALENDARIO
-======================= */
-/* Cabeceras de días (mes) */
 .fc .fc-col-header {
   background-color: #dbeafe;
   border-bottom: 1px solid #93c5fd;
@@ -102,16 +80,13 @@
   text-transform: uppercase;
 }
 
-/* Cabeceras de lista (list view) */
 .fc .fc-list-table th {
   background-color: #dbeafe;
   color: #1e40af;
   font-weight: 600;
   border-bottom: 1px solid #93c5fd;
 }
-/* =======================
-   Modal de detalles del evento
-======================= */
+
 .odont-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -150,6 +125,7 @@
   margin-bottom: 0.5rem;
 }
 
+
 .odont-modal-date {
   color: #2563eb;
   margin-bottom: 1rem;
@@ -170,6 +146,77 @@
 .odont-modal-close:hover {
   background-color: #1e40af;
   transform: scale(1.05);
+}
+.fc-event,
+.fc-daygrid-event,
+.fc-timegrid-event {
+  background-color: inherit !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  border: none !important;
+  cursor: default !important;
+  transform: none !important;
+}
+/* en calendario.css */
+.fc-popover {
+  animation: scaleIn 0.25s ease forwards;
+  border-radius: 12px;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+.fc-event:hover,
+.fc-daygrid-event:hover,
+.fc-timegrid-event:hover {
+  background-color: inherit !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  border: none !important;
+  cursor: default !important;
+  transform: none !important;
+}
+
+.fc-daygrid-more-link {
+  background: transparent !important;
+  color: inherit !important;
+  cursor: default !important;
+  text-decoration: none !important;
+}
+
+.fc .fc-daygrid-day-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 1.5rem;
+  font-weight: 500;
+  color: #000000;
+}
+
+.fc,
+.fc-theme-standard td,
+.fc-theme-standard th {
+  overflow: visible !important;
+  z-index: 1;
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
