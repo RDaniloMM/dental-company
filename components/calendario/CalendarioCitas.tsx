@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -12,6 +12,8 @@ import "./calendario.css";
 export default function CalendarioCitas() {
   const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY!;
   const calendarId = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID!;
+
+
 
   const formatDate = (date: Date | null) =>
     date
