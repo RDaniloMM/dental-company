@@ -13,17 +13,6 @@ export default function CalendarioCitas() {
   const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY!;
   const calendarId = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID!;
 
-  useEffect(() => {
-    console.log("NEXT_PUBLIC_GOOGLE_API_KEY:", googleApiKey);
-    console.log("NEXT_PUBLIC_GOOGLE_CALENDAR_ID:", calendarId);
-
-    if (!googleApiKey || !calendarId) {
-      console.warn(
-        "Alguna variable de entorno no está definida. Revisar"
-      );
-    }
-  }, []);
-
   const formatDate = (date: Date | null) =>
     date
       ? date.toLocaleString("es-PE", {
