@@ -5,8 +5,15 @@ interface IncisivoActionProps {
   toothId: string;
   onZoneSelect: (zone: string) => void;
   zoneColors: Record<string, string>;
+  generales?: {
+    condicion: string;
+    icon: string;
+    label?: string;
+    color?: "red" | "blue";
+  }[];
   hoverFill?: string;
   disabled?: boolean;
+  borderColor?: string;
 }
 
 const IncisivoAction: React.FC<IncisivoActionProps> = ({
@@ -14,9 +21,9 @@ const IncisivoAction: React.FC<IncisivoActionProps> = ({
   onZoneSelect,
   zoneColors,
   disabled = false,
+  borderColor,
 }) => {
   const [hoveredPart, setHoveredPart] = useState<string | null>(null);
-
   const getFillWithOpacity = (zone: string) => {
     const key = `${toothId}_${zone}`;
     const color = zoneColors[key];
@@ -24,13 +31,20 @@ const IncisivoAction: React.FC<IncisivoActionProps> = ({
     if (!color) {
       return hoveredPart === zone ? "rgba(173,216,230,0.4)" : "transparent";
     }
-
     if (color === "red")
       return hoveredPart === zone ? "rgba(255,0,0,0.7)" : "rgba(255,0,0,0.5)";
     if (color === "blue")
       return hoveredPart === zone ? "rgba(0,0,255,0.7)" : "rgba(0,0,255,0.5)";
 
     return "transparent";
+  };
+
+  const getCoronaStroke = () => {
+    const key = `${toothId}_corona`;
+    const color = zoneColors[key];
+    if (color === "red") return "red";
+    if (color === "blue") return "blue";
+    return "#000";
   };
 
   const outerX = 41.642595;
@@ -92,7 +106,6 @@ const IncisivoAction: React.FC<IncisivoActionProps> = ({
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Paths decorativos base */}
       <svg
         viewBox="0 0 210 250"
         width="100%"
@@ -111,9 +124,17 @@ const IncisivoAction: React.FC<IncisivoActionProps> = ({
             y="126.00148"
             width="125.64497"
             height="114.24808"
-            stroke="black"
+            stroke={
+              zoneColors[`${toothId}_corona`]
+                ? getCoronaStroke()
+                : borderColor
+                ? borderColor
+                : "transparent"
+            }
+            strokeWidth={
+              borderColor || zoneColors[`${toothId}_corona`] ? 10 : 0
+            }
             fill="white"
-            strokeWidth="2.48"
           />
           <path
             d="M 49.749787,182.97792 109.20548,182.963 Z"
@@ -152,7 +173,6 @@ const IncisivoAction: React.FC<IncisivoActionProps> = ({
         </g>
       </svg>
 
-      {/* Zonas clickeables */}
       {zones.map((zone) =>
         zone.type === "rect" ? (
           <rect
