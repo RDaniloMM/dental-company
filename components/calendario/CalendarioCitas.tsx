@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -12,6 +12,17 @@ import "./calendario.css";
 export default function CalendarioCitas() {
   const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY!;
   const calendarId = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID!;
+
+  useEffect(() => {
+    console.log("NEXT_PUBLIC_GOOGLE_API_KEY:", googleApiKey);
+    console.log("NEXT_PUBLIC_GOOGLE_CALENDAR_ID:", calendarId);
+
+    if (!googleApiKey || !calendarId) {
+      console.warn(
+        "Alguna variable de entorno no está definida. Revisar"
+      );
+    }
+  }, []);
 
   const formatDate = (date: Date | null) =>
     date
@@ -38,26 +49,25 @@ export default function CalendarioCitas() {
               interactionPlugin,
               googleCalendarPlugin,
             ]}
-            initialView="dayGridMonth" // Vista mes
+            initialView="dayGridMonth"
             locales={[esLocale]}
             locale="es"
             height="70vh"
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "" // solo mes
+              right: "",
             }}
-            
             buttonText={{
               today: "Hoy",
-              month: "Mes"
+              month: "Mes",
             }}
             googleCalendarApiKey={googleApiKey}
             eventSources={[
               { googleCalendarId: calendarId, className: "fc-event-google" },
             ]}
             dayMaxEvents={2}
-            dayCellClassNames={() => ["no-bg"]} // Oculta el fondo de cada celda
+            dayCellClassNames={() => ["no-bg"]}
             moreLinkClick="popover"
             moreLinkContent={(args) => ({
               html: `<div 
@@ -88,7 +98,6 @@ export default function CalendarioCitas() {
                 link.style.pointerEvents = "none";
               }
             }}
-            
             eventContent={(arg) => {
               const event = arg.event;
               const startTime = formatDate(event.start);
