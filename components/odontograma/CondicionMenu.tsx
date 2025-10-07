@@ -146,7 +146,7 @@ const dientesInferiores = [
 ============================================================ */
 const opcionesCondiciones: Record<string, string[]> = {
   Corona: ["CM", "CF", "CMC", "CV", "CLM"],
-  "Corona temporal": ["CTM", "CTF", "CTC"],
+  "Corona temporal": ["CTF"],
   "Defectos de desarrollo del esmalte (DDE)": ["PE", "O", "Fluorosis"],
   "Fosas y fisuras profundas": ["FFP"],
   "Implante dental": ["IMP"],
