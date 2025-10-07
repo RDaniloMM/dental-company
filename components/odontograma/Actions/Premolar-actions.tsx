@@ -7,6 +7,7 @@ interface PremolarActionProps {
   zoneColors: Record<string, string>;
   hoverFill?: string;
   disabled?: boolean;
+  borderColor?: string;
 }
 
 const PremolarAction: React.FC<PremolarActionProps> = ({
@@ -14,9 +15,16 @@ const PremolarAction: React.FC<PremolarActionProps> = ({
   onZoneSelect,
   zoneColors,
   disabled = false,
+  borderColor,
 }) => {
   const [hoveredPart, setHoveredPart] = useState<string | null>(null);
-
+  const getCoronaStroke = () => {
+    const key = `${toothId}_corona`;
+    const color = zoneColors[key];
+    if (color === "red") return "red";
+    if (color === "blue") return "blue";
+    return "black";
+  };
   const getFillWithOpacity = (zone: string) => {
     const key = `${toothId}_${zone}`;
     const color = zoneColors[key];
@@ -92,7 +100,6 @@ const PremolarAction: React.FC<PremolarActionProps> = ({
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Paths decorativos base */}
       <path
         d="M 64.293991,126.34358 H 149.90489 L 107.09946,15.32541 Z"
         stroke="black"
@@ -104,11 +111,16 @@ const PremolarAction: React.FC<PremolarActionProps> = ({
         y="126.00449"
         width="174.24286"
         height="114.03075"
-        stroke="black"
+        stroke={
+          zoneColors[`${toothId}_corona`]
+            ? getCoronaStroke()
+            : borderColor
+            ? borderColor
+            : "transparent"
+        }
         fill="white"
-        strokeWidth="2.48"
+        strokeWidth={10}
       />
-      {/* Línea horizontal al medio del rectángulo interior */}
       <path
         d={`M ${centerX}, ${centerY + centerH / 2} 
       H ${centerX + centerW}`}
@@ -117,7 +129,6 @@ const PremolarAction: React.FC<PremolarActionProps> = ({
         fill="none"
         style={{ pointerEvents: "none" }}
       />
-      {/* Zonas clickeables */}
       {zones.map((zone) =>
         zone.type === "rect" ? (
           <rect

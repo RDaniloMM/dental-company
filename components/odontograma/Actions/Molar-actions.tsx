@@ -5,15 +5,23 @@ interface MolarActionProps {
   toothId: string;
   onZoneSelect: (zone: string) => void;
   zoneColors: Record<string, string>;
+  generales?: {
+    condicion: string;
+    icon: string;
+    label?: string;
+    color?: "red" | "blue";
+  }[];
   hoverFill?: string;
-  disabled?: boolean; 
+  disabled?: boolean;
+  borderColor?: string;
 }
 
 const MolarAction: React.FC<MolarActionProps> = ({
   toothId,
   onZoneSelect,
   zoneColors,
-  disabled = false, 
+  disabled = false,
+  borderColor,
 }) => {
   const [hoveredPart, setHoveredPart] = useState<string | null>(null);
 
@@ -24,13 +32,20 @@ const MolarAction: React.FC<MolarActionProps> = ({
     if (!color) {
       return hoveredPart === zone ? "rgba(173,216,230,0.4)" : "transparent";
     }
-
     if (color === "red")
       return hoveredPart === zone ? "rgba(255,0,0,0.7)" : "rgba(255,0,0,0.5)";
     if (color === "blue")
       return hoveredPart === zone ? "rgba(0,0,255,0.7)" : "rgba(0,0,255,0.5)";
 
     return "transparent";
+  };
+
+  const getCoronaStroke = () => {
+    const key = `${toothId}_corona`;
+    const color = zoneColors[key];
+    if (color === "red") return "red";
+    if (color === "blue") return "blue";
+    return "#000";
   };
 
   const outerX = 19.642595;
@@ -92,7 +107,6 @@ const MolarAction: React.FC<MolarActionProps> = ({
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Paths decorativos base */}
       <path
         d="M 19.598722,126.1842 H 92.66381 L 56.131267,14.684617 Z"
         stroke="#000"
@@ -120,31 +134,33 @@ const MolarAction: React.FC<MolarActionProps> = ({
         y={outerY}
         width={outerW}
         height={outerH}
-        stroke="#000"
+        strokeWidth={zoneColors[`${toothId}_corona`] || borderColor ? 10 : 0}
+        stroke={
+          zoneColors[`${toothId}_corona`]
+            ? getCoronaStroke()
+            : borderColor
+            ? borderColor
+            : "transparent"
+        }
         fill="white"
-        strokeWidth="1.94"
-        style={{ pointerEvents: "none" }}
+        style={{ pointerEvents: "auto", cursor: "pointer" }}
+        onClick={() => !disabled && onZoneSelect("corona")}
       />
-      {/* Línea vertical al medio del rectángulo interior */}
       <path
-        d={`M ${centerX + centerW / 2}, ${centerY} 
-      V ${centerY + centerH}`}
+        d={`M ${centerX + centerW / 2}, ${centerY} V ${centerY + centerH}`}
         stroke="#000"
-        strokeWidth="1.94"
+        strokeWidth="1.2"
         fill="none"
         style={{ pointerEvents: "none" }}
       />
-      {/* Línea horizontal al medio del rectángulo interior */}
       <path
-        d={`M ${centerX}, ${centerY + centerH / 2} 
-      H ${centerX + centerW}`}
+        d={`M ${centerX}, ${centerY + centerH / 2} H ${centerX + centerW}`}
         stroke="#000"
-        strokeWidth="1.94"
+        strokeWidth="1.2"
         fill="none"
         style={{ pointerEvents: "none" }}
       />
 
-      {/* Zonas clickeables */}
       {zones.map((zone) =>
         zone.type === "rect" ? (
           <rect
@@ -154,7 +170,7 @@ const MolarAction: React.FC<MolarActionProps> = ({
             width={zone.width}
             height={zone.height}
             stroke="black"
-            strokeWidth={1.5}
+            strokeWidth={1.2}
             fill={getFillWithOpacity(zone.name)}
             onMouseEnter={() => !disabled && setHoveredPart(zone.name)}
             onMouseLeave={() => !disabled && setHoveredPart(null)}
@@ -166,7 +182,7 @@ const MolarAction: React.FC<MolarActionProps> = ({
             key={zone.name}
             points={zone.points}
             stroke="black"
-            strokeWidth={1.5}
+            strokeWidth={1.2}
             fill={getFillWithOpacity(zone.name)}
             onMouseEnter={() => !disabled && setHoveredPart(zone.name)}
             onMouseLeave={() => !disabled && setHoveredPart(null)}

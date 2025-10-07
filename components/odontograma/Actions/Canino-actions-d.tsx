@@ -1,12 +1,18 @@
 "use client";
 import React, { useState } from "react";
-
 interface CaninoActiondProps {
   toothId: string;
   onZoneSelect: (zone: string) => void;
   zoneColors: Record<string, string>;
+  generales?: {
+    condicion: string;
+    icon: string;
+    label?: string;
+    color?: "red" | "blue";
+  }[];
   hoverFill?: string;
-  disabled?: boolean; 
+  disabled?: boolean;
+  borderColor?: string;
 }
 
 const CaninoActiond: React.FC<CaninoActiondProps> = ({
@@ -14,6 +20,7 @@ const CaninoActiond: React.FC<CaninoActiondProps> = ({
   onZoneSelect,
   zoneColors,
   disabled = false,
+  borderColor,
 }) => {
   const [hoveredPart, setHoveredPart] = useState<string | null>(null);
 
@@ -32,7 +39,13 @@ const CaninoActiond: React.FC<CaninoActiondProps> = ({
 
     return "transparent";
   };
-
+  const getCoronaStroke = () => {
+    const key = `${toothId}_corona`;
+    const color = zoneColors[key];
+    if (color === "red") return "red";
+    if (color === "blue") return "blue";
+    return "#000";
+  };
   const outerX = 19.642595;
   const outerY = 126.00449;
   const outerW = 174.24286;
@@ -92,7 +105,6 @@ const CaninoActiond: React.FC<CaninoActiondProps> = ({
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Paths decorativos base */}
       <path
         d="M 85.813647,126.34345 H 171.42454 L 128.61911,15.325288 Z"
         stroke="black"
@@ -111,13 +123,18 @@ const CaninoActiond: React.FC<CaninoActiondProps> = ({
         y={outerY}
         width={outerW}
         height={outerH}
-        stroke="#000"
+        strokeWidth={zoneColors[`${toothId}_corona`] || borderColor ? 10 : 0}
+        stroke={
+          zoneColors[`${toothId}_corona`]
+            ? getCoronaStroke()
+            : borderColor
+            ? borderColor
+            : "transparent"
+        }
         fill="white"
-        strokeWidth="1.94"
         style={{ pointerEvents: "none" }}
       />
 
-      {/* Zonas clickeables */}
       {zones.map((zone) =>
         zone.type === "rect" ? (
           <rect

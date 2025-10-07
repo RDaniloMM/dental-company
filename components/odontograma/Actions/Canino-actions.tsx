@@ -5,8 +5,15 @@ interface CaninoActionProps {
   toothId: string;
   onZoneSelect: (zone: string) => void;
   zoneColors: Record<string, string>;
+  generales?: {
+    condicion: string;
+    icon: string;
+    label?: string;
+    color?: "red" | "blue";
+  }[];
   hoverFill?: string;
   disabled?: boolean;
+  borderColor?: string;
 }
 
 const CaninoAction: React.FC<CaninoActionProps> = ({
@@ -14,9 +21,9 @@ const CaninoAction: React.FC<CaninoActionProps> = ({
   onZoneSelect,
   zoneColors,
   disabled = false,
+  borderColor,
 }) => {
   const [hoveredPart, setHoveredPart] = useState<string | null>(null);
-
   const getFillWithOpacity = (zone: string) => {
     const key = `${toothId}_${zone}`;
     const color = zoneColors[key];
@@ -24,13 +31,20 @@ const CaninoAction: React.FC<CaninoActionProps> = ({
     if (!color) {
       return hoveredPart === zone ? "rgba(173,216,230,0.4)" : "transparent";
     }
-
     if (color === "red")
       return hoveredPart === zone ? "rgba(255,0,0,0.7)" : "rgba(255,0,0,0.5)";
     if (color === "blue")
       return hoveredPart === zone ? "rgba(0,0,255,0.7)" : "rgba(0,0,255,0.5)";
 
     return "transparent";
+  };
+
+  const getCoronaStroke = () => {
+    const key = `${toothId}_corona`;
+    const color = zoneColors[key];
+    if (color === "red") return "red";
+    if (color === "blue") return "blue";
+    return "#000";
   };
 
   const outerX = 19.642595;
@@ -92,7 +106,6 @@ const CaninoAction: React.FC<CaninoActionProps> = ({
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Paths decorativos base */}
       <path
         d="M 85.813647,126.34345 H 171.42454 L 128.61911,15.325288 Z"
         stroke="black"
@@ -111,12 +124,18 @@ const CaninoAction: React.FC<CaninoActionProps> = ({
         y={outerY}
         width={outerW}
         height={outerH}
-        stroke="#000"
+        strokeWidth={zoneColors[`${toothId}_corona`] || borderColor ? 10 : 0}
+        stroke={
+          zoneColors[`${toothId}_corona`]
+            ? getCoronaStroke()
+            : borderColor
+            ? borderColor
+            : "transparent"
+        }
         fill="white"
-        strokeWidth="1.94"
-        style={{ pointerEvents: "none" }}
+        style={{ pointerEvents: "auto", cursor: "pointer" }}
+        onClick={() => !disabled && onZoneSelect("corona")}
       />
-      {/* Línea horizontal al medio del rectángulo interior */}
       <path
         d={`M ${centerX}, ${centerY + centerH / 2} 
       H ${centerX + centerW}`}
@@ -125,7 +144,6 @@ const CaninoAction: React.FC<CaninoActionProps> = ({
         fill="none"
         style={{ pointerEvents: "none" }}
       />
-      {/* Zonas clickeables */}
       {zones.map((zone) =>
         zone.type === "rect" ? (
           <rect

@@ -3,11 +3,17 @@ import { useState } from "react";
 import OdontogramaSVG from "./OdontogramaSVG";
 
 type Zona = { zona: string; condicion: string; color: string };
-type General = { condicion: string; icon: string };
+type General = {
+  condicion: string;
+  icon: string;
+  label?: string;
+  color?: string;
+};
 type Diente = { zonas: Zona[]; generales: General[] };
 
 export default function OdontoPage() {
   const [odontograma, setOdontograma] = useState<Record<string, Diente>>({});
+  const [borderColors, setBorderColors] = useState<Record<string, string>>({});
 
   const teethList = [
     "18",
@@ -44,7 +50,6 @@ export default function OdontoPage() {
     "38",
   ];
 
-  // Exportar como JSON
   const handleExport = () => {
     const blob = new Blob([JSON.stringify(odontograma, null, 2)], {
       type: "application/json",
@@ -57,7 +62,6 @@ export default function OdontoPage() {
     URL.revokeObjectURL(url);
   };
 
-  //Importar desde JSON
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -72,10 +76,39 @@ export default function OdontoPage() {
         }
 
         setOdontograma(json);
-        console.log("Importado:", json);
-        alert("Odontograma importado correctamente ✅");
+
+        const newBorderColors: Record<string, string> = {};
+        for (const toothId in json) {
+          const diente = json[toothId];
+
+          diente.zonas.forEach((zona: Zona) => {
+            if (zona.color) {
+              newBorderColors[`${toothId}_${zona.zona}`] = zona.color;
+            }
+          });
+
+          diente.generales.forEach((gen: General) => {
+            let color = gen.color;
+            if (!color) {
+              const match = gen.icon.match(/_([RB])$/);
+              if (match) {
+                color = match[1] === "R" ? "red" : "blue";
+              }
+            }
+
+            if (color) {
+              newBorderColors[`${toothId}_corona`] = color;
+            }
+          });
+        }
+
+        setBorderColors(newBorderColors);
+
+        console.log("Odontograma importado:", json);
+        console.log("Border colors reconstruidos:", newBorderColors);
+        alert("Odontograma importado correctamente ");
       } catch {
-        alert("Error al importar el archivo ❌");
+        alert("Error al importar el archivo ");
       }
     };
     reader.readAsText(file);
@@ -85,7 +118,6 @@ export default function OdontoPage() {
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">Odontograma Digital</h1>
 
-      {/* Botones */}
       <div className="flex gap-4">
         <button
           onClick={handleExport}
@@ -102,11 +134,12 @@ export default function OdontoPage() {
         />
       </div>
 
-      {/* Render Odontograma */}
       <OdontogramaSVG
         teethList={teethList}
         odontograma={odontograma}
-        setOdontograma={setOdontograma} //
+        setOdontograma={setOdontograma}
+        borderColors={borderColors}
+        setBorderColors={setBorderColors}
       />
     </div>
   );
