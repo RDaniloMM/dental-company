@@ -11,6 +11,7 @@ CREATE TABLE public.antecedentes (
   CONSTRAINT antecedentes_pkey PRIMARY KEY (id),
   CONSTRAINT antecedentes_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id)
 );
+
 CREATE TABLE public.citas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   paciente_id uuid NOT NULL,
