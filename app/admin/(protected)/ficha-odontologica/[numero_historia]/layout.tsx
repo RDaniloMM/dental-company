@@ -1,13 +1,41 @@
-"use client";
+import { redirect } from "next/navigation";
+import HistoriaLayoutClient from "./layout-client";
+import { createClient } from "@/lib/supabase/server";
 
-import React from "react";
+export default async function HistoriaLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ numero_historia: string }>;
+}) {
+  const resolvedParams = await params;
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-export default function HistoriaLayout({ children }: { children: React.ReactNode }) {
+  if (!session) {
+    redirect("/admin/login");
+  }
+
+  const { data: paciente, error } = await supabase
+    .from("pacientes")
+    .select("id")
+    .eq("numero_historia", resolvedParams.numero_historia)
+    .single();
+
+  if (error || !paciente) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        No se pudo encontrar al paciente.
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen w-full bg-muted/40">
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4">{children}</div>
-      </main>
-    </div>
+    <HistoriaLayoutClient patientId={paciente.id}>
+      {children}
+    </HistoriaLayoutClient>
   );
 }

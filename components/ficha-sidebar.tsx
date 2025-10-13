@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import {
@@ -50,14 +50,12 @@ const navItems = [
 
 export default function FichaSidebar({
   patientId,
-  numeroHistoria,
-  onSelectView,
 }: {
   patientId: string;
-  numeroHistoria?: string;
-  onSelectView: (view: string) => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [age, setAge] = useState<number | null>(null);
@@ -100,14 +98,19 @@ export default function FichaSidebar({
       <nav className="flex flex-col space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname.includes(`/ficha-odontologica/${numeroHistoria}/${item.href}`);
+          const isActive = searchParams.get("view") === item.href;
           return (
             <button
               key={item.href}
-              onClick={() => onSelectView(item.href)}
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams.toString());
+                newParams.set("view", item.href);
+                router.push(`${pathname}?${newParams.toString()}`);
+              }}
               className={cn(
                 "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted-foreground transition-all hover:text-primary",
-                isActive && "bg-primary text-primary-foreground hover:text-primary-foreground"
+                isActive &&
+                  "bg-primary text-primary-foreground hover:text-primary-foreground",
               )}
             >
               <Icon className="h-4 w-4" />

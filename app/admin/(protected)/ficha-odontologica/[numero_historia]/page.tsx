@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+"use client";
+
+import { useState, useEffect, use, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import FiliacionForm from "@/components/filiacion-form";
 import HistoriaClinicaForm from "@/components/historia-clinica-form";
-import FichaSidebar from "@/components/ficha-sidebar";
+import ImageManager from "@/components/imagenes/ImageManager";
 import Image from "next/image";
 
 // Definición local del tipo Paciente
@@ -35,13 +38,13 @@ type PatientData = {
   observaciones: string;
 };
 
-export default function FichaOdontologicaPage({
+function FichaOdontologicaContent({
   params,
 }: {
-  params: Promise<{ numero_historia: string }>;
+  params: { numero_historia: string };
 }) {
-  const resolvedParams = use(params);
-  const [activeView, setActiveView] = useState("welcome");
+  const searchParams = useSearchParams();
+  const activeView = searchParams.get("view") || "welcome";
   const [patient, setPatient] = useState<Partial<PatientData>>({});
   const supabase = createClient();
 
@@ -50,7 +53,7 @@ export default function FichaOdontologicaPage({
       const { data, error } = await supabase
         .from("pacientes")
         .select("*")
-        .eq("numero_historia", resolvedParams.numero_historia)
+        .eq("numero_historia", params.numero_historia)
         .single();
 
       if (error) {
@@ -60,10 +63,10 @@ export default function FichaOdontologicaPage({
       }
     };
 
-    if (resolvedParams.numero_historia) {
+    if (params.numero_historia) {
       fetchPatient();
     }
-  }, [resolvedParams.numero_historia, supabase]);
+  }, [params.numero_historia, supabase]);
 
   const renderContent = () => {
     // La comprobación de patient.id asegura a TypeScript que patient.id existe en las ramas inferiores
@@ -82,6 +85,8 @@ export default function FichaOdontologicaPage({
       case "historia-clinica":
         // patient.id está garantizado que existe por el chequeo anterior
         return <HistoriaClinicaForm pacienteId={patient.id} />;
+      case "imagenes":
+        return <ImageManager pacienteId={patient.id} />;
       default:
         return (
           <div className="flex h-full w-full flex-col items-center justify-center">
@@ -91,7 +96,8 @@ export default function FichaOdontologicaPage({
                 alt="Logo de la clínica dental"
                 width={200}
                 height={200}
-                className="mx-auto mb-4"
+                className="mx-auto mb-4 h-auto"
+                priority
               />
               <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">
                 Tu sonrisa es nuestra sonrisa
@@ -102,16 +108,18 @@ export default function FichaOdontologicaPage({
     }
   };
 
+  return <>{renderContent()}</>;
+}
+
+export default function FichaOdontologicaPage({
+  params,
+}: {
+  params: Promise<{ numero_historia: string }>;
+}) {
+  const resolvedParams = use(params);
   return (
-    <div className="flex min-h-screen w-full bg-muted/40">
-      <FichaSidebar
-        patientId={patient?.id || ""}
-        numeroHistoria={resolvedParams.numero_historia}
-        onSelectView={setActiveView}
-      />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4">{renderContent()}</div>
-      </main>
-    </div>
+    <Suspense fallback={<div>Cargando...</div>}>
+      <FichaOdontologicaContent params={resolvedParams} />
+    </Suspense>
   );
 }

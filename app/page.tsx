@@ -21,6 +21,8 @@ const Header = () => (
           width={150}
           height={180}
           className=''
+          priority
+          style={{ width: "auto", height: "auto" }}
         />
       </Link>
       <nav className='hidden md:flex space-x-4 lg:space-x-8 items-center'>

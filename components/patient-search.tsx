@@ -58,6 +58,7 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
             }}
             placeholder="Escriba el nombre del paciente..."
             className="w-full pl-10 bg-white dark:bg-gray-800 text-black dark:text-white"
+            autoComplete="off"
           />
           {searchTerm && filteredPatients.length > 0 && (
             <div className="absolute z-10 w-full mt-1 top-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg">

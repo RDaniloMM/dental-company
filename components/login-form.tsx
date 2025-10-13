@@ -65,11 +65,13 @@ export function LoginForm({
       <Card>
         <CardHeader className='text-center'>
           <Image
-            className='item-center mx-auto'
+            className='item-center mx-auto h-auto'
             src='/logo.png'
             width={150}
             height={150}
             alt='Logo Dental Company'
+            priority
+            style={{ width: "auto", height: "auto" }}
           />
           <CardTitle className='text-2xl'>Iniciar Sesión</CardTitle>
           <CardDescription>

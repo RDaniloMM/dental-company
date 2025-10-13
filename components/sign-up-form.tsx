@@ -91,10 +91,12 @@ export function SignUpForm({
       <Card>
         <CardHeader className='text-center items-center'>
           <Image
+            className='h-auto'
             src='/logo.png'
             width={150}
             height={150}
             alt='Logo Dental Company'
+            priority
           />
           <CardTitle className='text-2xl'>Registrar</CardTitle>
           <CardDescription>Crear una nueva cuenta</CardDescription>
