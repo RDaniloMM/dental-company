@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/login-form";
-import CalendarioCitas from "@/components/calendario/CalendarioCitas";
+import VistaCalendario from "../../../../components/calendar/VistaCalendario";
 
 export default function Page() {
   return (
@@ -12,7 +12,7 @@ export default function Page() {
 
       <div className="flex-[7] flex items-center justify-center">
         <div className="w-full max-w-5xl">
-          <CalendarioCitas />
+          <VistaCalendario calendarKey={0} />
         </div>
       </div>
     </div>
