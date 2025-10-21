@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Smile, Bone, MessageSquareQuote } from "lucide-react";
+import { Smile, Bone } from "lucide-react";
 
 import useEmblaCarousel from "embla-carousel-react";
 import { EmblaOptionsType } from "embla-carousel";
+import { FloatingChatbot } from "@/components/floating-chatbot";
 
 // --- Componente Header ---
 const WHATSAPP_NUMBER = "51914340074";
@@ -288,26 +289,8 @@ export default function LandingPage() {
 
         <section
           id='reservas'
-          className='py-12 sm:py-16 md:py-20 bg-white'
+          className='py-12 sm:py-16 bg-blue-100'
         >
-          <div className='container mx-auto px-4 sm:px-6 text-center'>
-            <div className='max-w-2xl mx-auto bg-gray-100 p-6 sm:p-8 md:p-10 rounded-lg shadow-inner'>
-              <MessageSquareQuote className='h-12 w-12 sm:h-16 sm:w-16 mx-auto text-blue-500 mb-3 sm:mb-4' />
-              <h2 className='text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-black'>
-                ¿Tienes una consulta rápida?
-              </h2>
-              <p className='text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base px-2'>
-                Nuestro asistente virtual con IA puede ayudarte a resolver dudas
-                frecuentes y agendar tu próxima cita al instante.
-              </p>
-              <button className='bg-gray-800 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-black transition-colors text-sm sm:text-base'>
-                Pregúntale a nuestro Asistente (Próximamente)
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className='py-12 sm:py-16 bg-blue-100'>
           <div className='container mx-auto px-4 sm:px-6 max-w-xl'>
             <h2 className='text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-blue-800'>
               Contáctanos
@@ -459,6 +442,9 @@ export default function LandingPage() {
           </div>
         </footer>
       </main>
+
+      {/* Chatbot flotante con FAQ */}
+      <FloatingChatbot />
     </>
   );
 }
