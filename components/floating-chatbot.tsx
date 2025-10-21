@@ -47,7 +47,11 @@ export const FloatingChatbot = () => {
   const [input, setInput] = useState("");
   const [model] = useState<string>(models[0].value);
   const [useFAQ] = useState(true); // Siempre activado para usuarios públicos
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, error } = useChat({
+    onError: (error) => {
+      console.error("Chat error:", error);
+    },
+  });
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -123,6 +127,24 @@ export const FloatingChatbot = () => {
                 <li>• Información de servicios</li>
                 <li>• Precios y seguros</li>
               </ul>
+            </div>
+          )}
+
+          {/* Mensaje de error */}
+          {error && (
+            <div className='p-4 m-4 bg-red-50 border border-red-200 rounded-lg'>
+              <p className='text-sm text-red-700 font-medium'>
+                ⚠️ {error.message}
+              </p>
+              <p className='text-xs text-red-600 mt-2'>
+                💬 Llámanos:{" "}
+                <a
+                  href='tel:+51952864883'
+                  className='underline font-medium'
+                >
+                  +51 952 864 883
+                </a>
+              </p>
             </div>
           )}
 
