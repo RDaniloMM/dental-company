@@ -6,12 +6,16 @@ import {
   isRelevantForFAQ,
 } from "@/lib/rag-utils";
 
-// Allow streaming responses up to 30 seconds
+// Configuración para Node.js runtime (mejor para problemas de IP con Google Cloud)
+export const runtime = "nodejs";
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    // Log para debugging (incluye información de IP si está disponible)
+ 
+
     // Verificar API key
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       console.error("GOOGLE_GENERATIVE_AI_API_KEY no configurada");
@@ -100,20 +104,28 @@ IMPORTANTE:
       sendReasoning: true,
     });
   } catch (error: unknown) {
-    const err = error as Error & { statusCode?: number };
+    const err = error as Error & { statusCode?: number; status?: number };
+
+    // Log detallado del error
     console.error("Error en chatbot API:", {
       message: err.message,
       name: err.name,
+      statusCode: err.statusCode || err.status,
       timestamp: new Date().toISOString(),
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
 
-    // Rate limit / Quota exceeded
+    // Rate limit / Quota exceeded (Google Cloud)
     if (
       err.message?.includes("quota") ||
       err.message?.includes("limit") ||
       err.message?.includes("429") ||
-      err.statusCode === 429
+      err.message?.includes("RESOURCE_EXHAUSTED") ||
+      err.message?.includes("rate") ||
+      err.statusCode === 429 ||
+      err.status === 429
     ) {
+      console.warn("Rate limit hit - Google Cloud quota exceeded");
       return new Response(
         JSON.stringify({
           error:
@@ -130,17 +142,22 @@ IMPORTANTE:
       );
     }
 
-    // API key inválida o problemas de autenticación
+    // API key inválida o problemas de autenticación (incluyendo bloqueos de IP)
     if (
       err.message?.includes("API key") ||
       err.message?.includes("401") ||
+      err.message?.includes("403") ||
       err.message?.includes("authentication") ||
-      err.statusCode === 401
+      err.message?.includes("PERMISSION_DENIED") ||
+      err.message?.includes("blocked") ||
+      err.statusCode === 401 ||
+      err.statusCode === 403
     ) {
+      console.warn("Auth error - possible IP block or invalid API key");
       return new Response(
         JSON.stringify({
           error:
-            "🔧 Error de configuración del servicio. Por favor contáctanos al +51 952 864 883",
+            "🔧 Error de autenticación. Puede ser un bloqueo temporal. Llámanos al +51 952 864 883",
           code: "AUTH_ERROR",
         }),
         {

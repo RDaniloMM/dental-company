@@ -1,3 +1,5 @@
+import { BrushCleaning } from "lucide-react"
+
 // FAQs de DENTAL COMPANY - Tacna, Perú
 export const faqData = [
   {
@@ -41,7 +43,18 @@ export const faqData = [
     id: "3",
     question: "¿Qué servicios dentales ofrecen?",
     answer:
-      "Ofrecemos una amplia gama de servicios incluyendo: limpieza dental, ortodoncia, endodoncia, implantes dentales, blanqueamiento, extracciones, coronas, puentes, y tratamientos de estética dental.",
+      `Ofrecemos una amplia gama de servicios incluyendo:
+        - Odontología general
+        - Estética dental
+        - Ortodoncia
+        - Implantes dentales
+        - Cirugía Bucal
+        - Endodoncia
+        - Periodoncia
+        - Odontopediatría
+        - Prótesis Dental
+        - Diagnóstico de Patologías Dentales
+      `,
     keywords: [
       "servicios",
       "tratamientos",
@@ -56,7 +69,7 @@ export const faqData = [
     id: "4",
     question: "¿Aceptan seguros médicos?",
     answer:
-      "Sí, trabajamos con la mayoría de seguros médicos dentales. Te recomendamos contactarnos con los detalles de tu seguro para confirmar la cobertura específica.",
+      "No, no trabajamos con seguros médicos dentales. Te recomendamos contactarnos con los detalles de tu seguro para confirmar la cobertura específica.",
     keywords: [
       "seguro",
       "seguros",
@@ -199,7 +212,7 @@ export const faqData = [
     id: "14",
     question: "¿Qué formas de pago aceptan?",
     answer:
-      "Aceptamos diversas formas de pago: efectivo, tarjetas de débito y crédito, transferencias bancarias, y ofrecemos planes de financiamiento. Contáctanos al +51 952 864 883 para más detalles.",
+      "Aceptamos diversas formas de pago: Yape, plin, efectivo, tarjetas de débito y crédito, transferencias bancarias. Contáctanos al +51 952 864 883 para más detalles.",
     keywords: [
       "pago",
       "tarjeta",
@@ -225,6 +238,24 @@ export const faqData = [
       "inmediato",
     ],
   },
+  {
+    id: "16",
+    question: "¿Qué odontólogos atienden en la clínica?",
+    answer:
+      `Ofrecemos una amplia gama de servicios incluyendo:
+        - Ulises Massino Peñaloza de La Torre
+        - Gabriela Nathaly Condori Condori
+        - Paola Adriana Peñaloza De la Torre
+      `,
+    keywords: [
+      "odontólogos",
+      "especialistas",
+      "equipo",
+      "clínica",
+      "cita",
+      "disponibilidad",
+    ],
+  }
 ];
 
 export type FAQ = (typeof faqData)[number];
