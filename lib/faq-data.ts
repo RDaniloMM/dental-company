@@ -1,5 +1,3 @@
-import { BrushCleaning } from "lucide-react"
-
 // FAQs de DENTAL COMPANY - Tacna, Perú
 export const faqData = [
   {
