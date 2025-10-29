@@ -7,6 +7,9 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
 import { Save, FilePlus } from "lucide-react";
+import PatientSearch from "./PatientSearch2";
+import VersionSelect from "./VersionSelect";
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -278,37 +281,23 @@ export default function OdontoPage() {
 
       <div className="flex gap-4 flex-wrap">
         {/* Dropdown de pacientes */}
-        <select
-          value={pacienteSeleccionado}
-          onChange={(e) => setPacienteSeleccionado(e.target.value)}
-          className="border px-2 py-1"
-        >
-          <option value="">-- Seleccione Paciente --</option>
-          {pacientes.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nombres} {p.apellidos} ({p.numero_historia})
-            </option>
-          ))}
-        </select>
+        <PatientSearch
+          patients={pacientes}
+          selectedPaciente={pacienteSeleccionado}
+          onSelectPaciente={(id) => setPacienteSeleccionado(id)}
+        />
 
-        {/* Dropdown de versiones */}
-        <select
-          value={versionSeleccionada || ""}
-          onChange={(e) => setVersionSeleccionada(Number(e.target.value))}
-          className="border px-2 py-1"
-        >
-          <option value="">-- Seleccione Versión --</option>
-          {versiones.map((v) => (
-            <option key={v} value={v}>
-              Versión {v}
-            </option>
-          ))}
-        </select>
+        <VersionSelect
+          versiones={versiones}
+          selectedVersion={versionSeleccionada}
+          onSelectVersion={(v) => setVersionSeleccionada(v)}
+        />
 
         {/* Botones */}
         <button
           onClick={guardarOdontograma}
-          className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2"
+          title="Guardar odontograma"
+          className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-600 hover:scale-105 transition-all duration-200 ease-in-out"
           disabled={!pacienteSeleccionado || loading}
         >
           {loading ? (
@@ -317,6 +306,7 @@ export default function OdontoPage() {
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               > */}
+
               <Save className="w-4 h-4" />
               {/* </motion.div> */}
             </span>
@@ -329,7 +319,8 @@ export default function OdontoPage() {
 
         <button
           onClick={nuevoOdontograma}
-          className="bg-yellow-500 text-white px-4 py-2 rounded flex items-center gap-2"
+          title="Crear nuevo odontograma"
+          className="bg-yellow-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-yellow-600 hover:scale-105 transition-all duration-200 ease-in-out"
           disabled={!pacienteSeleccionado || loading}
         >
           <FilePlus className="w-4 h-4" />
