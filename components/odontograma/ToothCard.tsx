@@ -94,7 +94,6 @@ export default function ToothCard({
         gap: "6px",
       }}
       whileHover={{
-        scale: 1.0005,
         borderColor: "#87b3fbff",
         backgroundColor: "#cde0f6ff",
       }}
