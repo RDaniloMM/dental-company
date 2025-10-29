@@ -27,6 +27,9 @@ interface CondicionMenuProps {
 
 /* ============================================================
    LISTA DE CONDICIONES Y HABILITADAS
+   Define dos arrays:
+   - condiciones: todas las condiciones dentales posibles
+   - habilitadas: condiciones que están actualmente disponibles
 ============================================================ */
 const condiciones = [
   "Aparato ortodóntico fijo",
@@ -108,6 +111,8 @@ const habilitadas = [
 
 /* ============================================================
    DIENTES
+   Define arrays con la numeración de dientes superiores e inferiores
+   siguiendo la nomenclatura dental internacional
 ============================================================ */
 const dientesSuperiores = [
   "18",
@@ -148,10 +153,13 @@ const dientesInferiores = [
 
 /* ============================================================
    SIGLAS Y FORMAS
+   Define objetos que mapean:
+   - opcionesCondiciones: cada condición con sus siglas permitidas
+   - formasPorCondicion: el tipo de forma visual para cada condición
 ============================================================ */
 const opcionesCondiciones: Record<string, string[]> = {
   Corona: ["CM", "CF", "CMC", "CV", "CLM"],
-  "Corona temporal": ["CTF"],
+  "Corona temporal": ["CT"],
   "Defectos de desarrollo del esmalte (DDE)": ["PE", "O", "Fluorosis"],
   "Fosas y fisuras profundas": ["FFP"],
   "Implante dental": ["IMP"],
@@ -196,6 +204,11 @@ const formasPorCondicion: Record<
   Impactación: "triangle",
 };
 
+/* ============================================================
+   FUNCIONES AUXILIARES
+   buildSiglaIcon: Construye el nombre del ícono basado en la condición,
+   sigla y color seleccionados
+============================================================ */
 const buildSiglaIcon = (
   condicion: string,
   sigla: string,
@@ -207,8 +220,14 @@ const buildSiglaIcon = (
 };
 
 /* ============================================================
-   COMPONENTE
+   COMPONENTE PRINCIPAL
+   CondicionMenu: Maneja la UI para seleccionar y aplicar condiciones
+   dentales. Incluye:
+   - Estado local para modales y selecciones
+   - Funciones para guardar diferentes tipos de condiciones
+   - Lógica de renderizado condicional para diferentes tipos de opciones
 ============================================================ */
+
 export default function CondicionMenu({
   toothId,
   selectedCondition,
@@ -226,6 +245,7 @@ export default function CondicionMenu({
   const [showDiastemaDirection, setShowDiastemaDirection] = useState(false);
   const [showFusionDirection, setShowFusionDirection] = useState(false);
   const [, setShowEspigaMuñonDirection] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setShowRangeModal(false);
@@ -439,148 +459,162 @@ export default function CondicionMenu({
       <h2 className="text-lg font-semibold text-blue-700 p-4 border-b sticky top-0 bg-white z-10">
         Condición del diente {toothId}
       </h2>
-
+      {/* Campo de búsqueda */}
+      <div className="p-4 sticky top-0 bg-white z-10 border-b">
+        <input
+          type="text"
+          placeholder="Buscar condición..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
+        />
+      </div>
+      <hr />
       {!selectedCondition ? (
         // ---------- Lista de condiciones ----------
         <ul className="flex-1 overflow-y-auto p-4 grid grid-cols-1 gap-2">
-          {condiciones.map((c) => (
-            <li
-              key={c}
-              className={`p-2 border rounded-lg text-sm ${
-                habilitadas.includes(c)
-                  ? "cursor-pointer hover:bg-blue-100"
-                  : "bg-gray-200 text-gray-500 cursor-not-allowed"
-              }`}
-              onClick={() => {
-                if (!habilitadas.includes(c)) return;
+          {condiciones
+            .filter((c) =>
+              c.toLowerCase().startsWith(searchTerm.toLowerCase().trim())
+            )
+            .map((c) => (
+              <li
+                key={c}
+                className={`p-2 border rounded-lg text-sm min-h-[40px] flex items-center ${
+                  habilitadas.includes(c)
+                    ? "cursor-pointer hover:bg-blue-100"
+                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                }`}
+                onClick={() => {
+                  if (!habilitadas.includes(c)) return;
 
-                switch (c) {
-                  case "Espigo - muñón":
-                    setShowEspigaMuñonDirection(true);
-                    setSelectedCondition(c);
-                    break;
+                  switch (c) {
+                    case "Espigo - muñón":
+                      setShowEspigaMuñonDirection(true);
+                      setSelectedCondition(c);
+                      break;
 
-                  // ---------- Geminación ----------
-                  case "Geminación":
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "geminacion",
-                          icon: `geminacion_blue`,
-                          color: "blue",
-                        },
-                      ],
-                    });
-                    setBorderColors((prev) => ({
-                      ...prev,
-                      [toothId]: "#3b82f6",
-                    }));
-                    onClose();
-                    break;
+                    // ---------- Geminación ----------
+                    case "Geminación":
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "geminacion",
+                            icon: `geminacion_blue`,
+                            color: "blue",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#3b82f6",
+                      }));
+                      onClose();
+                      break;
 
-                  // ---------- Diastema ----------
-                  case "Diastema":
-                    setSelectedCondition(c);
-                    break;
+                    // ---------- Diastema ----------
+                    case "Diastema":
+                      setSelectedCondition(c);
+                      break;
 
-                  // ---------- Fusión ----------
-                  case "Fusion":
-                    setSelectedCondition(c);
-                    break;
+                    // ---------- Fusión ----------
+                    case "Fusion":
+                      setSelectedCondition(c);
+                      break;
 
-                  // ---------- Giroversión ----------
-                  case "Giroversión":
-                    setSelectedCondition(c);
-                    break;
-                  case "Transposición dentaria":
-                    setSelectedCondition(c);
-                    break;
-                  case "Pieza dentaria supernumeraria":
-                    setSelectedCondition(c);
-                    break;
+                    // ---------- Giroversión ----------
+                    case "Giroversión":
+                      setSelectedCondition(c);
+                      break;
+                    case "Transposición dentaria":
+                      setSelectedCondition(c);
+                      break;
+                    case "Pieza dentaria supernumeraria":
+                      setSelectedCondition(c);
+                      break;
 
-                  case "Pieza dentaria en clavija":
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "clavija",
-                          icon: `clavija_blue`,
-                          color: "blue",
-                        },
-                      ],
-                    });
-                    setBorderColors((prev) => ({
-                      ...prev,
-                      [toothId]: "#3b82f6",
-                    }));
-                    onClose();
-                    break;
-                  case "Pieza dentaria en erupción":
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "erupcion",
-                          icon: `erupcion_blue`,
-                          color: "blue",
-                        },
-                      ],
-                    });
-                    setBorderColors((prev) => ({
-                      ...prev,
-                      [toothId]: "#3b82f6",
-                    }));
-                    onClose();
-                    break;
-                  case "Pieza dentaria extruida":
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "extruida",
-                          icon: `extruida_blue`,
-                          color: "blue",
-                        },
-                      ],
-                    });
-                    setBorderColors((prev) => ({
-                      ...prev,
-                      [toothId]: "#3b82f6",
-                    }));
-                    onClose();
-                    break;
-                  case "Pieza dentaria intruida":
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "intruida",
-                          icon: `intruida_blue`,
-                          color: "blue",
-                        },
-                      ],
-                    });
-                    setBorderColors((prev) => ({
-                      ...prev,
-                      [toothId]: "#3b82f6",
-                    }));
-                    onClose();
-                    break;
-                  case "Pieza dentaria ausente":
-                    setSelectedCondition("Pieza dentaria ausente");
-                    break;
-                  case "Tratamiento de conducto (TC) / Pulpectomía (PC)":
-                    setSelectedCondition(
-                      "Tratamiento de conducto (TC) / Pulpectomía (PC)"
-                    );
-                    break;
+                    case "Pieza dentaria en clavija":
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "clavija",
+                            icon: `clavija_blue`,
+                            color: "blue",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#3b82f6",
+                      }));
+                      onClose();
+                      break;
+                    case "Pieza dentaria en erupción":
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "erupcion",
+                            icon: `erupcion_blue`,
+                            color: "blue",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#3b82f6",
+                      }));
+                      onClose();
+                      break;
+                    case "Pieza dentaria extruida":
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "extruida",
+                            icon: `extruida_blue`,
+                            color: "blue",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#3b82f6",
+                      }));
+                      onClose();
+                      break;
+                    case "Pieza dentaria intruida":
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "intruida",
+                            icon: `intruida_blue`,
+                            color: "blue",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#3b82f6",
+                      }));
+                      onClose();
+                      break;
+                    case "Pieza dentaria ausente":
+                      setSelectedCondition("Pieza dentaria ausente");
+                      break;
+                    case "Tratamiento de conducto (TC) / Pulpectomía (PC)":
+                      setSelectedCondition(
+                        "Tratamiento de conducto (TC) / Pulpectomía (PC)"
+                      );
+                      break;
 
-                  // ---------- Otras condiciones ----------
-                  default:
-                    setSelectedCondition(c);
-                }
-              }}
-            >
-              {c}
-            </li>
-          ))}
+                    // ---------- Otras condiciones ----------
+                    default:
+                      setSelectedCondition(c);
+                  }
+                }}
+              >
+                {c}
+              </li>
+            ))}
         </ul>
       ) : opcionesCondiciones[selectedCondition] ? (
         // ---------- Condiciones con opciones de color ----------
@@ -598,9 +632,19 @@ export default function CondicionMenu({
               ].includes(selectedCondition);
               // Determinamos si permite azul
               const allowBlue = [
+                "Corona",
                 "Pulpotomía",
                 "Restauración definitiva",
                 "Tratamiento de conducto (TC) / Pulpectomía (PC)",
+                "Implante dental",
+              ].includes(selectedCondition);
+              const soloAzul = [
+                "Impactación",
+                "Macrodoncia",
+                "Microdoncia",
+                "Pieza dentaria ausente",
+                "Pieza dentaria ectópica",
+                "Posición anormal dentaria",
               ].includes(selectedCondition);
 
               // Función helper para actualizar diente
@@ -645,16 +689,18 @@ export default function CondicionMenu({
 
               return (
                 <div key={opt} className="flex gap-2">
-                  {/* Botón rojo siempre */}
-                  <button
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
-                    onClick={() => handleUpdate("red")}
-                  >
-                    {opt}
-                  </button>
+                  {/* 🔴 Botón rojo — se oculta si la condición es soloAzul */}
+                  {!soloAzul && (
+                    <button
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                      onClick={() => handleUpdate("red")}
+                    >
+                      {opt}
+                    </button>
+                  )}
 
-                  {/* Botón azul solo si aplica */}
-                  {allowBlue && (
+                  {/* 🔵 Botón azul — aparece si la condición lo permite o si es soloAzul */}
+                  {(allowBlue || soloAzul) && (
                     <button
                       className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                       onClick={() => handleUpdate("blue")}
@@ -1071,6 +1117,8 @@ export default function CondicionMenu({
                 Derecha
               </button>
             </div>
+          ) : selectedCondition === "Fractura dental" ? (
+            <div className="flex flex-col items-center gap-4"></div>
           ) : (
             // Botones color general
             <div className="flex gap-4">

@@ -87,18 +87,18 @@ export default function ToothCard({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        border: `2px solid ${"#ccc"}`,
+        border: `1px solid transparent`,
         borderRadius: "8px",
         padding: 2,
         cursor: "pointer",
         gap: "6px",
       }}
       whileHover={{
-        scale: 1.1,
-        borderColor: "#3b82f6",
-        backgroundColor: "#bfdbfe",
+        scale: 1.0005,
+        borderColor: "#87b3fbff",
+        backgroundColor: "#cde0f6ff",
       }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.3 }}
       onClick={() => setSelectedTooth({ id, isTop })}
     >
       {isTop ? (
