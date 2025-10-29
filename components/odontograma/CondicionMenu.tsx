@@ -225,8 +225,7 @@ export default function CondicionMenu({
   const [rangeEnd, setRangeEnd] = useState<string>("");
   const [showDiastemaDirection, setShowDiastemaDirection] = useState(false);
   const [showFusionDirection, setShowFusionDirection] = useState(false);
-  const [showEspigaMuñonDirection, setShowEspigaMuñonDirection] =
-    useState(false);
+  const [, setShowEspigaMuñonDirection] = useState(false);
 
   useEffect(() => {
     setShowRangeModal(false);
