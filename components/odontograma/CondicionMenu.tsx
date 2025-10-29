@@ -83,6 +83,7 @@ const habilitadas = [
   "Giroversión",
   "Impactación",
   "Implante dental",
+  "Lesión de caries dental",
   "Macrodoncia",
   "Microdoncia",
   "Movilidad patológica",
@@ -94,11 +95,15 @@ const habilitadas = [
   "Pieza dentaria ectópica",
   "Posición anormal dentaria",
   "Prótesis dental parcial fija",
-
+  "Pulpotomía",
+  "Restauración definitiva",
+  "Pieza dentaria supernumeraria",
+  "Tratamiento de conducto (TC) / Pulpectomía (PC)",
   "Prótesis dental completa superior/inferior",
   "Prótesis dental parcial removible",
   "Remanente radicular",
   "Transposicion dentaria",
+  "Espigo - muñón",
 ];
 
 /* ============================================================
@@ -156,7 +161,7 @@ const opcionesCondiciones: Record<string, string[]> = {
   "Movilidad patológica": ["M1", "M2", "M3"],
   "Pieza dentaria ausente": ["DNE", "DEX", "DAO"],
   "Pieza dentaria ectópica": ["E"],
-  "Pieza dentaria supernumeraria": ["S"],
+  //"Pieza dentaria supernumeraria": ["S"],
   "Posición anormal dentaria": ["M", "D", "V", "P", "L"],
   Pulpotomía: ["PP"],
   "Remanente radicular": ["RR"],
@@ -168,7 +173,7 @@ const opcionesCondiciones: Record<string, string[]> = {
 
 const formasPorCondicion: Record<
   string,
-  "square" | "circle" | "triangle" | "ausente"
+  "square" | "circle" | "triangle" | "ausente" | "tratamiento_conducto"
 > = {
   Corona: "square",
   "Corona temporal": "circle",
@@ -181,13 +186,13 @@ const formasPorCondicion: Record<
   "Movilidad patológica": "circle",
   "Pieza dentaria ausente": "ausente",
   "Pieza dentaria ectópica": "triangle",
-  "Pieza dentaria supernumeraria": "triangle",
+  //"Pieza dentaria supernumeraria": "triangle",
   "Posición anormal dentaria": "square",
   Pulpotomía: "circle",
   "Remanente radicular": "triangle",
   "Restauración definitiva": "square",
   "Superficie desgastada": "circle",
-  "Tratamiento de conducto (TC) / Pulpectomía (PC)": "square",
+  "Tratamiento de conducto (TC) / Pulpectomía (PC)": "tratamiento_conducto",
   Impactación: "triangle",
 };
 
@@ -220,6 +225,8 @@ export default function CondicionMenu({
   const [rangeEnd, setRangeEnd] = useState<string>("");
   const [showDiastemaDirection, setShowDiastemaDirection] = useState(false);
   const [showFusionDirection, setShowFusionDirection] = useState(false);
+  const [showEspigaMuñonDirection, setShowEspigaMuñonDirection] =
+    useState(false);
 
   useEffect(() => {
     setShowRangeModal(false);
@@ -449,6 +456,11 @@ export default function CondicionMenu({
                 if (!habilitadas.includes(c)) return;
 
                 switch (c) {
+                  case "Espigo - muñón":
+                    setShowEspigaMuñonDirection(true);
+                    setSelectedCondition(c);
+                    break;
+
                   // ---------- Geminación ----------
                   case "Geminación":
                     updateTooth(toothId, {
@@ -482,6 +494,9 @@ export default function CondicionMenu({
                     setSelectedCondition(c);
                     break;
                   case "Transposición dentaria":
+                    setSelectedCondition(c);
+                    break;
+                  case "Pieza dentaria supernumeraria":
                     setSelectedCondition(c);
                     break;
 
@@ -552,6 +567,11 @@ export default function CondicionMenu({
                   case "Pieza dentaria ausente":
                     setSelectedCondition("Pieza dentaria ausente");
                     break;
+                  case "Tratamiento de conducto (TC) / Pulpectomía (PC)":
+                    setSelectedCondition(
+                      "Tratamiento de conducto (TC) / Pulpectomía (PC)"
+                    );
+                    break;
 
                   // ---------- Otras condiciones ----------
                   default:
@@ -570,36 +590,82 @@ export default function CondicionMenu({
             Selecciona tipo de {selectedCondition.toLowerCase()}:
           </p>
           <div className="flex flex-col gap-2">
-            {opcionesCondiciones[selectedCondition].map((opt) => (
-              <div key={opt} className="flex gap-2">
-                <button
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg"
-                  onClick={() =>
-                    saveGeneralCondition(
-                      selectedCondition,
-                      buildSiglaIcon(selectedCondition, opt, "red"),
-                      opt,
-                      "red"
-                    )
-                  }
-                >
-                  {opt}
-                </button>
-                <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                  onClick={() =>
-                    saveGeneralCondition(
-                      selectedCondition,
-                      buildSiglaIcon(selectedCondition, opt, "blue"),
-                      opt,
-                      "blue"
-                    )
-                  }
-                >
-                  {opt}
-                </button>
-              </div>
-            ))}
+            {opcionesCondiciones[selectedCondition].map((opt) => {
+              // Determinamos si la condición requiere zona + general
+              const requiresZone = [
+                "Lesión de caries dental",
+                "Pulpotomía",
+                "Restauración definitiva",
+              ].includes(selectedCondition);
+              // Determinamos si permite azul
+              const allowBlue = [
+                "Pulpotomía",
+                "Restauración definitiva",
+                "Tratamiento de conducto (TC) / Pulpectomía (PC)",
+              ].includes(selectedCondition);
+
+              // Función helper para actualizar diente
+              const handleUpdate = (color: "red" | "blue") => {
+                if (requiresZone && (!toothId || !selectedZone)) {
+                  alert(
+                    "Primero seleccione un diente y una zona antes de marcar esta condición."
+                  );
+                  return;
+                }
+
+                if (requiresZone) {
+                  updateTooth(toothId, {
+                    zonas: [
+                      {
+                        zona: selectedZone!,
+                        condicion: selectedCondition!,
+                        color,
+                      },
+                    ],
+                    generales: [
+                      {
+                        condicion: selectedCondition!,
+                        icon: buildSiglaIcon(selectedCondition!, opt, color),
+                        label: opt,
+                        color,
+                      },
+                    ],
+                  });
+                } else {
+                  saveGeneralCondition(
+                    selectedCondition!,
+                    buildSiglaIcon(selectedCondition!, opt, color),
+                    opt,
+                    color
+                  );
+                }
+
+                setSelectedCondition(null);
+                onClose();
+              };
+
+              return (
+                <div key={opt} className="flex gap-2">
+                  {/* Botón rojo siempre */}
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                    onClick={() => handleUpdate("red")}
+                  >
+                    {opt}
+                  </button>
+
+                  {/* Botón azul solo si aplica */}
+                  {allowBlue && (
+                    <button
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                      onClick={() => handleUpdate("blue")}
+                    >
+                      {opt}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <button
             className="bg-green-500 text-white px-4 py-2 rounded-lg mt-4"
@@ -620,6 +686,10 @@ export default function CondicionMenu({
               ? "Selecciona la dirección de la giroversión"
               : selectedCondition === "Transposicion dentaria"
               ? "Selecciona la dirección de la transposición dentaria"
+              : selectedCondition === "Pieza dentaria supernumeraria"
+              ? "Selecciona la dirección de la pieza dentaria supernumeraria"
+              : selectedCondition === "Espiga - muñón"
+              ? "Selecciona la dirección de la espiga - muñón"
               : `Elige un color para "${selectedCondition}"`}
           </p>
 
@@ -713,6 +783,74 @@ export default function CondicionMenu({
               >
                 Derecha
               </button>
+            </div>
+          ) : selectedCondition === "Espigo - muñón" ? (
+            <div className="flex flex-col gap-3">
+              {/* Botones azules */}
+              <div className="flex gap-4">
+                {["izq", "cen", "der"].map((dir) => (
+                  <button
+                    key={`azul-${dir}`}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                    onClick={() => {
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "espiga-muñon",
+                            icon: `espiga_${dir}_blue`,
+                            color: "blue",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#3b82f6",
+                      }));
+                      setSelectedCondition(null);
+                      onClose();
+                    }}
+                  >
+                    {dir === "izq"
+                      ? "Izquierda"
+                      : dir === "cen"
+                      ? "Centro"
+                      : "Derecha"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Botones rojos */}
+              <div className="flex gap-4">
+                {["izq", "cen", "der"].map((dir) => (
+                  <button
+                    key={`rojo-${dir}`}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                    onClick={() => {
+                      updateTooth(toothId, {
+                        generales: [
+                          {
+                            condicion: "espiga-muñon",
+                            icon: `espiga_${dir}_red`,
+                            color: "red",
+                          },
+                        ],
+                      });
+                      setBorderColors((prev) => ({
+                        ...prev,
+                        [toothId]: "#ef4444",
+                      }));
+                      setSelectedCondition(null);
+                      onClose();
+                    }}
+                  >
+                    {dir === "izq"
+                      ? "Izquierda"
+                      : dir === "cen"
+                      ? "Centro"
+                      : "Derecha"}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : selectedCondition === "Pieza dentaria en clavija" ? (
             <div className="flex gap-4">
@@ -812,6 +950,38 @@ export default function CondicionMenu({
                 </button>
               ))}
             </div>
+          ) : selectedCondition ===
+            "Tratamiento de conducto (TC) / Pulpectomía (PC)" ? (
+            <div className="flex flex-col gap-2">
+              {opcionesCondiciones[
+                "Tratamiento de conducto (TC) / Pulpectomía (PC)"
+              ]?.map((sigla) => (
+                <button
+                  key={sigla}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  onClick={() => {
+                    updateTooth(toothId, {
+                      generales: [
+                        {
+                          condicion: "tratamiento_conducto",
+                          icon: "tratamiento_conducto_blue",
+                          label: sigla,
+                          color: "blue",
+                        },
+                      ],
+                    });
+                    setBorderColors((prev) => ({
+                      ...prev,
+                      [toothId]: "#3b82f6",
+                    }));
+                    onClose();
+                    setSelectedCondition(null);
+                  }}
+                >
+                  {sigla}
+                </button>
+              ))}
+            </div>
           ) : selectedCondition === "Transposicion dentaria" ? (
             <div className="flex gap-4">
               <button
@@ -843,6 +1013,51 @@ export default function CondicionMenu({
                       {
                         condicion: "transposicion",
                         icon: `trans_der_blue`,
+                        color: "blue",
+                      },
+                    ],
+                  });
+                  setBorderColors((prev) => ({
+                    ...prev,
+                    [toothId]: "#0000ff",
+                  }));
+                  onClose();
+                }}
+              >
+                Derecha
+              </button>
+            </div>
+          ) : selectedCondition === "Pieza dentaria supernumeraria" ? (
+            <div className="flex gap-4">
+              <button
+                className="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                onClick={() => {
+                  updateTooth(toothId, {
+                    generales: [
+                      {
+                        condicion: "supernumeraria",
+                        icon: `supernumeraria_izq_blue`,
+                        color: "blue",
+                      },
+                    ],
+                  });
+                  setBorderColors((prev) => ({
+                    ...prev,
+                    [toothId]: "#22c55e",
+                  }));
+                  onClose();
+                }}
+              >
+                Izquierda
+              </button>
+              <button
+                className="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                onClick={() => {
+                  updateTooth(toothId, {
+                    generales: [
+                      {
+                        condicion: "supernumeraria",
+                        icon: `supernumeraria_der_blue`,
                         color: "blue",
                       },
                     ],

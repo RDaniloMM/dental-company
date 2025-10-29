@@ -21,6 +21,9 @@ import {
   renderPiezaIntruida,
   renderTransposicion,
   renderProtesisParcialFija,
+  renderSupernumeraria,
+  renderTratamientoConducto,
+  renderEspigaMunon,
 } from "./renderLines";
 
 interface ToothData {
@@ -149,6 +152,9 @@ export default function OdontogramaSVG({
         {renderPiezaIntruida(odontograma)}
         {renderTransposicion(odontograma)}
         {renderProtesisParcialFija(odontograma)}
+        {renderSupernumeraria(odontograma)}
+        {renderTratamientoConducto(odontograma)}
+        {renderEspigaMunon(odontograma)}
       </svg>
 
       <AnimatePresence>
