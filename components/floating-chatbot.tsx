@@ -19,7 +19,8 @@ import { Actions, Action } from "@/components/ai-elements/actions";
 import { useState, Fragment } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Response } from "@/components/ai-elements/response";
-import { CopyIcon, MessageCircle, X, BookOpenIcon } from "lucide-react";
+import { CopyIcon, X, BookOpenIcon } from "lucide-react";
+import Image from "next/image";
 import {
   Reasoning,
   ReasoningContent,
@@ -52,6 +53,7 @@ export const FloatingChatbot = () => {
       console.error("Chat error:", error);
     },
   });
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -77,18 +79,37 @@ export const FloatingChatbot = () => {
 
   return (
     <>
-      {/* Botón flotante - Más grande */}
+      {/* Botón flotante - Icono ocupa toda la burbuja */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className='fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-5 shadow-2xl transition-all duration-300 hover:scale-110 flex items-center gap-3 group'
-          aria-label='Abrir chat de ayuda'
-        >
-          <MessageCircle className='w-8 h-8' />
-          <span className='max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap text-base font-medium'>
-            ¿Necesitas ayuda?
-          </span>
-        </button>
+        <div className="fixed bottom-6 right-6 z-50" style={{ minWidth: 80, minHeight: 80 }}>
+          <div className="relative flex items-center" style={{ minWidth: 80, minHeight: 80 }}>
+            <button
+              onClick={() => setIsOpen(true)}
+              className='rounded-full p-0 shadow-2xl transition-all duration-300 hover:scale-110 bg-transparent border-none relative'
+              aria-label='Abrir chat de ayuda'
+              style={{ width: 80, height: 80 }}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <span className='absolute inset-0 w-full h-full rounded-full overflow-hidden'>
+                <Image
+                  src="/logo-chatbot.png"
+                  alt="Chatbot"
+                  fill
+                  className="object-cover w-full h-full rounded-full"
+                  priority
+                />
+              </span>
+            </button>
+            {/* Mensaje tipo diálogo encima del icono */}
+            <span
+              className={`pointer-events-none select-none transition-all duration-300 whitespace-nowrap text-base font-medium bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg absolute left-1/2 -translate-x-[70%] bottom-[90px] ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+              style={{ minWidth: 120 }}
+            >
+              ¿Necesitas ayuda?
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Ventana del chat */}
@@ -97,7 +118,14 @@ export const FloatingChatbot = () => {
           {/* Header */}
           <div className='bg-blue-600 text-white p-4 flex justify-between items-center'>
             <div className='flex items-center gap-2'>
-              <MessageCircle className='w-5 h-5' />
+              <Image
+                src='/logo-chatbot.png'
+                alt='Chatbot'
+                width={28}
+                height={28}
+                className='w-7 h-7 rounded-full bg-white'
+                priority
+              />
               <div>
                 <h3 className='font-semibold'>Asistente Virtual</h3>
                 <p className='text-xs text-blue-100 flex items-center gap-1'>
