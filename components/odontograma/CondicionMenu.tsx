@@ -107,6 +107,10 @@ const habilitadas = [
   "Remanente radicular",
   "Transposicion dentaria",
   "Espigo - muñón",
+  "Fractura dental",
+  "Restauración temporal",
+  "Sellantes",
+  "Superficie desgastada",
 ];
 
 /* ============================================================
@@ -174,7 +178,7 @@ const opcionesCondiciones: Record<string, string[]> = {
   Pulpotomía: ["PP"],
   "Remanente radicular": ["RR"],
   "Restauración definitiva": ["AM", "R", "IV", "IM", "IE", "C"],
-  "Superficie desgastada": ["DES"],
+  //"Superficie desgastada": ["DES"],
   "Tratamiento de conducto (TC) / Pulpectomía (PC)": ["TC", "PC"],
   Impactación: ["I"],
 };
@@ -199,7 +203,7 @@ const formasPorCondicion: Record<
   Pulpotomía: "circle",
   "Remanente radicular": "triangle",
   "Restauración definitiva": "square",
-  "Superficie desgastada": "circle",
+  //"Superficie desgastada": "circle",
   "Tratamiento de conducto (TC) / Pulpectomía (PC)": "tratamiento_conducto",
   Impactación: "triangle",
 };
@@ -246,6 +250,10 @@ export default function CondicionMenu({
   const [showFusionDirection, setShowFusionDirection] = useState(false);
   const [, setShowEspigaMuñonDirection] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [, setShowDrawingModal] = useState(false);
+  //const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  //const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
     setShowRangeModal(false);
@@ -493,6 +501,13 @@ export default function CondicionMenu({
                       setShowEspigaMuñonDirection(true);
                       setSelectedCondition(c);
                       break;
+                    case "Fractura dental":
+                    case "Restauración temporal":
+                    case "Sellantes":
+                    case "Superficie desgastada":
+                      setSelectedCondition(c);
+                      setShowDrawingModal(true);
+                      break;
 
                     // ---------- Geminación ----------
                     case "Geminación":
@@ -735,6 +750,8 @@ export default function CondicionMenu({
               ? "Selecciona la dirección de la pieza dentaria supernumeraria"
               : selectedCondition === "Espiga - muñón"
               ? "Selecciona la dirección de la espiga - muñón"
+              : selectedCondition === "Fractura dental"
+              ? "Selecciona la dirección de la fractura dental"
               : `Elige un color para "${selectedCondition}"`}
           </p>
 
@@ -1118,7 +1135,100 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Fractura dental" ? (
-            <div className="flex flex-col items-center gap-4"></div>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => setSelectedColor("red")}
+              >
+                Rojo
+              </button>
+              {/* <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => setSelectedColor("blue")}
+              >
+                Azul
+              </button> */}
+            </div>
+          ) : selectedCondition === "Restauración temporal" ? (
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => setSelectedColor("red")}
+              >
+                Rojo
+              </button>
+              {/* <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => setSelectedColor("blue")}
+              >
+                Azul
+              </button> */}
+            </div>
+          ) : selectedCondition === "Sellantes" ? (
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => {
+                  setSelectedColor("red");
+                  if (toothId) {
+                    updateTooth(toothId, {
+                      generales: [
+                        {
+                          condicion: "Sellantes",
+                          icon: `path_${toothId}`,
+                          color: "red",
+                          label: "S", // <-- aquí pones "S"
+                        },
+                      ],
+                    });
+                  }
+                }}
+              >
+                Rojo
+              </button>
+
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => {
+                  setSelectedColor("blue");
+                  if (toothId) {
+                    updateTooth(toothId, {
+                      generales: [
+                        {
+                          condicion: "Sellantes",
+                          icon: `path_${toothId}`,
+                          color: "blue",
+                          label: "S", // <-- también "S" aquí
+                        },
+                      ],
+                    });
+                  }
+                }}
+              >
+                Azul
+              </button>
+            </div>
+          ) : selectedCondition === "Superficie desgastada" ? (
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => {
+                  updateTooth(toothId, {
+                    generales: [
+                      {
+                        condicion: "Superficie desgastada",
+                        icon: `path_${toothId}`,
+                        color: "red",
+                        label: "DES", // solo agregamos el label extra
+                      },
+                    ],
+                  });
+                  setSelectedColor("red");
+                }}
+              >
+                Rojo
+              </button>
+            </div>
           ) : (
             // Botones color general
             <div className="flex gap-4">

@@ -246,34 +246,34 @@ export default function OdontoPage() {
   };
 
   // ---------- Export / Import JSON ----------
-  // const handleExport = () => {
-  //   const blob = new Blob([JSON.stringify(odontograma, null, 2)], {
-  //     type: "application/json",
-  //   });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = "odontograma.json";
-  //   a.click();
-  //   URL.revokeObjectURL(url);
-  // };
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(odontograma, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "odontograma.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-  // const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (!file) return;
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     try {
-  //       const json = JSON.parse(e.target?.result as string);
-  //       setOdontograma(json);
-  //       reconstruirBorderColors(json);
-  //       alert("Odontograma importado correctamente");
-  //     } catch {
-  //       alert("Error al importar el archivo");
-  //     }
-  //   };
-  //   reader.readAsText(file);
-  // };
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        setOdontograma(json);
+        reconstruirBorderColors(json);
+        alert("Odontograma importado correctamente");
+      } catch {
+        alert("Error al importar el archivo");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   return (
     <div className="p-6 space-y-4">
@@ -326,19 +326,19 @@ export default function OdontoPage() {
           <FilePlus className="w-4 h-4" />
         </button>
 
-        {/* <button
+        <button
           onClick={handleExport}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Exportar JSON
-        </button> */}
+        </button>
 
-        {/* <input
+        <input
           type="file"
           accept="application/json"
           onChange={handleImport}
           className="border px-2 py-1"
-        /> */}
+        />
       </div>
 
       {/* Odontograma */}

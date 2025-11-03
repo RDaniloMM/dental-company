@@ -1,4 +1,3 @@
-// components/odontograma/ToothCard.tsx
 "use client";
 
 import React from "react";
@@ -11,6 +10,7 @@ export interface ToothGeneral {
   icon?: string;
   label?: string;
   color?: "red" | "blue" | string;
+  drawPath?: string; // 🆕 añadido
 }
 
 export interface ToothData {
@@ -92,6 +92,7 @@ export default function ToothCard({
         padding: 2,
         cursor: "pointer",
         gap: "6px",
+        position: "relative", // 🆕 necesario para posicionar el overlay
       }}
       whileHover={{
         borderColor: "#87b3fbff",
@@ -112,7 +113,9 @@ export default function ToothCard({
           >
             {id}
           </button>
-          <div style={{ transform: "rotate(0deg)" }}>
+
+          <div style={{ transform: "rotate(0deg)", position: "relative" }}>
+            {/* SVG del diente base */}
             <ToothComponent
               toothId={id}
               zoneColors={zoneColors}
@@ -120,11 +123,38 @@ export default function ToothCard({
               disabled={false}
               borderColor={borderColor}
             />
+
+            {/* 🆕 Dibujo guardado (paths sobre el diente) */}
+            {odontograma[id]?.generales
+              ?.filter((g) => g.drawPath)
+              .map((g, i) => (
+                <svg
+                  key={`draw-${id}-${i}`}
+                  viewBox="0 0 220 250"
+                  width="100%"
+                  height="100%"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <path
+                    d={g.drawPath!}
+                    stroke={g.color || "blue"}
+                    strokeWidth={3}
+                    fill="none"
+                    strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+              ))}
           </div>
         </>
       ) : (
         <>
-          <div style={{ transform: "rotate(180deg)" }}>
+          <div style={{ transform: "rotate(180deg)", position: "relative" }}>
             <ToothComponent
               toothId={id}
               zoneColors={zoneColors}
@@ -132,7 +162,36 @@ export default function ToothCard({
               disabled={false}
               borderColor={borderColor}
             />
+
+            {/* 🆕 Dibujo para dientes inferiores */}
+            {odontograma[id]?.generales
+              ?.filter((g) => g.drawPath)
+              .map((g, i) => (
+                <svg
+                  key={`draw-${id}-${i}`}
+                  viewBox="0 0 220 250"
+                  width="100%"
+                  height="100%"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    pointerEvents: "none",
+                    transform: "rotate(180deg)",
+                  }}
+                >
+                  <path
+                    d={g.drawPath!}
+                    stroke={g.color || "blue"}
+                    strokeWidth={3}
+                    fill="none"
+                    strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+              ))}
           </div>
+
           <button
             style={{
               background: "transparent",

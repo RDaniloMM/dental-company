@@ -31,6 +31,7 @@ interface ToothData {
   generales: {
     condicion: string;
     icon: string;
+    drawPath?: string;
     label?: string;
     color?: string;
   }[];
@@ -178,7 +179,8 @@ export default function OdontogramaSVG({
               </h2>
 
               <div className="flex w-full gap-4">
-                <div className="flex-1 flex flex-col justify-center items-center bg-blue-50 p-4 rounded-xl">
+                <div className="flex-1 flex flex-col justify-center items-center bg-blue-50 p-4 rounded-xl relative">
+                  {/* Diente base */}
                   <ToothCard
                     id={selectedTooth.id}
                     isTop={selectedTooth.isTop}
@@ -188,7 +190,52 @@ export default function OdontogramaSVG({
                     onZoneSelect={(zone) => setSelectedZone(zone)}
                     borderColor={borderColors[selectedTooth.id] || "#ccc"}
                   />
+
+                  {/* Overlay de dibujo para condiciones específicas */}
+                  {[
+                    "Fractura dental",
+                    "Restauración temporal",
+                    "Sellantes",
+                    "Superficie desgastada",
+                  ].includes(selectedCondition ?? "") && (
+                    <DrawingOverlay
+                      toothId={selectedTooth.id}
+                      drawColor={selectedColor || "blue"} // color que viene de CondicionMenu
+                      onSave={(newDraw) => {
+                        // Solo agregar path si realmente hay dibujo
+                        if (!newDraw.drawPath) return;
+
+                        setOdontograma((prev) => {
+                          const current = prev[selectedTooth.id] || {
+                            zonas: [],
+                            generales: [],
+                          };
+
+                          return {
+                            ...prev,
+                            [selectedTooth.id]: {
+                              ...current,
+                              generales: [
+                                ...current.generales,
+                                {
+                                  condicion: selectedCondition!, // la condición seleccionada
+                                  icon: `path_${selectedTooth.id}`,
+                                  drawPath: newDraw.drawPath,
+                                  color: newDraw.color,
+                                },
+                              ],
+                            },
+                          };
+                        });
+                      }}
+                      onClose={() => {
+                        setSelectedTooth(null);
+                        setSelectedZone(null);
+                      }}
+                    />
+                  )}
                 </div>
+
                 <div className="flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-gray-200">
                   <CondicionMenu
                     toothId={selectedTooth.id}
@@ -212,5 +259,127 @@ export default function OdontogramaSVG({
         )}
       </AnimatePresence>
     </div>
+  );
+}
+function DrawingOverlay({
+  toothId,
+  drawColor,
+  onSave,
+  onClose,
+}: {
+  toothId: string;
+  drawColor: "red" | "blue" | string;
+  onSave?: (newDraw: {
+    toothId: string;
+    drawPath: string;
+    color: string;
+  }) => void;
+  onClose?: () => void;
+}) {
+  const [isDrawing, setIsDrawing] = React.useState(false);
+  const [path, setPath] = React.useState<string[]>([]);
+  const topCanvasRef = React.useRef<HTMLCanvasElement>(null);
+  const bottomCanvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  const CANVAS_WIDTH = 300;
+  const CANVAS_HEIGHT = 500;
+
+  const startDraw = (e: React.MouseEvent, isTop: boolean) => {
+    setIsDrawing(true);
+    const canvas = isTop ? topCanvasRef.current : bottomCanvasRef.current;
+    const rect = canvas!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPath((prev) => [...prev, `M ${x} ${y}`]);
+    const ctx = canvas!.getContext("2d");
+    if (ctx) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+  };
+
+  const draw = (e: React.MouseEvent, isTop: boolean) => {
+    if (!isDrawing) return;
+    const canvas = isTop ? topCanvasRef.current : bottomCanvasRef.current;
+    const rect = canvas!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPath((prev) => [...prev, `L ${x} ${y}`]);
+    const ctx = canvas!.getContext("2d");
+    if (ctx) {
+      ctx.strokeStyle = drawColor;
+      ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+  };
+
+  const stopDraw = () => setIsDrawing(false);
+
+  const handleSave = () => {
+    if (path.length > 0 && onSave) {
+      const scaleX = 220 / CANVAS_WIDTH;
+      const scaleY = 250 / CANVAS_HEIGHT;
+
+      const scaledPath = path.map((seg) => {
+        const [cmd, xStr, yStr] = seg.split(" ");
+        const x = parseFloat(xStr) * scaleX;
+        const y = parseFloat(yStr) * scaleY;
+        return `${cmd} ${x} ${y}`;
+      });
+
+      onSave({ toothId, drawPath: scaledPath.join(" "), color: drawColor });
+      setPath([]);
+    }
+    if (onClose) onClose();
+  };
+
+  return (
+    <>
+      {/* Canvas superior */}
+      <canvas
+        ref={topCanvasRef}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        className="absolute inset-0 m-auto z-20 cursor-crosshair"
+        style={{
+          top: "100%",
+          left: "50%",
+          transform: "translate(-50%, -42%)",
+        }}
+        onMouseDown={(e) => startDraw(e, true)}
+        onMouseMove={(e) => draw(e, true)}
+        onMouseUp={stopDraw}
+        onMouseLeave={stopDraw}
+      />
+
+      {/* Canvas inferior */}
+      <canvas
+        ref={bottomCanvasRef}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        className="absolute inset-0 m-auto z-20 cursor-crosshair"
+        style={{
+          top: "100%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+        onMouseDown={(e) => startDraw(e, false)}
+        onMouseMove={(e) => draw(e, false)}
+        onMouseUp={stopDraw}
+        onMouseLeave={stopDraw}
+      />
+
+      {/* Botón guardar */}
+      <div className="absolute bottom-2 right-2 flex gap-2 z-30">
+        <button
+          onClick={handleSave}
+          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+        >
+          Guardar
+        </button>
+      </div>
+    </>
   );
 }
