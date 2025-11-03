@@ -1,16 +1,13 @@
 "use client";
-
 import React from "react";
 import { motion } from "framer-motion";
 import { ActionsTypeMap, getToothType } from "./dientes";
-
-// ---------- Tipos ----------
 export interface ToothGeneral {
   condicion?: string;
   icon?: string;
   label?: string;
   color?: "red" | "blue" | string;
-  drawPath?: string; // 🆕 añadido
+  drawPath?: string;
 }
 
 export interface ToothData {
@@ -38,15 +35,22 @@ export default function ToothCard({
   borderColor,
 }: Props) {
   const ToothComponent = ActionsTypeMap[getToothType(id)];
+  const maxHeight = 60;
+  const labels = odontograma[id]?.generales?.filter((g) => g.label) || [];
+  const maxVisible = 3;
+  const showTooltip = labels.length > maxVisible;
+
+  const visibleLabels = labels.slice(0, maxVisible);
+  const hiddenLabels = labels.slice(maxVisible);
 
   const labelDiv = (
     <div
       style={{
         width: "50px",
-        minHeight: "60px",
+        height: `${maxHeight}px`,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
+        justifyContent: "flex-start",
         alignItems: "center",
         textAlign: "center",
         fontWeight: "bold",
@@ -56,26 +60,79 @@ export default function ToothCard({
         borderRadius: "6px",
         padding: "2px",
         backgroundColor: "#f0f9ff",
+        position: "relative",
+        cursor: showTooltip ? "pointer" : "default",
       }}
     >
-      {odontograma[id]?.generales
-        ?.filter((g: ToothGeneral) => g.label)
-        .map((g: ToothGeneral, idx: number) => (
-          <span
-            key={idx}
-            style={{
-              color:
-                g.color === "red"
-                  ? "#ef4444"
-                  : g.color === "blue"
-                  ? "#3b82f6"
-                  : "#000",
-              fontSize: "12px",
-            }}
-          >
-            {g.label}
-          </span>
-        ))}
+      {visibleLabels.map((g, idx) => (
+        <span
+          key={idx}
+          style={{
+            color:
+              g.color === "red"
+                ? "#ef4444"
+                : g.color === "blue"
+                ? "#3b82f6"
+                : "#000",
+            fontSize: "12px",
+          }}
+        >
+          {g.label}
+        </span>
+      ))}
+      {showTooltip && (
+        <span style={{ fontSize: "10px" }}>+{hiddenLabels.length}</span>
+      )}
+
+      {/* 🆕 Tooltip estilizado con hover interno */}
+      {showTooltip && (
+        <div
+          style={{
+            position: "absolute",
+            top: "-5px",
+            left: "110%",
+            backgroundColor: "#ffffff",
+            border: "1px solid #3b82f6",
+            borderRadius: "6px",
+            padding: "6px 8px",
+            fontSize: "12px",
+            color: "#000",
+            whiteSpace: "nowrap",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            opacity: 0,
+            transform: "translateY(-3px)",
+            pointerEvents: "none",
+            transition: "opacity 0.2s, transform 0.2s",
+            zIndex: 10,
+          }}
+        >
+          {hiddenLabels.map((g, idx) => (
+            <div
+              key={idx}
+              style={{
+                color:
+                  g.color === "red"
+                    ? "#ef4444"
+                    : g.color === "blue"
+                    ? "#3b82f6"
+                    : "#000",
+                fontWeight: "bold",
+              }}
+            >
+              {g.label}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 🆕 Estilo de hover inline (sin clases externas) */}
+      <style jsx>{`
+        div:hover > div {
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          transform: translateY(0px) !important;
+        }
+      `}</style>
     </div>
   );
 
@@ -92,7 +149,7 @@ export default function ToothCard({
         padding: 2,
         cursor: "pointer",
         gap: "6px",
-        position: "relative", // 🆕 necesario para posicionar el overlay
+        position: "relative",
       }}
       whileHover={{
         borderColor: "#87b3fbff",
@@ -115,7 +172,6 @@ export default function ToothCard({
           </button>
 
           <div style={{ transform: "rotate(0deg)", position: "relative" }}>
-            {/* SVG del diente base */}
             <ToothComponent
               toothId={id}
               zoneColors={zoneColors}
@@ -123,8 +179,6 @@ export default function ToothCard({
               disabled={false}
               borderColor={borderColor}
             />
-
-            {/* 🆕 Dibujo guardado (paths sobre el diente) */}
             {odontograma[id]?.generales
               ?.filter((g) => g.drawPath)
               .map((g, i) => (
@@ -163,7 +217,6 @@ export default function ToothCard({
               borderColor={borderColor}
             />
 
-            {/* 🆕 Dibujo para dientes inferiores */}
             {odontograma[id]?.generales
               ?.filter((g) => g.drawPath)
               .map((g, i) => (
