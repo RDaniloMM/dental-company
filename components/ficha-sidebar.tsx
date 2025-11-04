@@ -1,18 +1,14 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import {
   User,
   FileText,
   ClipboardList,
-  Wallet,
-  Stethoscope,
-  MessageSquare,
   Image,
-  PenSquare,
-  FileSignature,
+  FolderKanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,12 +36,8 @@ const navItems = [
   { href: "filiacion", label: "Filiación", icon: User },
   { href: "historia-clinica", label: "Historia Clínica", icon: FileText },
   { href: "odontograma", label: "Odontograma", icon: ClipboardList },
-  { href: "presupuesto", label: "Presupuesto", icon: Wallet },
-  { href: "diagnostico", label: "Diagnóstico", icon: Stethoscope },
-  { href: "evolucion", label: "Evolución", icon: MessageSquare },
+  { href: "casos", label: "Casos Clínicos", icon: FolderKanban },
   { href: "imagenes", label: "Imágenes", icon: Image },
-  { href: "consentimiento", label: "Consentimiento", icon: FileSignature },
-  { href: "recetas", label: "Recetas", icon: PenSquare },
 ];
 
 export default function FichaSidebar({
@@ -55,7 +47,6 @@ export default function FichaSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [age, setAge] = useState<number | null>(null);
@@ -69,7 +60,7 @@ export default function FichaSidebar({
         .single();
 
       if (error) {
-        console.error("Error fetching patient:", error);
+        console.error("Error fetching patient:", JSON.stringify(error, null, 2));
       } else {
         setPatient(data);
         setAge(calculateAge(data.fecha_nacimiento));
@@ -98,14 +89,16 @@ export default function FichaSidebar({
       <nav className="flex flex-col space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = searchParams.get("view") === item.href;
+          const isActive = pathname.includes(item.href);
           return (
             <button
               key={item.href}
               onClick={() => {
-                const newParams = new URLSearchParams(searchParams.toString());
-                newParams.set("view", item.href);
-                router.push(`${pathname}?${newParams.toString()}`);
+                const pathSegments = pathname.split('/');
+                if (pathSegments.length >= 4) {
+                  const numeroHistoria = pathSegments[3];
+                  router.push(`/admin/ficha-odontologica/${numeroHistoria}/${item.href}`);
+                }
               }}
               className={cn(
                 "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted-foreground transition-all hover:text-primary",

@@ -11,6 +11,7 @@ import ImageUploadModal from './ImageUploadModal';
 
 interface ImageManagerProps {
   pacienteId: string;
+  casoId?: string;
 }
 
 interface ImagenPaciente {
@@ -24,7 +25,7 @@ interface ImagenPaciente {
 
 const imageTypes = ['todos', 'radiografia', 'odontograma', 'seguimiento', 'otro'];
 
-export default function ImageManager({ pacienteId }: ImageManagerProps) {
+export default function ImageManager({ pacienteId, casoId }: ImageManagerProps) {
   const [images, setImages] = useState<ImagenPaciente[]>([]);
   const [filteredImages, setFilteredImages] = useState<ImagenPaciente[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +40,10 @@ export default function ImageManager({ pacienteId }: ImageManagerProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/imagenes/paciente/${pacienteId}`);
+      const url = casoId 
+        ? `/api/imagenes/paciente/${pacienteId}?casoId=${casoId}` 
+        : `/api/imagenes/paciente/${pacienteId}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Error al cargar las imágenes.');
       const data = await response.json();
       setImages(data);
@@ -52,7 +56,7 @@ export default function ImageManager({ pacienteId }: ImageManagerProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [pacienteId]);
+  }, [pacienteId, casoId]);
 
   useEffect(() => {
     fetchImages();
@@ -145,6 +149,7 @@ export default function ImageManager({ pacienteId }: ImageManagerProps) {
         onClose={() => setUploadModalOpen(false)}
         onUploadSuccess={fetchImages}
         pacienteId={pacienteId}
+        casoId={casoId} // Pasar casoId al modal de subida
       />
 
       <ImageViewerModal

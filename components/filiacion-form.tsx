@@ -134,16 +134,16 @@ export default function FiliacionForm({ patient }: { patient: Partial<PatientDat
           <form onSubmit={handleSubmit} className="space-y-8">
           {/* Fila 1 */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2"><Label>Apellidos</Label><Input name="apellidos" value={formData.apellidos} onChange={handleChange} /></div>
-            <div className="space-y-2"><Label>Nombres</Label><Input name="nombres" value={formData.nombres} onChange={handleChange} /></div>
+            <div className="space-y-2"><Label>Apellidos</Label><Input name="apellidos" value={formData.apellidos} onChange={handleChange} autoComplete="off" /></div>
+            <div className="space-y-2"><Label>Nombres</Label><Input name="nombres" value={formData.nombres} onChange={handleChange} autoComplete="off" /></div>
             <div className="space-y-2"><Label>Fecha de Nacimiento</Label><Input name="fecha_nacimiento" type="date" value={formData.fecha_nacimiento} onChange={handleChange} /></div>
             <div className="space-y-2"><Label>Edad</Label><Input value={age} readOnly disabled /></div>
           </div>
           <hr />
           {/* Fila 2 */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="space-y-2"><Label>Documento DNI</Label><Input name="dni" value={formData.dni} onChange={handleChange} /></div>
-            <div className="space-y-2 md:col-span-2"><Label>Dirección</Label><Input name="direccion" value={formData.direccion} onChange={handleChange} /></div>
+            <div className="space-y-2"><Label>Documento DNI</Label><Input name="dni" value={formData.dni} onChange={handleChange} autoComplete="off" /></div>
+            <div className="space-y-2 md:col-span-2"><Label>Dirección</Label><Input name="direccion" value={formData.direccion} onChange={handleChange} autoComplete="off" /></div>
             <div className="space-y-2"><Label>Sexo</Label>
               <Select name="genero" onValueChange={(v) => handleSelectChange("genero", v)} value={formData.genero}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -164,7 +164,7 @@ export default function FiliacionForm({ patient }: { patient: Partial<PatientDat
           <hr />
           {/* Fila 3 */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2"><Label>Ocupación</Label><Input name="ocupacion" value={formData.ocupacion} onChange={handleChange} /></div>
+            <div className="space-y-2"><Label>Ocupación</Label><Input name="ocupacion" value={formData.ocupacion} onChange={handleChange} autoComplete="off" /></div>
             <div className="space-y-2"><Label>Grado de Instrucción</Label>
               <Select name="grado_instruccion" onValueChange={(v) => handleSelectChange("grado_instruccion", v)} value={formData.grado_instruccion}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -177,30 +177,30 @@ export default function FiliacionForm({ patient }: { patient: Partial<PatientDat
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>Teléfono</Label><Input name="telefono" value={formData.telefono} onChange={handleChange} /></div>
-            <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} /></div>
+            <div className="space-y-2"><Label>Teléfono</Label><Input name="telefono" value={formData.telefono} onChange={handleChange} autoComplete="off" /></div>
+            <div className="space-y-2"><Label>Email</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} autoComplete="off" /></div>
           </div>
           <hr />
           {/* Fila 4 (Ubicación) - Simplificado por ahora */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-             <div className="space-y-2"><Label>País</Label><Input name="pais" value={formData.pais} onChange={handleChange} /></div>
-             <div className="space-y-2"><Label>Departamento</Label><Input name="departamento" value={formData.departamento} onChange={handleChange} /></div>
-             <div className="space-y-2"><Label>Provincia</Label><Input name="provincia" value={formData.provincia} onChange={handleChange} /></div>
-             <div className="space-y-2"><Label>Distrito</Label><Input name="distrito" value={formData.distrito} onChange={handleChange} /></div>
+             <div className="space-y-2"><Label>País</Label><Input name="pais" value={formData.pais} onChange={handleChange} autoComplete="off" /></div>
+             <div className="space-y-2"><Label>Departamento</Label><Input name="departamento" value={formData.departamento} onChange={handleChange} autoComplete="off" /></div>
+             <div className="space-y-2"><Label>Provincia</Label><Input name="provincia" value={formData.provincia} onChange={handleChange} autoComplete="off" /></div>
+             <div className="space-y-2"><Label>Distrito</Label><Input name="distrito" value={formData.distrito} onChange={handleChange} autoComplete="off" /></div>
           </div>
           <hr />
           {/* Fila 5 (Emergencia) */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2"><Label>En caso de emergencia</Label><Input name="nombre" value={formData.contacto_emergencia.nombre} onChange={handleEmergencyContactChange} /></div>
-            <div className="space-y-2"><Label>Parentesco</Label><Input name="parentesco" value={formData.contacto_emergencia.parentesco} onChange={handleEmergencyContactChange} /></div>
-            <div className="space-y-2"><Label>Domicilio</Label><Input name="domicilio" value={formData.contacto_emergencia.domicilio} onChange={handleEmergencyContactChange} /></div>
-            <div className="space-y-2"><Label>Teléfono</Label><Input name="telefono" value={formData.contacto_emergencia.telefono} onChange={handleEmergencyContactChange} /></div>
+            <div className="space-y-2"><Label>En caso de emergencia</Label><Input name="nombre" value={formData.contacto_emergencia.nombre} onChange={handleEmergencyContactChange} autoComplete="off" /></div>
+            <div className="space-y-2"><Label>Parentesco</Label><Input name="parentesco" value={formData.contacto_emergencia.parentesco} onChange={handleEmergencyContactChange} autoComplete="off" /></div>
+            <div className="space-y-2"><Label>Domicilio</Label><Input name="domicilio" value={formData.contacto_emergencia.domicilio} onChange={handleEmergencyContactChange} autoComplete="off" /></div>
+            <div className="space-y-2"><Label>Teléfono</Label><Input name="telefono" value={formData.contacto_emergencia.telefono} onChange={handleEmergencyContactChange} autoComplete="off" /></div>
           </div>
           <hr />
           {/* Fila 6 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Referido por</Label><Input name="recomendado_por" value={formData.recomendado_por} onChange={handleChange} /></div>
-            <div className="space-y-2"><Label>Observación</Label><Input name="observaciones" value={formData.observaciones} onChange={handleChange} /></div>
+            <div className="space-y-2"><Label>Referido por</Label><Input name="recomendado_por" value={formData.recomendado_por} onChange={handleChange} autoComplete="off" /></div>
+            <div className="space-y-2"><Label>Observación</Label><Input name="observaciones" value={formData.observaciones} onChange={handleChange} autoComplete="off" /></div>
           </div>
 
           <div className="flex justify-end">

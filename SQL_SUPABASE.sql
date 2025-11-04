@@ -3,15 +3,33 @@
 
 CREATE TABLE public.antecedentes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  historia_id uuid NOT NULL,
-  categoria text NOT NULL,
-  opciones ARRAY,
-  otros text,
+  historia_id uuid NOT NULL UNIQUE,
   no_refiere boolean DEFAULT false,
+  datos jsonb NOT NULL DEFAULT '{}'::jsonb,
+  resumen_antecedentes jsonb DEFAULT '{}'::jsonb,
   CONSTRAINT antecedentes_pkey PRIMARY KEY (id),
   CONSTRAINT antecedentes_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id)
 );
 
+CREATE TYPE public.estado_caso AS ENUM ('Abierto', 'En progreso', 'Cerrado');
+
+CREATE TABLE public.casos_clinicos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  historia_id uuid NOT NULL,
+  nombre_caso text NOT NULL,
+  descripcion text,
+  diagnostico_preliminar text,
+  fecha_inicio timestamp with time zone DEFAULT now(),
+  fecha_cierre timestamp with time zone,
+  estado estado_caso DEFAULT 'Abierto'::estado_caso,
+  presupuesto_id uuid,
+  deleted_at timestamptz,
+  CONSTRAINT casos_clinicos_pkey PRIMARY KEY (id),
+  CONSTRAINT casos_clinicos_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id),
+  CONSTRAINT casos_clinicos_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.planes_procedimiento(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_casos_historia_estado ON public.casos_clinicos(historia_id, estado);
 CREATE TABLE public.citas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   paciente_id uuid NOT NULL,
@@ -25,10 +43,27 @@ CREATE TABLE public.citas (
   google_calendar_event_id text,
   notas text,
   created_at timestamp with time zone DEFAULT now(),
+  nombre_cita text,
+  caso_id uuid,
   CONSTRAINT citas_pkey PRIMARY KEY (id),
   CONSTRAINT citas_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
   CONSTRAINT citas_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id),
-  CONSTRAINT citas_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id)
+  CONSTRAINT citas_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id),
+  CONSTRAINT citas_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id)
+);
+CREATE TABLE public.consentimientos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  caso_id uuid NOT NULL,
+  paciente_id uuid NOT NULL,
+  tipo text NOT NULL,
+  documento_url text,
+  firmado boolean DEFAULT false,
+  firmado_por uuid,
+  fecha_firma timestamp with time zone,
+  CONSTRAINT consentimientos_pkey PRIMARY KEY (id),
+  CONSTRAINT consentimientos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id),
+  CONSTRAINT consentimientos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
+  CONSTRAINT consentimientos_firmado_por_fkey FOREIGN KEY (firmado_por) REFERENCES public.personal(id)
 );
 CREATE TABLE public.cuestionario_respuestas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -41,6 +76,18 @@ CREATE TABLE public.cuestionario_respuestas (
   detalle text,
   CONSTRAINT cuestionario_respuestas_pkey PRIMARY KEY (id),
   CONSTRAINT cuestionario_respuestas_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id)
+);
+CREATE TABLE public.diagnosticos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  caso_id uuid NOT NULL,
+  odontologo_id uuid NOT NULL,
+  tipo text NOT NULL,
+  descripcion text NOT NULL,
+  fecha timestamp with time zone DEFAULT now(),
+  adjuntos jsonb,
+  CONSTRAINT diagnosticos_pkey PRIMARY KEY (id),
+  CONSTRAINT diagnosticos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id),
+  CONSTRAINT diagnosticos_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id)
 );
 CREATE TABLE public.grupos_procedimiento (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -153,9 +200,11 @@ CREATE TABLE public.planes_procedimiento (
   moneda_id uuid,
   estado USER-DEFINED DEFAULT 'Propuesto'::plan_status,
   fecha_creacion timestamp with time zone DEFAULT now(),
+  caso_id uuid,
   CONSTRAINT planes_procedimiento_pkey PRIMARY KEY (id),
   CONSTRAINT planes_procedimiento_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
-  CONSTRAINT planes_procedimiento_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id)
+  CONSTRAINT planes_procedimiento_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id),
+  CONSTRAINT planes_procedimiento_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id)
 );
 CREATE TABLE public.procedimiento_precios (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -184,6 +233,21 @@ CREATE TABLE public.procedimientos (
   CONSTRAINT procedimientos_unidad_id_fkey FOREIGN KEY (unidad_id) REFERENCES public.unidades(id),
   CONSTRAINT procedimientos_grupo_id_fkey FOREIGN KEY (grupo_id) REFERENCES public.grupos_procedimiento(id)
 );
+CREATE TABLE public.recetas (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  caso_id uuid NOT NULL,
+  cita_id uuid,
+  paciente_id uuid NOT NULL,
+  prescriptor_id uuid NOT NULL,
+  contenido text NOT NULL,
+  fecha timestamp with time zone DEFAULT now(),
+  pdf_url text,
+  CONSTRAINT recetas_pkey PRIMARY KEY (id),
+  CONSTRAINT recetas_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id),
+  CONSTRAINT recetas_cita_id_fkey FOREIGN KEY (cita_id) REFERENCES public.citas(id),
+  CONSTRAINT recetas_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
+  CONSTRAINT recetas_prescriptor_id_fkey FOREIGN KEY (prescriptor_id) REFERENCES public.personal(id)
+);
 CREATE TABLE public.seguimiento_imagenes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   seguimiento_id uuid NOT NULL,
@@ -202,11 +266,13 @@ CREATE TABLE public.seguimientos (
   procedimiento_id uuid,
   observaciones text,
   fecha_proxima_cita date,
+  caso_id uuid,
   CONSTRAINT seguimientos_pkey PRIMARY KEY (id),
   CONSTRAINT seguimientos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
   CONSTRAINT seguimientos_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id),
   CONSTRAINT seguimientos_cita_id_fkey FOREIGN KEY (cita_id) REFERENCES public.citas(id),
-  CONSTRAINT seguimientos_procedimiento_id_fkey FOREIGN KEY (procedimiento_id) REFERENCES public.procedimientos(id)
+  CONSTRAINT seguimientos_procedimiento_id_fkey FOREIGN KEY (procedimiento_id) REFERENCES public.procedimientos(id),
+  CONSTRAINT seguimientos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id)
 );
 CREATE TABLE public.transacciones_financieras (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
