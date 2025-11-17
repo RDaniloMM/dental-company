@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react"; // Eliminar Suspense si no se usa
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client"; // Importar createClient de cliente para Client Component
+import { createClient } from "@/lib/supabase/client";
 import FiliacionForm from "@/components/filiacion-form";
-import HistoriaClinicaForm from "@/components/historia-clinica-form";
+import AntecedentesDinamicoForm from "@/components/historia-clinica/antecedentes-dinamico-form";
 import ImageManager from "@/components/imagenes/ImageManager";
 import Image from "next/image";
 
-// Definición local del tipo Paciente
 type PatientData = {
   id: string;
   apellidos: string;
@@ -36,7 +35,6 @@ type PatientData = {
   observaciones: string;
 };
 
-// Componente de cliente para el contenido de la ficha
 export default function FichaOdontologicaContent({
   patientId,
 }: {
@@ -44,7 +42,7 @@ export default function FichaOdontologicaContent({
 }) {
   const searchParams = useSearchParams();
   const activeView = searchParams.get("view") || "welcome";
-  const [patient, setPatient] = useState<PatientData | null>(null); // Cambiar a PatientData | null
+  const [patient, setPatient] = useState<PatientData | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -65,7 +63,7 @@ export default function FichaOdontologicaContent({
     if (patientId) {
       fetchPatient();
     }
-  }, [patientId, supabase]); // Añadir supabase como dependencia
+  }, [patientId, supabase]);
 
   const renderContent = () => {
     if (!patient) {
@@ -80,7 +78,7 @@ export default function FichaOdontologicaContent({
       case "filiacion":
         return <FiliacionForm patient={patient} />;
       case "historia-clinica":
-        return <HistoriaClinicaForm pacienteId={patient.id} />;
+        return <AntecedentesDinamicoForm pacienteId={patient.id} />;
       case "imagenes":
         return <ImageManager pacienteId={patient.id} />;
       default:

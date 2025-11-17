@@ -13,23 +13,23 @@ import {
 import { cn } from "@/lib/utils";
 
 type Patient = {
+  id?: string;
   nombres: string;
   apellidos: string;
   fecha_nacimiento: string;
   numero_historia: string;
 };
 
-// Función para calcular la edad
 const calculateAge = (birthDate: string) => {
   if (!birthDate) return null;
+  const birthDateObj = new Date(birthDate + 'T00:00:00');
   const today = new Date();
-  const birthDateObj = new Date(birthDate);
   let age = today.getFullYear() - birthDateObj.getFullYear();
   const monthDifference = today.getMonth() - birthDateObj.getMonth();
   if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDateObj.getDate())) {
     age--;
   }
-  return age;
+  return age >= 0 ? age : null;
 };
 
 const navItems = [
@@ -55,7 +55,7 @@ export default function FichaSidebar({
     const fetchPatient = async () => {
       const { data, error } = await supabase
         .from("pacientes")
-        .select("nombres, apellidos, fecha_nacimiento, numero_historia")
+        .select("id, nombres, apellidos, fecha_nacimiento, numero_historia")
         .eq("id", patientId)
         .single();
 
@@ -71,11 +71,29 @@ export default function FichaSidebar({
       fetchPatient();
     }
   }, [patientId, supabase]);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const custom = e as CustomEvent;
+        const updated = custom.detail as Patient | undefined;
+        if (!updated) return;
+        if ((updated.id && updated.id === patientId) || (updated.numero_historia && updated.numero_historia === patient?.numero_historia)) {
+          setPatient(updated);
+          setAge(calculateAge(updated.fecha_nacimiento));
+        }
+      } catch {
+        // ignore malformed events
+      }
+    };
+
+    window.addEventListener("paciente-updated", handler as EventListener);
+    return () => window.removeEventListener("paciente-updated", handler as EventListener);
+  }, [patientId, patient]);
 
   return (
     <aside className="w-64 flex-shrink-0 border-r bg-background p-4">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-bold uppercase">
+        <h2 className="text-2xl font-semibold uppercase">
           {patient ? `${patient.nombres} ${patient.apellidos}` : "Cargando..."}
         </h2>
         <p className="text-sm text-muted-foreground">

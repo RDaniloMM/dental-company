@@ -3,16 +3,14 @@
 
 CREATE TABLE public.antecedentes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  historia_id uuid NOT NULL UNIQUE,
+  historia_id uuid NOT NULL,
+  categoria text NOT NULL,
+  datos jsonb NOT NULL,
+  fecha_registro timestamp without time zone DEFAULT now(),
   no_refiere boolean DEFAULT false,
-  datos jsonb NOT NULL DEFAULT '{}'::jsonb,
-  resumen_antecedentes jsonb DEFAULT '{}'::jsonb,
   CONSTRAINT antecedentes_pkey PRIMARY KEY (id),
   CONSTRAINT antecedentes_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id)
 );
-
-CREATE TYPE public.estado_caso AS ENUM ('Abierto', 'En progreso', 'Cerrado');
-
 CREATE TABLE public.casos_clinicos (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   historia_id uuid NOT NULL,
@@ -21,15 +19,18 @@ CREATE TABLE public.casos_clinicos (
   diagnostico_preliminar text,
   fecha_inicio timestamp with time zone DEFAULT now(),
   fecha_cierre timestamp with time zone,
-  estado estado_caso DEFAULT 'Abierto'::estado_caso,
+  estado text DEFAULT 'Abierto'::text,
   presupuesto_id uuid,
-  deleted_at timestamptz,
   CONSTRAINT casos_clinicos_pkey PRIMARY KEY (id),
   CONSTRAINT casos_clinicos_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id),
   CONSTRAINT casos_clinicos_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.planes_procedimiento(id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_casos_historia_estado ON public.casos_clinicos(historia_id, estado);
+CREATE TABLE public.cie10_catalogo (
+  id integer NOT NULL DEFAULT nextval('cie10_catalogo_id_seq'::regclass),
+  codigo text NOT NULL UNIQUE,
+  descripcion text NOT NULL,
+  CONSTRAINT cie10_catalogo_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.citas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   paciente_id uuid NOT NULL,
@@ -82,12 +83,12 @@ CREATE TABLE public.diagnosticos (
   caso_id uuid NOT NULL,
   odontologo_id uuid NOT NULL,
   tipo text NOT NULL,
-  descripcion text NOT NULL,
   fecha timestamp with time zone DEFAULT now(),
-  adjuntos jsonb,
+  cie10_id integer NOT NULL,
   CONSTRAINT diagnosticos_pkey PRIMARY KEY (id),
   CONSTRAINT diagnosticos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id),
-  CONSTRAINT diagnosticos_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id)
+  CONSTRAINT diagnosticos_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id),
+  CONSTRAINT diagnosticos_cie10_id_fkey FOREIGN KEY (cie10_id) REFERENCES public.cie10_catalogo(id)
 );
 CREATE TABLE public.grupos_procedimiento (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
