@@ -79,10 +79,15 @@ export const FloatingChatbot = () => {
 
   return (
     <>
-      {/* Botón flotante - Icono ocupa toda la burbuja */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50" style={{ minWidth: 80, minHeight: 80 }}>
-          <div className="relative flex items-center" style={{ minWidth: 80, minHeight: 80 }}>
+        <div
+          className='fixed bottom-6 right-6 z-50'
+          style={{ minWidth: 80, minHeight: 80 }}
+        >
+          <div
+            className='relative flex items-center'
+            style={{ minWidth: 80, minHeight: 80 }}
+          >
             <button
               onClick={() => setIsOpen(true)}
               className='rounded-full p-0 shadow-2xl transition-all duration-300 hover:scale-110 bg-transparent border-none relative'
@@ -93,17 +98,19 @@ export const FloatingChatbot = () => {
             >
               <span className='absolute inset-0 w-full h-full rounded-full overflow-hidden'>
                 <Image
-                  src="/logo-chatbot.png"
-                  alt="Chatbot"
+                  src='/logo-chatbot.png'
+                  alt='Chatbot'
                   fill
-                  className="object-cover w-full h-full rounded-full"
+                  className='object-cover w-full h-full rounded-full'
                   priority
                 />
               </span>
             </button>
             {/* Mensaje tipo diálogo encima del icono */}
             <span
-              className={`pointer-events-none select-none transition-all duration-300 whitespace-nowrap text-base font-medium bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg absolute left-1/2 -translate-x-[70%] bottom-[90px] ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+              className={`pointer-events-none select-none transition-all duration-300 whitespace-nowrap text-base font-medium bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg absolute left-1/2 -translate-x-[70%] bottom-[90px] ${
+                isHovered ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              }`}
               style={{ minWidth: 120 }}
             >
               ¿Necesitas ayuda?
@@ -260,7 +267,6 @@ export const FloatingChatbot = () => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className='p-2 bg-gray-100 text-center'>
             <p className='text-xs text-gray-500'>
               Asistente con IA • Información general
