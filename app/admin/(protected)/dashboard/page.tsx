@@ -27,7 +27,6 @@ export default async function Page() {
   return (
     <div className="flex min-h-svh w-full">
       <Sheet>
-        {/* Botón flotante de menú (responsivo) */}
         <SheetTrigger asChild>
           <button
             className="fixed left-2 top-2 sm:left-4 sm:top-4 z-50 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-md border border-border bg-background text-foreground shadow-md hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-colors"
@@ -39,7 +38,6 @@ export default async function Page() {
           </button>
         </SheetTrigger>
 
-        {/* Contenido principal */}
         <main className="flex-1 p-4 sm:p-6 md:p-8 lg:p-10 pt-16 sm:pt-20">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
@@ -70,7 +68,7 @@ export default async function Page() {
 
           <hr className="my-8" />
 
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-1">
             <PatientSearch patients={patients || []} />
           </div>
           <hr className="my-8" />
@@ -79,13 +77,11 @@ export default async function Page() {
           </div>
         </main>
 
-        {/* Menú lateral en Sheet */}
         <SheetContent side="left" className="w-full sm:w-80 md:w-72 p-0">
           <SheetHeader className="px-4 py-3 border-b border-border">
             <SheetTitle className="text-left">Menú</SheetTitle>
           </SheetHeader>
           <nav className="px-3 py-4 sm:px-4">
-            {/* Menús principales sin acordeón padre */}
             <Accordion type="multiple" className="w-full space-y-3">
               <AccordionItem
                 value="pacientes"

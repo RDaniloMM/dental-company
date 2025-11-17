@@ -27,6 +27,7 @@ interface ImageUploadModalProps {
   onClose: () => void;
   onUploadSuccess: () => void;
   pacienteId: string;
+  casoId?: string;
 }
 
 const imageTypes = ['radiografia', 'odontograma', 'seguimiento', 'otro'];
@@ -36,6 +37,7 @@ export default function ImageUploadModal({
   onClose,
   onUploadSuccess,
   pacienteId,
+  casoId, // Añadir casoId aquí
 }: ImageUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -85,6 +87,9 @@ export default function ImageUploadModal({
     formData.append('paciente_id', pacienteId);
     formData.append('tipo', tipo);
     formData.append('descripcion', descripcion);
+    if (casoId) {
+      formData.append('caso_id', casoId);
+    }
 
     try {
       const response = await fetch('/api/imagenes/upload', {

@@ -52,7 +52,14 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   )
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+function TableRow(props: React.ComponentProps<"tr">) {
+  // Sanitize children to remove whitespace-only text nodes which can cause
+  // hydration mismatches inside table rows.
+  const { className, children, ...rest } = props
+  const sanitizedChildren = React.Children.toArray(children).filter(
+    (child) => !(typeof child === 'string' && child.trim() === '')
+  )
+
   return (
     <tr
       data-slot="table-row"
@@ -60,8 +67,10 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
         "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
         className
       )}
-      {...props}
-    />
+      {...rest}
+    >
+      {sanitizedChildren}
+    </tr>
   )
 }
 

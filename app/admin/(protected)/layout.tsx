@@ -1,5 +1,6 @@
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Toaster } from "sonner";
 
 export default function ProtectedLayout({
   children,
@@ -18,6 +19,12 @@ export default function ProtectedLayout({
         <div className='flex-1 flex flex-col gap-20 p-4 w-full'>
           {children}
         </div>
+        <Toaster 
+          position="bottom-center" 
+          richColors
+          closeButton
+          theme="light"
+        />
       </div>
     </main>
   );

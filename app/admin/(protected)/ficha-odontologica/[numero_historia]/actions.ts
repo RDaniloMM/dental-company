@@ -3,38 +3,31 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-type Antecedente = {
-  opciones: string[];
-  otros: string;
-  noRefiere: boolean;
-};
-
-type AntecedentesData = {
-  [key: string]: Antecedente;
-};
-
-type CuestionarioPreguntaValor =
-  | string
+export type AnswerValue =
+  | boolean
   | {
       respuesta?: boolean;
-      detalle?: string;
+      texto?: string;
       opciones?: string[];
+      subFields?: { [key: string]: string | number };
+      noRefiere?: boolean;
     };
 
-type CuestionarioData = {
-  [key: string]: {
-    [key: string]: CuestionarioPreguntaValor;
-  };
+export type CategoryState = {
+  questions: { [questionId: string]: AnswerValue };
+  noRefiereCategoria: boolean;
 };
 
-export async function saveHistoriaClinica(
+export type AntecedentesFormData = {
+  [category: string]: CategoryState;
+};
+
+export async function saveAntecedentes(
   pacienteId: string,
-  antecedentes: AntecedentesData,
-  cuestionario: CuestionarioData
+  formData: AntecedentesFormData
 ) {
   const supabase = await createClient();
 
-  // 1. Obtener o crear la historia clínica
   const { data: initialHistoria, error: historiaError } = await supabase
     .from("historias_clinicas")
     .select("id")
@@ -44,7 +37,6 @@ export async function saveHistoriaClinica(
   let historia = initialHistoria;
 
   if (historiaError && historiaError.code === "PGRST116") {
-    // No existe, la creamos
     const { data: newHistoria, error: newHistoriaError } = await supabase
       .from("historias_clinicas")
       .insert({ paciente_id: pacienteId })
@@ -69,66 +61,74 @@ export async function saveHistoriaClinica(
 
   const historiaId = historia.id;
 
-  // 2. Guardar antecedentes
-  const antecedentesPromises = Object.entries(antecedentes).map(
-    ([categoria, data]) =>
+  const upsertPromises = Object.entries(formData).map(
+    ([categoria, categoryState]) =>
       supabase.from("antecedentes").upsert(
         {
           historia_id: historiaId,
-          categoria,
-          opciones: data.opciones,
-          otros: data.otros,
-          no_refiere: data.noRefiere,
+          categoria: categoria,
+          datos: categoryState.questions,
+          no_refiere: categoryState.noRefiereCategoria,
         },
         { onConflict: "historia_id,categoria" }
       )
   );
 
-  // 3. Guardar cuestionario
-  const cuestionarioPromises = Object.entries(cuestionario).flatMap(
-    ([seccion, preguntas]) =>
-      Object.entries(preguntas).map(([pregunta, valor]) => {
-        const payload: {
-          historia_id: number;
-          seccion: string;
-          pregunta: string;
-          respuesta_si_no?: boolean | null;
-          respuesta_texto?: string | null;
-          respuesta_opciones?: string[] | null;
-          detalle?: string | null;
-        } = {
-          historia_id: historiaId,
-          seccion,
-          pregunta,
-        };
-
-        if (typeof valor === "string") {
-          payload.respuesta_texto = valor;
-        } else if (typeof valor === "object" && valor !== null) {
-          payload.respuesta_si_no =
-            typeof valor.respuesta === "boolean" ? valor.respuesta : null;
-          payload.respuesta_opciones = valor.opciones || null;
-          payload.detalle = valor.detalle || null;
-        }
-
-        return supabase
-          .from("cuestionario_respuestas")
-          .upsert(payload, { onConflict: "historia_id,seccion,pregunta" });
-      })
-  );
-
-  const results = await Promise.all([
-    ...antecedentesPromises,
-    ...cuestionarioPromises,
-  ]);
+  const results = await Promise.all(upsertPromises);
 
   const errors = results.map((res) => res.error).filter(Boolean);
 
   if (errors.length > 0) {
-    console.error("Errores al guardar la historia clínica:", errors);
+    console.error("Errores al guardar los antecedentes:", errors);
     return { error: errors };
   }
 
-  revalidatePath(`/admin/ficha-odontologica/${pacienteId}`);
-  return { data: "Historia clínica guardada con éxito." };
+  revalidatePath(`/admin/ficha-odontologica/${pacienteId}/historia-clinica`);
+  return { data: "Antecedentes guardados con éxito." };
+}
+
+export async function getAntecedentes(pacienteId: string): Promise<{ data?: AntecedentesFormData; error?: unknown }> {
+  const supabase = await createClient();
+
+  const { data: historia, error: historiaError } = await supabase
+    .from("historias_clinicas")
+    .select("id")
+    .eq("paciente_id", pacienteId)
+    .single();
+
+  if (historiaError || !historia) {
+    if (historiaError && historiaError.code !== "PGRST116") {
+      console.error("Error fetching historia clinica:", historiaError);
+    }
+    return { data: {} };
+  }
+
+  const historiaId = historia.id;
+  const { data: antecedentesData, error: antecedentesError } = await supabase
+    .from("antecedentes")
+    .select("categoria, datos, no_refiere")
+    .eq("historia_id", historiaId);
+
+  if (antecedentesError) {
+    console.error("Error fetching antecedentes:", antecedentesError);
+    return { error: antecedentesError };
+  }
+
+  const processedFormData: AntecedentesFormData = (antecedentesData || []).reduce(
+    (acc, item) => {
+      acc[item.categoria] = {
+        questions: item.datos || {},
+        noRefiereCategoria: item.no_refiere || false,
+      };
+      return acc;
+    },
+    {} as AntecedentesFormData
+  );
+
+  return { data: processedFormData };
+}
+
+export async function getAntecedentesClient(pacienteId: string) {
+  "use server";
+  return getAntecedentes(pacienteId);
 }
