@@ -1,6 +1,3 @@
--- WARNING: This schema is for context only and is not meant to be run.
--- Table order and constraints may not be valid for execution.
-
 CREATE TABLE public.antecedentes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   historia_id uuid NOT NULL,
@@ -30,6 +27,7 @@ CREATE TABLE public.citas (
   CONSTRAINT citas_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id),
   CONSTRAINT citas_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id)
 );
+
 CREATE TABLE public.cuestionario_respuestas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   historia_id uuid NOT NULL,
@@ -145,6 +143,7 @@ CREATE TABLE public.plan_items (
   CONSTRAINT plan_items_procedimiento_id_fkey FOREIGN KEY (procedimiento_id) REFERENCES public.procedimientos(id),
   CONSTRAINT plan_items_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id)
 );
+
 CREATE TABLE public.planes_procedimiento (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   paciente_id uuid NOT NULL,
@@ -225,3 +224,36 @@ CREATE TABLE public.unidades (
   nombre text NOT NULL UNIQUE,
   CONSTRAINT unidades_pkey PRIMARY KEY (id)
 );
+
+CREATE TYPE public.tipo_ajuste AS ENUM (
+    'color',      -- Para valores de color (ej. #FFFFFF o 59 130 246)
+    'texto',      -- Para textos cortos (títulos, etiquetas de botones)
+    'textarea',   -- Para textos largos (párrafos, descripciones)
+    'numero',     -- Para valores numéricos (ej. número de WhatsApp)
+    'booleano'    -- Para activar/desactivar funcionalidades (ej. mostrar_banner_promocional)
+);
+
+CREATE TABLE public.ajustes_aplicacion (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- La 'clave' es el identificador único que usarás en tu código para llamar a un valor.
+    -- Usar una notación con puntos (ej. 'theme.color.primary') es una excelente práctica.
+    clave TEXT UNIQUE NOT NULL,
+    -- El 'valor' que el administrador podrá editar.
+    valor TEXT,
+    -- El 'grupo' sirve para organizar los ajustes en el panel de administración.
+    grupo TEXT NOT NULL,
+    -- El 'tipo' le dice a tu panel de admin qué tipo de input mostrar.
+    tipo public.tipo_ajuste NOT NULL,
+    -- Una descripción amigable para que el administrador sepa qué está cambiando.
+    descripcion TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- MEJORA: Añadir un índice en la columna 'clave' para búsquedas ultra rápidas.
+CREATE INDEX idx_ajustes_aplicacion_clave ON public.ajustes_aplicacion(clave);
+
+-- MEJORA: Añadir comentarios para documentar la tabla.
+COMMENT ON TABLE public.ajustes_aplicacion IS 'Almacena configuraciones clave-valor para la personalización de la UI y funcionalidades de la aplicación desde un panel de administración.';
+COMMENT ON COLUMN public.ajustes_aplicacion.clave IS 'Identificador único usado en el código para obtener un ajuste. Ej: theme.color.primary';
+COMMENT ON COLUMN public.ajustes_aplicacion.grupo IS 'Categoría para agrupar ajustes en el panel de admin. Ej: Tema, Landing Page, Contacto';
+
