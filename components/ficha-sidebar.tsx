@@ -31,13 +31,17 @@ const calculateAge = (birthDate: string) => {
   const birthDateObj = new Date(birthDate);
   let age = today.getFullYear() - birthDateObj.getFullYear();
   const monthDifference = today.getMonth() - birthDateObj.getMonth();
-  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDateObj.getDate())) {
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDateObj.getDate())
+  ) {
     age--;
   }
   return age;
 };
 
 const navItems = [
+  { href: "/", label: "Inicio", icon: User },
   { href: "filiacion", label: "Filiación", icon: User },
   { href: "historia-clinica", label: "Historia Clínica", icon: FileText },
   { href: "odontograma", label: "Odontograma", icon: ClipboardList },
@@ -49,12 +53,12 @@ const navItems = [
   { href: "recetas", label: "Recetas", icon: PenSquare },
 ];
 
-export default function FichaSidebar({ 
-  patientId, 
-  numeroHistoria 
-}: { 
-  patientId: string; 
-  numeroHistoria?: string; 
+export default function FichaSidebar({
+  patientId,
+  numeroHistoria,
+}: {
+  patientId: string;
+  numeroHistoria?: string;
 }) {
   const pathname = usePathname();
   const supabase = createClient();
@@ -99,14 +103,17 @@ export default function FichaSidebar({
       <nav className="flex flex-col space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname.includes(`/ficha-odontologica/${numeroHistoria}/${item.href}`);
+          const isActive = pathname.includes(
+            `/ficha-odontologica/${numeroHistoria}/${item.href}`
+          );
           return (
             <Link
               key={item.href}
               href={`/admin/ficha-odontologica/${numeroHistoria}/${item.href}`}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                isActive && "bg-primary text-primary-foreground hover:text-primary-foreground"
+                isActive &&
+                  "bg-primary text-primary-foreground hover:text-primary-foreground"
               )}
             >
               <Icon className="h-4 w-4" />

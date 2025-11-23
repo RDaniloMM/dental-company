@@ -1,13 +1,11 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import OdontogramaSVG from "./OdontogramaSVG";
 import { createClient } from "@supabase/supabase-js";
-// import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
-
 import { Save, FilePlus } from "lucide-react";
-import PatientSearch from "./PatientSearch2";
 import VersionSelect from "./VersionSelect";
 
 const supabase = createClient(
@@ -15,6 +13,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// ------- tipos (sin cambios) -------
 type Zona = { zona: string; condicion: string; color: string };
 type General = {
   condicion: string;
@@ -23,16 +22,8 @@ type General = {
   color?: string;
 };
 type Diente = { zonas: Zona[]; generales: General[] };
-type Paciente = {
-  id: string;
-  nombres: string;
-  apellidos: string;
-  numero_historia: string;
-};
 
-export default function OdontoPage() {
-  const [pacientes, setPacientes] = useState<Paciente[]>([]);
-  const [pacienteSeleccionado, setPacienteSeleccionado] = useState<string>("");
+export default function OdontoPage({ patientId }: { patientId: string }) {
   const [odontograma, setOdontograma] = useState<Record<string, Diente>>({});
   const [borderColors, setBorderColors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -76,81 +67,68 @@ export default function OdontoPage() {
     "38",
   ];
 
-  // ---------- Cargar pacientes ----------
+  // -------- Cargar versiones ----------
   useEffect(() => {
-    const fetchPacientes = async () => {
-      const { data, error } = await supabase
-        .from("pacientes")
-        .select("id, nombres, apellidos, numero_historia");
-      if (error) console.error("Error al cargar pacientes:", error);
-      else if (data) setPacientes(data as Paciente[]);
-    };
-    fetchPacientes();
-  }, []);
-
-  // ---------- Cargar versiones disponibles ----------
-  useEffect(() => {
-    if (!pacienteSeleccionado) return;
-
     const fetchVersiones = async () => {
       const { data, error } = await supabase
         .from("odontogramas")
         .select("version")
-        .eq("paciente_id", pacienteSeleccionado)
+        .eq("paciente_id", patientId)
         .order("version", { ascending: false });
 
-      if (error) console.error("Error al cargar versiones:", error);
-      else if (data) {
-        const vers = (data as { version: number }[])
-          .map((v) => v.version)
-          .sort((a, b) => b - a);
-        setVersiones(vers);
-        setVersionSeleccionada(vers[0] || null);
+      if (error) {
+        console.error(error.message);
+        return;
       }
+
+      const vers = (data ?? []).map((v) => v.version);
+      setVersiones(vers);
+      setVersionSeleccionada(vers[0] ?? null);
     };
     fetchVersiones();
-  }, [pacienteSeleccionado]);
+  }, [patientId]);
 
-  // ---------- Cargar odontograma por versión ----------
+  // -------- Cargar odontograma según versión ----------
   useEffect(() => {
-    if (!pacienteSeleccionado || versionSeleccionada === null) return;
+    if (!versionSeleccionada) return;
 
     const fetchOdontograma = async () => {
       setLoading(true);
+
       const { data, error } = await supabase
         .from("odontogramas")
         .select("*")
-        .eq("paciente_id", pacienteSeleccionado)
+        .eq("paciente_id", patientId)
         .eq("version", versionSeleccionada)
         .single();
 
-      if (error && error.code !== "PGRST116")
-        console.error("Error al cargar odontograma:", error);
-      else if (data) {
+      if (error) {
+        console.warn("No hay datos para la versión seleccionada");
+        setOdontograma({});
+        setBorderColors({});
+      } else if (data) {
         const json = data.odontograma_data as Record<string, Diente>;
         setOdontograma(json);
         reconstruirBorderColors(json);
-      } else {
-        setOdontograma({});
-        setBorderColors({});
       }
       setLoading(false);
     };
-    fetchOdontograma();
-  }, [pacienteSeleccionado, versionSeleccionada]);
 
-  // ---------- Reconstruir colores ----------
+    fetchOdontograma();
+  }, [patientId, versionSeleccionada]);
+
+  // -------- Reconstruir colores --------
   const reconstruirBorderColors = (json: Record<string, Diente>) => {
     const newBorderColors: Record<string, string> = {};
     for (const toothId in json) {
       const diente = json[toothId];
-      diente.zonas.forEach((zona: Zona) => {
-        if (zona.color) newBorderColors[`${toothId}_${zona.zona}`] = zona.color;
+      diente.zonas?.forEach((z) => {
+        if (z.color) newBorderColors[`${toothId}_${z.zona}`] = z.color;
       });
-      diente.generales.forEach((gen: General) => {
+      diente.generales?.forEach((gen) => {
         let color = gen.color;
         if (!color) {
-          const match = gen.icon.match(/_([RB])$/);
+          const match = gen.icon?.match(/_([RB])$/);
           if (match) color = match[1] === "R" ? "red" : "blue";
         }
         if (color) newBorderColors[`${toothId}_corona`] = color;
@@ -159,189 +137,70 @@ export default function OdontoPage() {
     setBorderColors(newBorderColors);
   };
 
-  // ---------- Guardar odontograma (nueva versión) ----------
+  // -------- Guardar nueva versión --------
   const guardarOdontograma = async () => {
-    if (!pacienteSeleccionado) {
-      Swal.fire({
-        icon: "warning",
-        title: "Atención",
-        text: "Seleccione un paciente primero.",
-      });
-      return;
+    if (Object.keys(odontograma).length === 0) {
+      return Swal.fire("Aviso", "No hay información para guardar", "warning");
     }
-    setLoading(true);
 
-    const nuevaVersion = versiones.length > 0 ? Math.max(...versiones) + 1 : 1;
+    setLoading(true);
+    const nuevaVersion = versiones.length ? Math.max(...versiones) + 1 : 1;
 
     const { error } = await supabase.from("odontogramas").insert([
       {
-        paciente_id: pacienteSeleccionado,
+        paciente_id: patientId,
         odontograma_data: odontograma,
         version: nuevaVersion,
       },
     ]);
 
     if (error) {
-      console.error("Error al guardar odontograma:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo guardar el odontograma. Revisa la consola.",
-      });
-      setLoading(false);
-      return;
+      Swal.fire("Error", "No se pudo guardar", "error");
+      return setLoading(false);
     }
 
-    Swal.fire({
-      icon: "success",
-      title: "¡Guardado!",
-      text: `Odontograma guardado correctamente (versión ${nuevaVersion})`,
-    });
-
-    // ----- Refrescar versiones -----
-    const { data: versionesData, error: versionesError } = await supabase
-      .from("odontogramas")
-      .select("version")
-      .eq("paciente_id", pacienteSeleccionado)
-      .order("version", { ascending: false });
-
-    let vers: number[] = [];
-    if (versionesError)
-      console.error("Error al recargar versiones:", versionesError);
-    else if (versionesData) {
-      vers = (versionesData as { version: number }[])
-        .map((v) => v.version)
-        .sort((a, b) => b - a);
-      setVersiones(vers);
-      setVersionSeleccionada(vers[0] || nuevaVersion);
-    }
-
-    // ----- Cargar automáticamente el odontograma de la última versión -----
-    if (vers.length > 0) {
-      const { data, error: odontError } = await supabase
-        .from("odontogramas")
-        .select("*")
-        .eq("paciente_id", pacienteSeleccionado)
-        .eq("version", vers[0])
-        .single();
-
-      if (odontError) console.error("Error al cargar odontograma:", odontError);
-      else if (data) {
-        const json = data.odontograma_data as Record<string, Diente>;
-        setOdontograma(json);
-        reconstruirBorderColors(json);
-      }
-    }
-
+    Swal.fire("Guardado!", `Versión ${nuevaVersion}`, "success");
+    setVersiones([nuevaVersion, ...versiones]);
+    setVersionSeleccionada(nuevaVersion);
     setLoading(false);
   };
 
-  // ---------- Nuevo odontograma (limpiar para nuevo registro) ----------
+  // -------- Nuevo odontograma --------
   const nuevoOdontograma = () => {
-    if (!pacienteSeleccionado) return;
+    const nuevaVersion = versiones.length ? Math.max(...versiones) + 1 : 1;
     setOdontograma({});
     setBorderColors({});
-    const nuevaVersion = versiones.length > 0 ? Math.max(...versiones) + 1 : 1;
     setVersionSeleccionada(nuevaVersion);
   };
 
-  // ---------- Export / Import JSON ----------
-  // const handleExport = () => {
-  //   const blob = new Blob([JSON.stringify(odontograma, null, 2)], {
-  //     type: "application/json",
-  //   });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = "odontograma.json";
-  //   a.click();
-  //   URL.revokeObjectURL(url);
-  // };
-
-  // const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (!file) return;
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     try {
-  //       const json = JSON.parse(e.target?.result as string);
-  //       setOdontograma(json);
-  //       reconstruirBorderColors(json);
-  //       alert("Odontograma importado correctamente");
-  //     } catch {
-  //       alert("Error al importar el archivo");
-  //     }
-  //   };
-  //   reader.readAsText(file);
-  // };
-
   return (
-    <div className="p-6 space-y-4">
+    <div>
       <h1 className="text-xl font-bold">Odontograma Digital</h1>
 
-      <div className="flex gap-4 flex-wrap">
-        {/* Dropdown de pacientes */}
-        <PatientSearch
-          patients={pacientes}
-          selectedPaciente={pacienteSeleccionado}
-          onSelectPaciente={(id) => setPacienteSeleccionado(id)}
-        />
-
+      <div className="flex gap-4 flex-wrap items-center">
         <VersionSelect
           versiones={versiones}
           selectedVersion={versionSeleccionada}
-          onSelectVersion={(v) => setVersionSeleccionada(v)}
+          onSelectVersion={setVersionSeleccionada}
         />
 
-        {/* Botones */}
         <button
           onClick={guardarOdontograma}
-          title="Guardar odontograma"
-          className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-600 hover:scale-105 transition-all duration-200 ease-in-out"
-          disabled={!pacienteSeleccionado || loading}
+          disabled={loading}
+          className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-600 disabled:bg-green-300"
         >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              {/* <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-              > */}
-
-              <Save className="w-4 h-4" />
-              {/* </motion.div> */}
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <Save className="w-4 h-4" />
-            </span>
-          )}
+          <Save className="w-4 h-4" /> {loading ? "Guardando..." : "Guardar"}
         </button>
 
         <button
           onClick={nuevoOdontograma}
-          title="Crear nuevo odontograma"
-          className="bg-yellow-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-yellow-600 hover:scale-105 transition-all duration-200 ease-in-out"
-          disabled={!pacienteSeleccionado || loading}
+          disabled={loading}
+          className="bg-yellow-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-yellow-600 disabled:bg-yellow-300"
         >
-          <FilePlus className="w-4 h-4" />
+          <FilePlus className="w-4 h-4" /> Nuevo
         </button>
-
-        {/* <button
-          onClick={handleExport}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Exportar JSON
-        </button>
-
-        <input
-          type="file"
-          accept="application/json"
-          onChange={handleImport}
-          className="border px-2 py-1"
-        /> */}
       </div>
 
-      {/* Odontograma */}
       <OdontogramaSVG
         teethList={teethList}
         odontograma={odontograma}

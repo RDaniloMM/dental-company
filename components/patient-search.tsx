@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
 type Patient = {
@@ -17,7 +23,9 @@ type PatientSearchProps = {
 };
 
 export default function PatientSearch({ patients }: PatientSearchProps) {
-  const [selectedNumeroHistoria, setSelectedNumeroHistoria] = useState<string | null>(null);
+  const [selectedNumeroHistoria, setSelectedNumeroHistoria] = useState<
+    string | null
+  >(null);
   const router = useRouter();
 
   const handleGoToHistory = () => {
@@ -28,10 +36,11 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
 
   return (
     <div className="rounded-lg border bg-white p-4">
-      <h3 className="font-semibold text-slate-800">Búsqueda avanzada</h3>
-      <div className="mt-4 flex items-center gap-4">
+      <h3 className="font-semibold text-slate-800">Búsqueda de pacientes</h3>
+
+      <div className="grid grid-cols-[1fr_auto] gap-2 mt-3 items-center">
         <Select onValueChange={setSelectedNumeroHistoria}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Seleccione un paciente..." />
           </SelectTrigger>
           <SelectContent>
@@ -42,6 +51,7 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
             ))}
           </SelectContent>
         </Select>
+
         <Button onClick={handleGoToHistory} disabled={!selectedNumeroHistoria}>
           Ir a historia
         </Button>
