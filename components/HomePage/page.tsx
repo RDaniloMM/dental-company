@@ -2,7 +2,8 @@
 import { createClient } from "@/lib/supabase/server";
 
 import PatientSearch from "@/components/patient-search";
-// import CalendarSection from "@/components/calendar/CalendarSection";
+
+import CalendarHome from "@/components/calendar/CalendarHome";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -11,10 +12,47 @@ export default async function HomePage() {
     .select("id, nombres, apellidos, numero_historia");
 
   return (
-    <div className="flex w-full">
+    <>
       {/* Contenido principal */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 lg:p-10 pt-16 sm:pt-20">
-        {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <main className="h-full">
+        <div className="grid grid-cols-3 grid-rows-[auto,1fr] gap-4 h-full">
+          {/* Primera fila: 3 columnas */}
+          <div className="rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground">
+            <h3 className="font-semibold text-base sm:text-lg">Resumen</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
+              Métricas y estado general.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground">
+            <h3 className="font-semibold text-base sm:text-lg">
+              Próximas citas
+            </h3>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
+              Listado de próximas atenciones.
+            </p>
+          </div>
+
+          <div>
+            <PatientSearch patients={patients || []} />
+          </div>
+
+          {/* Segunda fila: 2 columnas */}
+          <div className="col-span-3 h-auto bg-white p-6 rounded-lg shadow">
+            {/* <CalendarSection showButton={true} /> */}
+            <CalendarHome />
+          </div>
+
+          {/* <div className="rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground h-full">
+            <CalendarioCitas></CalendarioCitas>
+          </div> */}
+        </div>
+      </main>
+    </>
+  );
+}
+{
+  /* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
           <Link
             href="/admin/ficha"
@@ -49,27 +87,5 @@ export default async function HomePage() {
         <hr className="my-8" />
         <div>
           <CalendarSection showButton={true} />
-        </div> */}
-        <div className="grid grid-cols-[repeat(3,1fr)] grid-rows-[repeat(3,1fr)] gap-y-[10px] gap-x-[10px]">
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground">
-            <h3 className="font-semibold text-base sm:text-lg">Resumen</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Métricas y estado general.
-            </p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6 text-card-foreground">
-            <h3 className="font-semibold text-base sm:text-lg">
-              Próximas citas
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Listado de próximas atenciones.
-            </p>
-          </div>{" "}
-          <div className="">
-            <PatientSearch patients={patients || []} />
-          </div>{" "}
-        </div>
-      </main>
-    </div>
-  );
+        </div> */
 }

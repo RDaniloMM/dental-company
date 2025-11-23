@@ -1,0 +1,272 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
+import { createClient } from "@/lib/supabase/client";
+
+interface GoogleCalendarPageProps {
+  onCitaCreada?: () => void;
+}
+
+interface Paciente {
+  id: string;
+  nombres: string;
+  apellidos: string; // <--- agregado
+}
+
+interface Odontologo {
+  id: string;
+  nombre_completo: string;
+}
+
+interface Moneda {
+  id: string;
+  nombre: string;
+}
+
+export default function GoogleCalendarPage({
+  onCitaCreada,
+}: GoogleCalendarPageProps) {
+  const [connected, setConnected] = useState(false);
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [odontologos, setOdontologos] = useState<Odontologo[]>([]);
+  const [monedas, setMonedas] = useState<Moneda[]>([]);
+
+  const supabase = createClient();
+
+  // Cargar datos reales desde la base
+  useEffect(() => {
+    const fetchData = async () => {
+      const [pacientesData, odontologosData, monedasData] = await Promise.all([
+        supabase.from("pacientes").select("id,nombres,apellidos"),
+        supabase.from("personal").select("id,nombre_completo"),
+        supabase.from("monedas").select("id,nombre"),
+      ]);
+
+      if (pacientesData.data) setPacientes(pacientesData.data);
+      if (odontologosData.data) setOdontologos(odontologosData.data);
+      if (monedasData.data) setMonedas(monedasData.data);
+    };
+
+    fetchData();
+  }, [supabase]);
+
+  // Verificar conexión con Google Calendar
+  useEffect(() => {
+    fetch("/api/calendar/create-event")
+      .then((res) => res.json())
+      .then((data) => setConnected(Boolean(data?.connected)))
+      .catch(() => setConnected(false));
+  }, []);
+
+  const openEventForm = () => {
+    const DURACION_DEFAULT_MIN = 60; // duración por defecto en minutos
+
+    Swal.fire({
+      title: "Registrar nueva cita",
+      width: "auto",
+      html: `
+      <style>
+        .swal2-popup { border-radius: 16px !important; background: #f9fafb !important; font-family: 'Inter', sans-serif; }
+        .swal2-title { font-weight: 600; color: #1f2937; font-size: 1.4rem; }
+        #calendar-form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; text-align: left; }
+        #calendar-form label { font-weight: 500; color: #374151; margin-bottom: 2px; }
+        #calendar-form input, #calendar-form select, #calendar-form textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: #fff; }
+        #calendar-form input:focus, #calendar-form select:focus, #calendar-form textarea:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 1px #3b82f6; }
+      </style>
+
+      <form id="calendar-form">
+        <label>Paciente:</label>
+        <select id="paciente_id" required>
+          <option value="">Seleccione...</option>
+          ${pacientes
+            .map(
+              (p) =>
+                `<option value="${p.id}">${p.nombres} ${p.apellidos}</option>`
+            )
+            .join("")}
+        </select>
+
+        <label>Odontólogo:</label>
+        <select id="odontologo_id" required>
+          <option value="">Seleccione...</option>
+          ${odontologos
+            .map((o) => `<option value="${o.id}">${o.nombre_completo}</option>`)
+            .join("")}
+        </select>
+
+        <label>Motivo de la cita:</label>
+        <textarea id="motivo" placeholder="Ej. Limpieza, control, etc."></textarea>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label>Inicio:</label>
+            <input id="fecha_inicio" placeholder="Selecciona fecha y hora" required>
+          </div>
+          <div>
+            <label>Estado:</label>
+            <select id="estado">
+              <option value="Programada">Programada</option>
+              <option value="Confirmada">Confirmada</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label>Moneda:</label>
+            <select id="moneda_id">
+              <option value="">Seleccione...</option>
+              ${monedas
+                .map((m) => `<option value="${m.id}">${m.nombre}</option>`)
+                .join("")}
+            </select>
+          </div>
+          <div>
+            <label>Costo total:</label>
+            <input id="costo_total" type="number" step="0.01" placeholder="Monto en números">
+          </div>
+        </div>
+
+        <label>Notas adicionales:</label>
+        <textarea id="notas" placeholder="Agregar observaciones si es necesario"></textarea>
+      </form>
+    `,
+      focusConfirm: false,
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
+      confirmButtonText: "Guardar cita",
+      reverseButtons: true,
+      didOpen: () => {
+        flatpickr("#fecha_inicio", {
+          enableTime: true,
+          dateFormat: "Y-m-d h:i K",
+          minDate: "today",
+          time_24hr: false,
+        });
+      },
+      preConfirm: async () => {
+        const get = (id: string) =>
+          (document.getElementById(id) as HTMLInputElement)?.value;
+        const data = {
+          paciente_id: get("paciente_id"),
+          odontologo_id: get("odontologo_id"),
+          fecha_inicio: get("fecha_inicio"),
+          estado: get("estado"),
+          motivo: get("motivo"),
+          costo_total: get("costo_total"),
+          moneda_id: get("moneda_id"),
+          notas: get("notas"),
+        };
+
+        if (!data.paciente_id || !data.odontologo_id || !data.fecha_inicio) {
+          Swal.showValidationMessage(
+            "Por favor, complete todos los campos obligatorios."
+          );
+          return false;
+        }
+
+        const startDate = new Date(data.fecha_inicio);
+        const endDate = new Date(
+          startDate.getTime() + DURACION_DEFAULT_MIN * 60000
+        ); // duración por defecto
+
+        try {
+          // Google Calendar
+          const res = await fetch("/api/calendar/create-event", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              summary: `Cita: ${data.motivo || "Consulta odontológica"}`,
+              description: `Paciente: ${
+                pacientes.find((p) => p.id === data.paciente_id)?.nombres
+              }\nOdontólogo: ${
+                odontologos.find((o) => o.id === data.odontologo_id)
+                  ?.nombre_completo
+              }\nNotas: ${data.notas || "Sin notas"}`,
+              start: startDate.toISOString(),
+              end: endDate.toISOString(),
+            }),
+          });
+          const result = await res.json();
+          if (!result.success)
+            throw new Error(
+              result.error || "Error creando evento en Google Calendar"
+            );
+          const googleEventId = result.eventId;
+
+          // Supabase
+          const { error: dbError } = await supabase.from("citas").insert([
+            {
+              paciente_id: data.paciente_id,
+              odontologo_id: data.odontologo_id,
+              fecha_inicio: startDate.toISOString(),
+              fecha_fin: endDate.toISOString(),
+              estado: data.estado,
+              motivo: data.motivo,
+              costo_total: data.costo_total,
+              moneda_id: data.moneda_id,
+              notas: data.notas,
+              google_calendar_event_id: googleEventId,
+              nombre_cita: data.motivo || "Consulta odontológica",
+            },
+          ]);
+          if (dbError) throw dbError;
+
+          Swal.fire({
+            icon: "success",
+            title: "Cita registrada correctamente",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+          if (onCitaCreada) onCitaCreada();
+        } catch (err) {
+          Swal.fire({
+            icon: "error",
+            title: "Error al crear la cita",
+            text: (err as Error).message || "Intente nuevamente.",
+          });
+        }
+      },
+    });
+  };
+
+  return (
+    <main className="flex flex-col items-center w-full">
+      <section className="w-full flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <h3 className="font-semibold text-base sm:text-lg">
+            Agenda Odontológica
+          </h3>
+
+          {/* Badge de conexión */}
+          <span
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium ${
+              connected
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                connected ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></span>
+            {connected ? "Conectado" : "Sin conexión"}
+          </span>
+        </div>
+
+        <button
+          onClick={openEventForm}
+          disabled={!connected}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+        >
+          Nueva cita
+        </button>
+      </section>
+    </main>
+  );
+}
