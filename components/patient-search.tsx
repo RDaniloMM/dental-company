@@ -36,10 +36,11 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
 
   return (
     <div className="rounded-lg border bg-white p-4">
-      <h3 className="font-semibold text-slate-800">Búsqueda avanzada</h3>
-      <div className="justify-self-stretch self-stretch col-0 col-2">
+      <h3 className="font-semibold text-slate-800">Búsqueda de pacientes</h3>
+
+      <div className="grid grid-cols-[1fr_auto] gap-2 mt-3 items-center">
         <Select onValueChange={setSelectedNumeroHistoria}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Seleccione un paciente..." />
           </SelectTrigger>
           <SelectContent>
@@ -50,6 +51,7 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
             ))}
           </SelectContent>
         </Select>
+
         <Button onClick={handleGoToHistory} disabled={!selectedNumeroHistoria}>
           Ir a historia
         </Button>

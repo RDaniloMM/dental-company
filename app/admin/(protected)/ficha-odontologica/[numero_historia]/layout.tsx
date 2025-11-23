@@ -12,7 +12,7 @@ export default async function HistoriaLayout({
 }) {
   const { numero_historia } = await params;
   const supabase = await createClient();
-  
+
   // Buscar el paciente por número de historia
   const { data: patient, error } = await supabase
     .from("pacientes")
@@ -23,15 +23,13 @@ export default async function HistoriaLayout({
   if (error || !patient) {
     notFound();
   }
-
   return (
-    <div className="flex min-h-screen w-full bg-muted/40">
+    <div className="grid grid-cols-[300px_1fr]  w-full bg-muted/40">
+      {/* Sidebar */}
       <FichaSidebar patientId={patient.id} numeroHistoria={numero_historia} />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          {children}
-        </div>
-      </main>
+
+      {/* Contenido */}
+      <div>{children}</div>
     </div>
   );
 }

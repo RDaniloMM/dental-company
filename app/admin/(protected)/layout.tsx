@@ -33,9 +33,12 @@ export default function ProtectedLayout({
             <ThemeSwitcher />
           </div>
         </header>
-        <main className="m-3 flex-1 overflow-auto">
-          {" "}
-          <div className="p-4">{children}</div>
+        <main className="min-h-[88vh] flex flex-col items-center">
+          <div className="flex-1 w-full flex flex-col gap-5">
+            <div className="flex-1 flex flex-col gap-20 p-4 w-full">
+              {children}
+            </div>
+          </div>
         </main>
         <footer className="border-t border-gray-200 bg-gray-50 px-6 py-4 dark: bg-transparent">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-center items-center gap-2">
