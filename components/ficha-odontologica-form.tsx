@@ -30,7 +30,7 @@ import {
   SeguimientoRow,
   AntecedentesData,
 } from "@/lib/supabase/ficha";
-import Odontograma from "@/components/odontograma/OdontoPage";
+// import Odontograma from "@/components/odontograma/OdontoPage";
 
 const initialState: FormData = {
   filiacion: {
@@ -155,17 +155,14 @@ const CheckboxWithInput = ({
   onCheckboxChange: (name: string, checked: boolean) => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) => (
-  <div className='flex items-center space-x-2'>
+  <div className="flex items-center space-x-2">
     <Checkbox
       id={checkboxName}
       name={checkboxName}
       checked={checkboxValue}
       onCheckedChange={(c) => onCheckboxChange(checkboxName, !!c)}
     />
-    <Label
-      htmlFor={checkboxName}
-      className='flex-shrink-0'
-    >
+    <Label htmlFor={checkboxName} className="flex-shrink-0">
       {label}
     </Label>
     {checkboxValue && (
@@ -174,7 +171,7 @@ const CheckboxWithInput = ({
         value={inputValue}
         onChange={onInputChange}
         placeholder={placeholder}
-        className='h-8'
+        className="h-8"
       />
     )}
   </div>
@@ -455,116 +452,112 @@ export function FichaOdontologicaForm({
   };
 
   return (
-    <form
-      className='space-y-8'
-      onSubmit={handleSubmit}
-      ref={formRef}
-    >
+    <form className="space-y-8" onSubmit={handleSubmit} ref={formRef}>
       {/* SECCIÓN 1: FILIACIÓN */}
-      <Card className='shadow-md hover:shadow-lg transition-shadow'>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className='flex items-center gap-3 text-xl'>
-            <User className='text-blue-600' />
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <User className="text-blue-600" />
             1. Filiación del Paciente
           </CardTitle>
         </CardHeader>
-        <CardContent className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-          <div className='space-y-2'>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
             <Label>Nombres</Label>
             <Input
-              name='filiacion.nombres'
+              name="filiacion.nombres"
               value={formData.filiacion.nombres}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Apellidos</Label>
             <Input
-              name='filiacion.apellidos'
+              name="filiacion.apellidos"
               value={formData.filiacion.apellidos}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Fecha de Nacimiento</Label>
             <Input
-              name='filiacion.fecha_nacimiento'
-              type='date'
+              name="filiacion.fecha_nacimiento"
+              type="date"
               value={formData.filiacion.fecha_nacimiento}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Ocupación</Label>
             <Input
-              name='filiacion.ocupacion'
+              name="filiacion.ocupacion"
               value={formData.filiacion.ocupacion}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Estado Civil</Label>
             <Input
-              name='filiacion.estado_civil'
+              name="filiacion.estado_civil"
               value={formData.filiacion.estado_civil}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Teléfono</Label>
             <Input
-              name='filiacion.telefono'
+              name="filiacion.telefono"
               value={formData.filiacion.telefono}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Email</Label>
             <Input
-              name='filiacion.email'
-              type='email'
+              name="filiacion.email"
+              type="email"
               value={formData.filiacion.email}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Dirección</Label>
             <Input
-              name='filiacion.direccion'
+              name="filiacion.direccion"
               value={formData.filiacion.direccion}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Lugar de Procedencia</Label>
             <Input
-              name='filiacion.lugar_procedencia'
+              name="filiacion.lugar_procedencia"
               value={formData.filiacion.lugar_procedencia}
               onChange={handleChange}
             />
           </div>
-          <div className='space-y-2 md:col-span-3'>
+          <div className="space-y-2 md:col-span-3">
             <Label>Alerta Médica</Label>
             <Input
-              name='filiacion.alerta_medica'
+              name="filiacion.alerta_medica"
               value={formData.filiacion.alerta_medica}
               onChange={handleChange}
-              placeholder='Ej: Alergia a la penicilina, Hipertenso, etc.'
-              className='bg-yellow-100 dark:bg-yellow-900'
+              placeholder="Ej: Alergia a la penicilina, Hipertenso, etc."
+              className="bg-yellow-100 dark:bg-yellow-900"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* SECCIÓN 2: ANTECEDENTES PATOLÓGICOS */}
-      <Card className='shadow-md hover:shadow-lg transition-shadow'>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className='flex items-center gap-3 text-xl'>
-            <HeartPulse className='text-red-500' />
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <HeartPulse className="text-red-500" />
             2. Antecedentes Patológicos
           </CardTitle>
         </CardHeader>
-        <CardContent className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* a. Cardiovascular */}
           <div
             className={cn(
@@ -572,31 +565,28 @@ export function FichaOdontologicaForm({
               { "opacity-50": formData.antecedentes.cardiovascular.no_refiere }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>a. Cardiovascular</h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">a. Cardiovascular</h4>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ac.no_refiere'
+                  id="ac.no_refiere"
                   checked={formData.antecedentes.cardiovascular.no_refiere}
                   onCheckedChange={(c) =>
                     handleNoRefiereChange("cardiovascular", !!c)
                   }
                 />
-                <Label
-                  htmlFor='ac.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="ac.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.cardiovascular.no_refiere}
-              className='grid grid-cols-1 gap-y-4 pt-4'
+              className="grid grid-cols-1 gap-y-4 pt-4"
             >
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ac.arritmias'
+                  id="ac.arritmias"
                   checked={formData.antecedentes.cardiovascular.arritmias}
                   onCheckedChange={(c) =>
                     handleCheckboxChange(
@@ -605,11 +595,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ac.arritmias'>Arritmias</Label>
+                <Label htmlFor="ac.arritmias">Arritmias</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ac.isquemica'
+                  id="ac.isquemica"
                   checked={
                     formData.antecedentes.cardiovascular.cardiopatia_isquemica
                   }
@@ -620,11 +610,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ac.isquemica'>Cardiopatía Isquémica</Label>
+                <Label htmlFor="ac.isquemica">Cardiopatía Isquémica</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ac.marcapasos'
+                  id="ac.marcapasos"
                   checked={formData.antecedentes.cardiovascular.marcapasos}
                   onCheckedChange={(c) =>
                     handleCheckboxChange(
@@ -633,26 +623,26 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ac.marcapasos'>Marcapasos</Label>
+                <Label htmlFor="ac.marcapasos">Marcapasos</Label>
               </div>
               <CheckboxWithInput
-                label='Hipertensión'
-                checkboxName='antecedentes.cardiovascular.hipertension'
+                label="Hipertensión"
+                checkboxName="antecedentes.cardiovascular.hipertension"
                 checkboxValue={
                   formData.antecedentes.cardiovascular.hipertension
                 }
-                inputName='antecedentes.cardiovascular.hipertension_tratamiento'
+                inputName="antecedentes.cardiovascular.hipertension_tratamiento"
                 inputValue={
                   formData.antecedentes.cardiovascular.hipertension_tratamiento
                 }
-                placeholder='Tratamiento...'
+                placeholder="Tratamiento..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
-              <div className='col-span-full space-y-3'>
-                <div className='flex items-center space-x-2'>
+              <div className="col-span-full space-y-3">
+                <div className="flex items-center space-x-2">
                   <Checkbox
-                    id='ac.anticoagulantes'
+                    id="ac.anticoagulantes"
                     checked={
                       formData.antecedentes.cardiovascular.anticoagulantes
                     }
@@ -663,15 +653,15 @@ export function FichaOdontologicaForm({
                       )
                     }
                   />
-                  <Label htmlFor='ac.anticoagulantes'>
+                  <Label htmlFor="ac.anticoagulantes">
                     Toma Anticoagulantes
                   </Label>
                 </div>
                 {formData.antecedentes.cardiovascular.anticoagulantes && (
-                  <div className='pl-6 grid grid-cols-1 gap-4'>
-                    <div className='flex items-center space-x-2'>
+                  <div className="pl-6 grid grid-cols-1 gap-4">
+                    <div className="flex items-center space-x-2">
                       <Checkbox
-                        id='ac.warfarina'
+                        id="ac.warfarina"
                         checked={
                           formData.antecedentes.cardiovascular
                             .anticoagulantes_cuales.warfarina
@@ -683,11 +673,11 @@ export function FichaOdontologicaForm({
                           )
                         }
                       />
-                      <Label htmlFor='ac.warfarina'>Warfarina</Label>
+                      <Label htmlFor="ac.warfarina">Warfarina</Label>
                     </div>
-                    <div className='flex items-center space-x-2'>
+                    <div className="flex items-center space-x-2">
                       <Checkbox
-                        id='ac.aas'
+                        id="ac.aas"
                         checked={
                           formData.antecedentes.cardiovascular
                             .anticoagulantes_cuales.aas
@@ -699,21 +689,21 @@ export function FichaOdontologicaForm({
                           )
                         }
                       />
-                      <Label htmlFor='ac.aas'>AAS</Label>
+                      <Label htmlFor="ac.aas">AAS</Label>
                     </div>
                     <CheckboxWithInput
-                      label='Otro'
-                      checkboxName='antecedentes.cardiovascular.anticoagulantes_cuales.otro'
+                      label="Otro"
+                      checkboxName="antecedentes.cardiovascular.anticoagulantes_cuales.otro"
                       checkboxValue={
                         formData.antecedentes.cardiovascular
                           .anticoagulantes_cuales.otro
                       }
-                      inputName='antecedentes.cardiovascular.anticoagulantes_otro_detalle'
+                      inputName="antecedentes.cardiovascular.anticoagulantes_otro_detalle"
                       inputValue={
                         formData.antecedentes.cardiovascular
                           .anticoagulantes_otro_detalle
                       }
-                      placeholder='Especifique...'
+                      placeholder="Especifique..."
                       onCheckboxChange={handleCheckboxChange}
                       onInputChange={handleChange}
                     />
@@ -729,51 +719,48 @@ export function FichaOdontologicaForm({
               { "opacity-50": formData.antecedentes.respiratorio.no_refiere }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>b. Respiratorio</h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">b. Respiratorio</h4>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ar.no_refiere'
+                  id="ar.no_refiere"
                   checked={formData.antecedentes.respiratorio.no_refiere}
                   onCheckedChange={(c) =>
                     handleNoRefiereChange("respiratorio", !!c)
                   }
                 />
-                <Label
-                  htmlFor='ar.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="ar.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.respiratorio.no_refiere}
-              className='grid grid-cols-1 gap-4 pt-4'
+              className="grid grid-cols-1 gap-4 pt-4"
             >
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ar.asma'
+                  id="ar.asma"
                   checked={formData.antecedentes.respiratorio.asma}
                   onCheckedChange={(c) =>
                     handleCheckboxChange("antecedentes.respiratorio.asma", !!c)
                   }
                 />
-                <Label htmlFor='ar.asma'>Asma</Label>
+                <Label htmlFor="ar.asma">Asma</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ar.epoc'
+                  id="ar.epoc"
                   checked={formData.antecedentes.respiratorio.epoc}
                   onCheckedChange={(c) =>
                     handleCheckboxChange("antecedentes.respiratorio.epoc", !!c)
                   }
                 />
-                <Label htmlFor='ar.epoc'>EPOC</Label>
+                <Label htmlFor="ar.epoc">EPOC</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ar.apnea'
+                  id="ar.apnea"
                   checked={formData.antecedentes.respiratorio.apnea_sueno}
                   onCheckedChange={(c) =>
                     handleCheckboxChange(
@@ -782,11 +769,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ar.apnea'>Apnea del sueño</Label>
+                <Label htmlFor="ar.apnea">Apnea del sueño</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ar.tuberculosis'
+                  id="ar.tuberculosis"
                   checked={formData.antecedentes.respiratorio.tuberculosis}
                   onCheckedChange={(c) =>
                     handleCheckboxChange(
@@ -795,7 +782,7 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ar.tuberculosis'>Tuberculosis</Label>
+                <Label htmlFor="ar.tuberculosis">Tuberculosis</Label>
               </div>
             </fieldset>
           </div>
@@ -809,13 +796,13 @@ export function FichaOdontologicaForm({
               }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">
                 c. Endocrino/Metabólico
               </h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ae.no_refiere'
+                  id="ae.no_refiere"
                   checked={
                     formData.antecedentes.endocrino_metabolico.no_refiere
                   }
@@ -823,23 +810,20 @@ export function FichaOdontologicaForm({
                     handleNoRefiereChange("endocrino_metabolico", !!c)
                   }
                 />
-                <Label
-                  htmlFor='ae.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="ae.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.endocrino_metabolico.no_refiere}
-              className='grid grid-cols-1 gap-y-4 pt-4'
+              className="grid grid-cols-1 gap-y-4 pt-4"
             >
-              <div className='flex items-center gap-2 flex-wrap'>
+              <div className="flex items-center gap-2 flex-wrap">
                 <Label>Diabetes tipo:</Label>
                 <Input
-                  className='w-20 h-8'
-                  name='antecedentes.endocrino_metabolico.diabetes_tipo'
+                  className="w-20 h-8"
+                  name="antecedentes.endocrino_metabolico.diabetes_tipo"
                   value={
                     formData.antecedentes.endocrino_metabolico.diabetes_tipo
                   }
@@ -847,18 +831,18 @@ export function FichaOdontologicaForm({
                 />
                 <Label>(HbA1c:</Label>
                 <Input
-                  className='w-20 h-8'
-                  name='antecedentes.endocrino_metabolico.hba1c'
+                  className="w-20 h-8"
+                  name="antecedentes.endocrino_metabolico.hba1c"
                   value={formData.antecedentes.endocrino_metabolico.hba1c}
                   onChange={handleChange}
                 />
                 <Label>%)</Label>
               </div>
-              <div className='flex items-center space-x-4'>
+              <div className="flex items-center space-x-4">
                 <Label>Tiroides:</Label>
-                <div className='flex items-center space-x-2'>
+                <div className="flex items-center space-x-2">
                   <Checkbox
-                    id='ae.hipo'
+                    id="ae.hipo"
                     checked={
                       formData.antecedentes.endocrino_metabolico.tiroides_hipo
                     }
@@ -869,11 +853,11 @@ export function FichaOdontologicaForm({
                       )
                     }
                   />
-                  <Label htmlFor='ae.hipo'>Hipo</Label>
+                  <Label htmlFor="ae.hipo">Hipo</Label>
                 </div>
-                <div className='flex items-center space-x-2'>
+                <div className="flex items-center space-x-2">
                   <Checkbox
-                    id='ae.hiper'
+                    id="ae.hiper"
                     checked={
                       formData.antecedentes.endocrino_metabolico.tiroides_hiper
                     }
@@ -884,21 +868,21 @@ export function FichaOdontologicaForm({
                       )
                     }
                   />
-                  <Label htmlFor='ae.hiper'>Hiper</Label>
+                  <Label htmlFor="ae.hiper">Hiper</Label>
                 </div>
               </div>
               <CheckboxWithInput
-                label='Osteoporosis'
-                checkboxName='antecedentes.endocrino_metabolico.osteoporosis'
+                label="Osteoporosis"
+                checkboxName="antecedentes.endocrino_metabolico.osteoporosis"
                 checkboxValue={
                   formData.antecedentes.endocrino_metabolico.osteoporosis
                 }
-                inputName='antecedentes.endocrino_metabolico.osteoporosis_tratamiento'
+                inputName="antecedentes.endocrino_metabolico.osteoporosis_tratamiento"
                 inputValue={
                   formData.antecedentes.endocrino_metabolico
                     .osteoporosis_tratamiento
                 }
-                placeholder='Tratamiento...'
+                placeholder="Tratamiento..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
@@ -914,13 +898,13 @@ export function FichaOdontologicaForm({
               }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">
                 d. Neurológico/Psiquiátrico
               </h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='an.no_refiere'
+                  id="an.no_refiere"
                   checked={
                     formData.antecedentes.neurologico_psiquiatrico.no_refiere
                   }
@@ -928,10 +912,7 @@ export function FichaOdontologicaForm({
                     handleNoRefiereChange("neurologico_psiquiatrico", !!c)
                   }
                 />
-                <Label
-                  htmlFor='an.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="an.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
@@ -940,11 +921,11 @@ export function FichaOdontologicaForm({
               disabled={
                 formData.antecedentes.neurologico_psiquiatrico.no_refiere
               }
-              className='grid grid-cols-1 gap-y-4 pt-4'
+              className="grid grid-cols-1 gap-y-4 pt-4"
             >
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='an.epilepsia'
+                  id="an.epilepsia"
                   checked={
                     formData.antecedentes.neurologico_psiquiatrico.epilepsia
                   }
@@ -955,11 +936,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='an.epilepsia'>Epilepsia</Label>
+                <Label htmlFor="an.epilepsia">Epilepsia</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='an.alzheimer'
+                  id="an.alzheimer"
                   checked={
                     formData.antecedentes.neurologico_psiquiatrico.alzheimer
                   }
@@ -970,11 +951,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='an.alzheimer'>Alzheimer</Label>
+                <Label htmlFor="an.alzheimer">Alzheimer</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='an.ansiedad'
+                  id="an.ansiedad"
                   checked={
                     formData.antecedentes.neurologico_psiquiatrico
                       .ansiedad_depresion
@@ -986,22 +967,22 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='an.ansiedad'>Ansiedad/Depresión</Label>
+                <Label htmlFor="an.ansiedad">Ansiedad/Depresión</Label>
               </div>
-              <div className='col-span-full'>
+              <div className="col-span-full">
                 <CheckboxWithInput
-                  label='Medicamentos Psiquiátricos'
-                  checkboxName='antecedentes.neurologico_psiquiatrico.medicamentos_psiquiatricos'
+                  label="Medicamentos Psiquiátricos"
+                  checkboxName="antecedentes.neurologico_psiquiatrico.medicamentos_psiquiatricos"
                   checkboxValue={
                     formData.antecedentes.neurologico_psiquiatrico
                       .medicamentos_psiquiatricos
                   }
-                  inputName='antecedentes.neurologico_psiquiatrico.medicamentos_psiquiatricos_detalle'
+                  inputName="antecedentes.neurologico_psiquiatrico.medicamentos_psiquiatricos_detalle"
                   inputValue={
                     formData.antecedentes.neurologico_psiquiatrico
                       .medicamentos_psiquiatricos_detalle
                   }
-                  placeholder='¿Cuáles?'
+                  placeholder="¿Cuáles?"
                   onCheckboxChange={handleCheckboxChange}
                   onInputChange={handleChange}
                 />
@@ -1018,13 +999,13 @@ export function FichaOdontologicaForm({
               }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">
                 e. Hematológico/Inmunológico
               </h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ah.no_refiere'
+                  id="ah.no_refiere"
                   checked={
                     formData.antecedentes.hematologico_inmunologico.no_refiere
                   }
@@ -1032,10 +1013,7 @@ export function FichaOdontologicaForm({
                     handleNoRefiereChange("hematologico_inmunologico", !!c)
                   }
                 />
-                <Label
-                  htmlFor='ah.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="ah.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
@@ -1044,11 +1022,11 @@ export function FichaOdontologicaForm({
               disabled={
                 formData.antecedentes.hematologico_inmunologico.no_refiere
               }
-              className='grid grid-cols-1 gap-4 pt-4'
+              className="grid grid-cols-1 gap-4 pt-4"
             >
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ah.anemia'
+                  id="ah.anemia"
                   checked={
                     formData.antecedentes.hematologico_inmunologico.anemia
                   }
@@ -1059,11 +1037,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ah.anemia'>Anemia</Label>
+                <Label htmlFor="ah.anemia">Anemia</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ah.hemofilia'
+                  id="ah.hemofilia"
                   checked={
                     formData.antecedentes.hematologico_inmunologico.hemofilia
                   }
@@ -1074,11 +1052,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ah.hemofilia'>Hemofilia</Label>
+                <Label htmlFor="ah.hemofilia">Hemofilia</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ah.vih'
+                  id="ah.vih"
                   checked={
                     formData.antecedentes.hematologico_inmunologico.vih_sida
                   }
@@ -1089,11 +1067,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ah.vih'>VIH/SIDA</Label>
+                <Label htmlFor="ah.vih">VIH/SIDA</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ah.autoinmunes'
+                  id="ah.autoinmunes"
                   checked={
                     formData.antecedentes.hematologico_inmunologico
                       .enfermedades_autoinmunes
@@ -1105,7 +1083,7 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ah.autoinmunes'>Enf. Autoinmunes</Label>
+                <Label htmlFor="ah.autoinmunes">Enf. Autoinmunes</Label>
               </div>
             </fieldset>
           </div>
@@ -1119,31 +1097,28 @@ export function FichaOdontologicaForm({
               }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>f. Digestivo/Hepático</h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">f. Digestivo/Hepático</h4>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ad.no_refiere'
+                  id="ad.no_refiere"
                   checked={formData.antecedentes.digestivo_hepatico.no_refiere}
                   onCheckedChange={(c) =>
                     handleNoRefiereChange("digestivo_hepatico", !!c)
                   }
                 />
-                <Label
-                  htmlFor='ad.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="ad.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.digestivo_hepatico.no_refiere}
-              className='grid grid-cols-1 gap-y-4 pt-4'
+              className="grid grid-cols-1 gap-y-4 pt-4"
             >
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ad.reflujo'
+                  id="ad.reflujo"
                   checked={formData.antecedentes.digestivo_hepatico.reflujo}
                   onCheckedChange={(c) =>
                     handleCheckboxChange(
@@ -1152,11 +1127,11 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ad.reflujo'>Reflujo</Label>
+                <Label htmlFor="ad.reflujo">Reflujo</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ad.ulcera'
+                  id="ad.ulcera"
                   checked={
                     formData.antecedentes.digestivo_hepatico.ulcera_gastrica
                   }
@@ -1167,19 +1142,19 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='ad.ulcera'>Úlcera Gástrica</Label>
+                <Label htmlFor="ad.ulcera">Úlcera Gástrica</Label>
               </div>
               <CheckboxWithInput
-                label='Hepatitis'
-                checkboxName='antecedentes.digestivo_hepatico.hepatitis'
+                label="Hepatitis"
+                checkboxName="antecedentes.digestivo_hepatico.hepatitis"
                 checkboxValue={
                   formData.antecedentes.digestivo_hepatico.hepatitis
                 }
-                inputName='antecedentes.digestivo_hepatico.hepatitis_tipo'
+                inputName="antecedentes.digestivo_hepatico.hepatitis_tipo"
                 inputValue={
                   formData.antecedentes.digestivo_hepatico.hepatitis_tipo
                 }
-                placeholder='Tipo...'
+                placeholder="Tipo..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
@@ -1192,47 +1167,44 @@ export function FichaOdontologicaForm({
               { "opacity-50": formData.antecedentes.renal.no_refiere }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>g. Renal</h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">g. Renal</h4>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ar.no_refiere_renal'
+                  id="ar.no_refiere_renal"
                   checked={formData.antecedentes.renal.no_refiere}
                   onCheckedChange={(c) => handleNoRefiereChange("renal", !!c)}
                 />
-                <Label
-                  htmlFor='ar.no_refiere_renal'
-                  className='text-xs'
-                >
+                <Label htmlFor="ar.no_refiere_renal" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.renal.no_refiere}
-              className='grid grid-cols-1 gap-y-4 pt-4'
+              className="grid grid-cols-1 gap-y-4 pt-4"
             >
               <CheckboxWithInput
-                label='Insuficiencia Renal'
-                checkboxName='antecedentes.renal.insuficiencia_renal'
+                label="Insuficiencia Renal"
+                checkboxName="antecedentes.renal.insuficiencia_renal"
                 checkboxValue={formData.antecedentes.renal.insuficiencia_renal}
-                inputName='antecedentes.renal.insuficiencia_renal_etapa'
+                inputName="antecedentes.renal.insuficiencia_renal_etapa"
                 inputValue={
                   formData.antecedentes.renal.insuficiencia_renal_etapa
                 }
-                placeholder='Etapa...'
+                placeholder="Etapa..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='ar.dialisis'
+                  id="ar.dialisis"
                   checked={formData.antecedentes.renal.dialisis}
                   onCheckedChange={(c) =>
                     handleCheckboxChange("antecedentes.renal.dialisis", !!c)
                   }
                 />
-                <Label htmlFor='ar.dialisis'>Diálisis</Label>
+                <Label htmlFor="ar.dialisis">Diálisis</Label>
               </div>
             </fieldset>
           </div>
@@ -1243,31 +1215,28 @@ export function FichaOdontologicaForm({
               { "opacity-50": formData.antecedentes.alergias.no_refiere }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>h. Alergias</h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">h. Alergias</h4>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='al.no_refiere'
+                  id="al.no_refiere"
                   checked={formData.antecedentes.alergias.no_refiere}
                   onCheckedChange={(c) =>
                     handleNoRefiereChange("alergias", !!c)
                   }
                 />
-                <Label
-                  htmlFor='al.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="al.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.alergias.no_refiere}
-              className='grid grid-cols-1 gap-y-4 pt-4'
+              className="grid grid-cols-1 gap-y-4 pt-4"
             >
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='al.penicilina'
+                  id="al.penicilina"
                   checked={formData.antecedentes.alergias.penicilina}
                   onCheckedChange={(c) =>
                     handleCheckboxChange(
@@ -1276,52 +1245,52 @@ export function FichaOdontologicaForm({
                     )
                   }
                 />
-                <Label htmlFor='al.penicilina'>Penicilina</Label>
+                <Label htmlFor="al.penicilina">Penicilina</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='al.sulfas'
+                  id="al.sulfas"
                   checked={formData.antecedentes.alergias.sulfas}
                   onCheckedChange={(c) =>
                     handleCheckboxChange("antecedentes.alergias.sulfas", !!c)
                   }
                 />
-                <Label htmlFor='al.sulfas'>Sulfas</Label>
+                <Label htmlFor="al.sulfas">Sulfas</Label>
               </div>
-              <div className='flex items-center space-x-2'>
+              <div className="flex items-center space-x-2">
                 <Checkbox
-                  id='al.latex'
+                  id="al.latex"
                   checked={formData.antecedentes.alergias.latex}
                   onCheckedChange={(c) =>
                     handleCheckboxChange("antecedentes.alergias.latex", !!c)
                   }
                 />
-                <Label htmlFor='al.latex'>Látex</Label>
+                <Label htmlFor="al.latex">Látex</Label>
               </div>
-              <div className='col-span-full'>
+              <div className="col-span-full">
                 <CheckboxWithInput
-                  label='Anestésicos locales'
-                  checkboxName='antecedentes.alergias.anestesicos_locales'
+                  label="Anestésicos locales"
+                  checkboxName="antecedentes.alergias.anestesicos_locales"
                   checkboxValue={
                     formData.antecedentes.alergias.anestesicos_locales
                   }
-                  inputName='antecedentes.alergias.anestesicos_locales_detalle'
+                  inputName="antecedentes.alergias.anestesicos_locales_detalle"
                   inputValue={
                     formData.antecedentes.alergias.anestesicos_locales_detalle
                   }
-                  placeholder='Especificar...'
+                  placeholder="Especificar..."
                   onCheckboxChange={handleCheckboxChange}
                   onInputChange={handleChange}
                 />
               </div>
-              <div className='col-span-full'>
+              <div className="col-span-full">
                 <CheckboxWithInput
-                  label='Alimentos'
-                  checkboxName='antecedentes.alergias.alimentos'
+                  label="Alimentos"
+                  checkboxName="antecedentes.alergias.alimentos"
                   checkboxValue={formData.antecedentes.alergias.alimentos}
-                  inputName='antecedentes.alergias.alimentos_detalle'
+                  inputName="antecedentes.alergias.alimentos_detalle"
                   inputValue={formData.antecedentes.alergias.alimentos_detalle}
-                  placeholder='Especificar...'
+                  placeholder="Especificar..."
                   onCheckboxChange={handleCheckboxChange}
                   onInputChange={handleChange}
                 />
@@ -1337,64 +1306,61 @@ export function FichaOdontologicaForm({
               }
             )}
           >
-            <div className='flex justify-between items-center'>
-              <h4 className='font-semibold text-base'>i. Otros Relevantes</h4>
-              <div className='flex items-center space-x-2 absolute top-2 right-2'>
+            <div className="flex justify-between items-center">
+              <h4 className="font-semibold text-base">i. Otros Relevantes</h4>
+              <div className="flex items-center space-x-2 absolute top-2 right-2">
                 <Checkbox
-                  id='ao.no_refiere'
+                  id="ao.no_refiere"
                   checked={formData.antecedentes.otros_relevantes.no_refiere}
                   onCheckedChange={(c) =>
                     handleNoRefiereChange("otros_relevantes", !!c)
                   }
                 />
-                <Label
-                  htmlFor='ao.no_refiere'
-                  className='text-xs'
-                >
+                <Label htmlFor="ao.no_refiere" className="text-xs">
                   No Refiere
                 </Label>
               </div>
             </div>
             <fieldset
               disabled={formData.antecedentes.otros_relevantes.no_refiere}
-              className='grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4 pt-4'
+              className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4 pt-4"
             >
               <CheckboxWithInputVertical
-                label='Cáncer'
-                checkboxName='antecedentes.otros_relevantes.cancer'
+                label="Cáncer"
+                checkboxName="antecedentes.otros_relevantes.cancer"
                 checkboxValue={formData.antecedentes.otros_relevantes.cancer}
-                inputName='antecedentes.otros_relevantes.cancer_tipo'
+                inputName="antecedentes.otros_relevantes.cancer_tipo"
                 inputValue={formData.antecedentes.otros_relevantes.cancer_tipo}
-                placeholder='Tipo...'
+                placeholder="Tipo..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
               <CheckboxWithInputVertical
-                label='Embarazo actual'
-                checkboxName='antecedentes.otros_relevantes.embarazo_actual'
+                label="Embarazo actual"
+                checkboxName="antecedentes.otros_relevantes.embarazo_actual"
                 checkboxValue={
                   formData.antecedentes.otros_relevantes.embarazo_actual
                 }
-                inputName='antecedentes.otros_relevantes.embarazo_semanas'
+                inputName="antecedentes.otros_relevantes.embarazo_semanas"
                 inputValue={
                   formData.antecedentes.otros_relevantes.embarazo_semanas
                 }
-                placeholder='Semanas...'
+                placeholder="Semanas..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
               <CheckboxWithInputVertical
-                label='Prótesis articulares'
-                checkboxName='antecedentes.otros_relevantes.protesis_articulares'
+                label="Prótesis articulares"
+                checkboxName="antecedentes.otros_relevantes.protesis_articulares"
                 checkboxValue={
                   formData.antecedentes.otros_relevantes.protesis_articulares
                 }
-                inputName='antecedentes.otros_relevantes.protesis_fecha_colocacion'
+                inputName="antecedentes.otros_relevantes.protesis_fecha_colocacion"
                 inputValue={
                   formData.antecedentes.otros_relevantes
                     .protesis_fecha_colocacion
                 }
-                placeholder='Fecha de colocación...'
+                placeholder="Fecha de colocación..."
                 onCheckboxChange={handleCheckboxChange}
                 onInputChange={handleChange}
               />
@@ -1404,15 +1370,15 @@ export function FichaOdontologicaForm({
       </Card>
 
       {/* SECCIÓN 3: HÁBITOS */}
-      <Card className='shadow-md hover:shadow-lg transition-shadow'>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className='flex items-center gap-3 text-xl'>
-            <Cigarette className='text-amber-600' />
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Cigarette className="text-amber-600" />
             3. Hábitos
           </CardTitle>
         </CardHeader>
-        <CardContent className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div className='space-y-2'>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
             <Label>Tabaco</Label>
             <Select
               onValueChange={(value) =>
@@ -1421,24 +1387,24 @@ export function FichaOdontologicaForm({
               value={formData.habitos.tabaco}
             >
               <SelectTrigger>
-                <SelectValue placeholder='Seleccione...' />
+                <SelectValue placeholder="Seleccione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='nunca'>Nunca</SelectItem>
-                <SelectItem value='ex_fumador'>Ex-fumador</SelectItem>
-                <SelectItem value='actual'>Actual</SelectItem>
+                <SelectItem value="nunca">Nunca</SelectItem>
+                <SelectItem value="ex_fumador">Ex-fumador</SelectItem>
+                <SelectItem value="actual">Actual</SelectItem>
               </SelectContent>
             </Select>
             {formData.habitos.tabaco === "actual" && (
               <Input
-                name='habitos.tabaco_actual_detalle'
+                name="habitos.tabaco_actual_detalle"
                 value={formData.habitos.tabaco_actual_detalle}
                 onChange={handleChange}
-                placeholder='Cigarrillos/día'
+                placeholder="Cigarrillos/día"
               />
             )}
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label>Alcohol</Label>
             <Select
               onValueChange={(value) =>
@@ -1447,31 +1413,31 @@ export function FichaOdontologicaForm({
               value={formData.habitos.alcohol}
             >
               <SelectTrigger>
-                <SelectValue placeholder='Seleccione...' />
+                <SelectValue placeholder="Seleccione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='no'>No</SelectItem>
-                <SelectItem value='ocasional'>Ocasional</SelectItem>
-                <SelectItem value='frecuente'>Frecuente</SelectItem>
+                <SelectItem value="no">No</SelectItem>
+                <SelectItem value="ocasional">Ocasional</SelectItem>
+                <SelectItem value="frecuente">Frecuente</SelectItem>
               </SelectContent>
             </Select>
             {formData.habitos.alcohol === "frecuente" && (
               <Input
-                name='habitos.alcohol_frecuente_detalle'
+                name="habitos.alcohol_frecuente_detalle"
                 value={formData.habitos.alcohol_frecuente_detalle}
                 onChange={handleChange}
-                placeholder='Veces/semana'
+                placeholder="Veces/semana"
               />
             )}
           </div>
-          <div className='md:col-span-2'>
+          <div className="md:col-span-2">
             <CheckboxWithInput
-              label='Consume drogas recreacionales'
-              checkboxName='habitos.drogas_recreacionales'
+              label="Consume drogas recreacionales"
+              checkboxName="habitos.drogas_recreacionales"
               checkboxValue={formData.habitos.drogas_recreacionales}
-              inputName='habitos.drogas_tipo'
+              inputName="habitos.drogas_tipo"
               inputValue={formData.habitos.drogas_tipo}
-              placeholder='Tipo...'
+              placeholder="Tipo..."
               onCheckboxChange={handleCheckboxChange}
               onInputChange={handleChange}
             />
@@ -1480,39 +1446,39 @@ export function FichaOdontologicaForm({
       </Card>
 
       {/* SECCIÓN 4: EXAMEN CLÍNICO */}
-      <Card className='shadow-md hover:shadow-lg transition-shadow'>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className='flex items-center gap-3 text-xl'>
-            <Stethoscope className='text-teal-500' />
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <Stethoscope className="text-teal-500" />
             4. Examen Clínico
           </CardTitle>
         </CardHeader>
-        <CardContent className='space-y-6'>
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-6 items-end'>
-            <div className='space-y-2'>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-end">
+            <div className="space-y-2">
               <Label>Talla (m)</Label>
               <Input
-                name='examen_clinico.talla'
+                name="examen_clinico.talla"
                 value={formData.examen_clinico.talla}
                 onChange={handleChange}
-                type='number'
-                step='0.01'
+                type="number"
+                step="0.01"
               />
             </div>
-            <div className='space-y-2'>
+            <div className="space-y-2">
               <Label>Peso (kg)</Label>
               <Input
-                name='examen_clinico.peso'
+                name="examen_clinico.peso"
                 value={formData.examen_clinico.peso}
                 onChange={handleChange}
-                type='number'
-                step='0.1'
+                type="number"
+                step="0.1"
               />
             </div>
-            <div className='space-y-2'>
+            <div className="space-y-2">
               <Label>IMC</Label>
-              <div className='flex items-center space-x-2 p-2 border rounded-md bg-gray-100 dark:bg-gray-800 min-h-[40px]'>
-                <span className='font-mono w-16'>
+              <div className="flex items-center space-x-2 p-2 border rounded-md bg-gray-100 dark:bg-gray-800 min-h-[40px]">
+                <span className="font-mono w-16">
                   {formData.examen_clinico.imc}
                 </span>
                 {imcClassification.classification && (
@@ -1527,53 +1493,49 @@ export function FichaOdontologicaForm({
                 )}
               </div>
             </div>
-            <div className='space-y-2'>
+            <div className="space-y-2">
               <Label>Presión Arterial (P.A.)</Label>
               <Input
-                name='examen_clinico.pa'
+                name="examen_clinico.pa"
                 value={formData.examen_clinico.pa}
                 onChange={handleChange}
               />
             </div>
           </div>
         </CardContent>
-        <Odontograma />
       </Card>
 
       {/* SECCIÓN 5: SEGUIMIENTO */}
-      <Card className='shadow-md hover:shadow-lg transition-shadow'>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
         <CardHeader>
-          <div className='flex justify-between items-center'>
-            <CardTitle className='flex items-center gap-3 text-xl'>
-              <ListChecks className='text-purple-500' />
+          <div className="flex justify-between items-center">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <ListChecks className="text-purple-500" />
               5. Seguimiento
             </CardTitle>
-            <Button
-              type='button'
-              onClick={addSeguimientoRow}
-            >
+            <Button type="button" onClick={addSeguimientoRow}>
               Añadir Fila
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className='space-y-4'>
+          <div className="space-y-4">
             {/* Encabezados de la tabla */}
             {formData.seguimiento.length > 0 && (
-              <div className='grid grid-cols-[1fr,2fr,2fr,1fr,1fr,auto] gap-2 items-center px-1 pb-2 border-b'>
-                <Label className='text-xs font-semibold text-center'>
+              <div className="grid grid-cols-[1fr,2fr,2fr,1fr,1fr,auto] gap-2 items-center px-1 pb-2 border-b">
+                <Label className="text-xs font-semibold text-center">
                   Fecha
                 </Label>
-                <Label className='text-xs font-semibold text-center'>
+                <Label className="text-xs font-semibold text-center">
                   Procedimiento Realizado
                 </Label>
-                <Label className='text-xs font-semibold text-center'>
+                <Label className="text-xs font-semibold text-center">
                   Observaciones
                 </Label>
-                <Label className='text-xs font-semibold text-center'>
+                <Label className="text-xs font-semibold text-center">
                   Próxima Cita
                 </Label>
-                <Label className='text-xs font-semibold text-center'>
+                <Label className="text-xs font-semibold text-center">
                   Imagen Ref.
                 </Label>
                 <div /> {/* Espacio para el botón de eliminar */}
@@ -1583,58 +1545,53 @@ export function FichaOdontologicaForm({
             {formData.seguimiento.map((row) => (
               <div
                 key={row.id}
-                className='grid grid-cols-[1fr,2fr,2fr,1fr,1fr,auto] gap-2 items-center'
+                className="grid grid-cols-[1fr,2fr,2fr,1fr,1fr,auto] gap-2 items-center"
               >
                 <Input
-                  type='date'
-                  name='fecha'
+                  type="date"
+                  name="fecha"
                   value={row.fecha}
                   onChange={(e) => handleSeguimientoChange(e, row.id)}
-                  className='text-center'
+                  className="text-center"
                 />
                 <Input
-                  name='procedimiento_realizado'
-                  placeholder='Procedimiento realizado'
+                  name="procedimiento_realizado"
+                  placeholder="Procedimiento realizado"
                   value={row.procedimiento_realizado}
                   onChange={(e) => handleSeguimientoChange(e, row.id)}
-                  className='text-center'
+                  className="text-center"
                 />
                 <Input
-                  name='observaciones'
-                  placeholder='Observaciones'
+                  name="observaciones"
+                  placeholder="Observaciones"
                   value={row.observaciones}
                   onChange={(e) => handleSeguimientoChange(e, row.id)}
-                  className='text-center'
+                  className="text-center"
                 />
                 <Input
-                  type='date'
-                  name='proxima_cita'
+                  type="date"
+                  name="proxima_cita"
                   value={row.proxima_cita}
                   onChange={(e) => handleSeguimientoChange(e, row.id)}
-                  className='text-center'
+                  className="text-center"
                 />
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  disabled
-                >
+                <Button type="button" variant="outline" size="sm" disabled>
                   {" "}
                   {/* Deshabilitado por ahora */}
                   Subir
                 </Button>
                 <Button
-                  type='button'
-                  variant='destructive'
-                  size='icon'
+                  type="button"
+                  variant="destructive"
+                  size="icon"
                   onClick={() => removeSeguimientoRow(row.id)}
                 >
-                  <Trash2 className='h-4 w-4' />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))}
             {formData.seguimiento.length === 0 && (
-              <p className='text-sm text-muted-foreground text-center'>
+              <p className="text-sm text-muted-foreground text-center">
                 No hay seguimientos registrados.
               </p>
             )}
@@ -1643,28 +1600,28 @@ export function FichaOdontologicaForm({
       </Card>
 
       {/* SECCIÓN DE ACCIONES */}
-      <div className='flex justify-end items-center space-x-4 mt-10 p-4 bg-slate-50 dark:bg-gray-800 rounded-lg shadow-md'>
+      <div className="flex justify-end items-center space-x-4 mt-10 p-4 bg-slate-50 dark:bg-gray-800 rounded-lg shadow-md">
         <Button
-          type='button'
-          variant='outline'
+          type="button"
+          variant="outline"
           onClick={handleCancel}
-          className='text-base px-6 py-5'
+          className="text-base px-6 py-5"
         >
           Cancelar
         </Button>
         <Button
-          type='button'
-          variant='secondary'
+          type="button"
+          variant="secondary"
           onClick={handlePrint}
           disabled={isPrinting}
-          className='text-base px-6 py-5 flex items-center gap-2'
+          className="text-base px-6 py-5 flex items-center gap-2"
         >
-          <FileDown className='w-5 h-5' />
+          <FileDown className="w-5 h-5" />
           {isPrinting ? "Generando PDF..." : "Imprimir Ficha"}
         </Button>
         <Button
-          type='submit'
-          className='text-base px-8 py-5 bg-blue-600 hover:bg-blue-700 text-white'
+          type="submit"
+          className="text-base px-8 py-5 bg-blue-600 hover:bg-blue-700 text-white"
         >
           Guardar Ficha
         </Button>
