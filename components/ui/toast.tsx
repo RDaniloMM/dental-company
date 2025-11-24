@@ -13,45 +13,41 @@ const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({ className, ...props }, ref) => {
-  // Keep an internal ref typed to the Toast Viewport element so we can call .focus() on mouse enter
   const internalRef = React.useRef<React.ElementRef<typeof ToastPrimitives.Viewport> | null>(null)
 
-  // forward ref handling
   React.useEffect(() => {
     if (!ref) return
     if (typeof ref === "function") {
       ref(internalRef.current)
     } else {
-      ;(ref as React.MutableRefObject<any>).current = internalRef.current
+      (ref as React.MutableRefObject<
+        React.ElementRef<typeof ToastPrimitives.Viewport> | null
+      >).current = internalRef.current
     }
   }, [ref])
 
   return (
     <ToastPrimitives.Viewport
-      // give the viewport a ref we control so we can focus it on hover
-      ref={internalRef as any}
+      ref={internalRef}
       className={cn(
-        // bottom-centered viewport so toasts appear centered over the lower edge of the window
         "fixed bottom-6 left-0 right-0 z-[100] flex items-end justify-center p-4",
         className
       )}
-      // allow keyboard focus; handle hover to pause/resume timer so stacked toasts stay visible
       tabIndex={0}
-      onMouseEnter={(e) => {
+      onMouseEnter={() => {
         try {
-          ;(internalRef.current as unknown as HTMLElement | null)?.focus()
-          // dispatch Radix expected events to pause viewport timers and show stacked toasts
-          const pauseEvt = new CustomEvent('toast.viewportPause')
+          (internalRef.current as HTMLElement | null)?.focus()
+          const pauseEvt = new CustomEvent("toast.viewportPause")
           internalRef.current?.dispatchEvent(pauseEvt)
-        } catch (err) {
+        } catch {
           /* noop */
         }
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={() => {
         try {
-          const resumeEvt = new CustomEvent('toast.viewportResume')
+          const resumeEvt = new CustomEvent("toast.viewportResume")
           internalRef.current?.dispatchEvent(resumeEvt)
-        } catch (err) {
+        } catch {
           /* noop */
         }
       }}
@@ -92,7 +88,6 @@ const Toast = React.forwardRef<
     <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
-      // Prevent clicks on the toast from bubbling to underlying elements (e.g. closing a modal)
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
       {...props}
