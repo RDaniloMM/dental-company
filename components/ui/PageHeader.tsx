@@ -8,7 +8,7 @@ type PageHeaderProps = {
 export function PageHeader({ title, children }: PageHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-6">
-      <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+      <h1 className="text-2xl font-bold text-sky-700">{title}</h1>
       {children}
     </div>
   );

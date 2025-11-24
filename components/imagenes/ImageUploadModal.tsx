@@ -19,8 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, UploadCloud, X } from 'lucide-react';
+import { UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
+import LoadingDots from '@/components/ui/LoadingDots';
+import { toast } from '@/components/ui/use-toast';
 
 interface ImageUploadModalProps {
   isOpen: boolean;
@@ -75,7 +77,8 @@ export default function ImageUploadModal({
 
   const handleSubmit = async () => {
     if (!file || !tipo || !pacienteId) {
-      setError('Por favor, completa todos los campos requeridos.');
+      // Mostrar notificación roja centrada inferior (igual que antecedentes)
+      toast({ title: 'Error', description: 'Por favor, completa todos los campos requeridos.', variant: 'destructive' });
       return;
     }
 
@@ -103,6 +106,8 @@ export default function ImageUploadModal({
       }
 
       onUploadSuccess();
+      // mostrar notificación de éxito verde centrada inferior
+      toast({ title: 'Éxito', description: 'Imagen subida correctamente.', variant: 'success' });
       handleClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -183,7 +188,9 @@ export default function ImageUploadModal({
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={!file || !tipo || isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading ? (
+              <span className="mr-2 inline-flex"><LoadingDots /></span>
+            ) : null}
             Guardar
           </Button>
         </DialogFooter>

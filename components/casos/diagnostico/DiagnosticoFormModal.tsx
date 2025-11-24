@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -18,16 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { toast } from '@/components/ui/use-toast'
-import { upsertDiagnostico } from '@/app/admin/(protected)/ficha-odontologica/[numero_historia]/casos/[casoId]/diagnostico/actions'
+import { toast } from 'sonner'
+import { upsertDiagnostico, deleteDiagnostico } from '@/app/admin/(protected)/ficha-odontologica/[numero_historia]/casos/[casoId]/diagnostico/actions'
 import { type Diagnostico } from './DiagnosticoTable'
 import { createClient } from '@/lib/supabase/client'
 import { Check, ChevronsUpDown } from 'lucide-react'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 type Cie10Entry = {
@@ -43,6 +39,8 @@ type DiagnosticoFormModalProps = {
   casoId: string
   userId: string
 }
+
+type ActionResult = { success?: boolean; error?: { message?: string; details?: string } }
 
 export default function DiagnosticoFormModal({
   isOpen,
@@ -78,8 +76,12 @@ export default function DiagnosticoFormModal({
   const [cie10Options, setCie10Options] = useState<Cie10Entry[]>([])
   const [isCie10Open, setIsCie10Open] = useState(false)
   const [selectedCie10State, setSelectedCie10State] = useState<Cie10Entry | null>(diagnostico ? getCie10Data(diagnostico.cie10_catalogo) : null)
-  const [errors, setErrors] = useState<{ tipo?: string; cie10Id?: string }>({})
+  const [errors, setErrors] = useState<{ tipo?: string; cie10Id?: string; odontologoId?: string }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [personalOptions, setPersonalOptions] = useState<Array<{ id: string; nombre_completo: string }>>([])
+  const [odontologoId, setOdontologoId] = useState<string | null>(diagnostico?.odontologo_id || null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const cieWrapperRef = useRef<HTMLDivElement | null>(null)
 
   const supabase = createClient()
 
@@ -89,7 +91,31 @@ export default function DiagnosticoFormModal({
     setCie10SearchTerm(diagnostico?.cie10_catalogo ? getCie10Data(diagnostico.cie10_catalogo).descripcion : '')
     setSelectedCie10State(diagnostico ? getCie10Data(diagnostico.cie10_catalogo) : null)
     setErrors({})
+    setOdontologoId(diagnostico?.odontologo_id || null)
   }, [diagnostico, isOpen])
+
+  useEffect(() => {
+    let mounted = true
+    const loadPersonal = async () => {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase.from('personal').select('id, nombre_completo').eq('activo', true)
+        if (error) throw error
+        if (mounted && Array.isArray(data)) {
+          const personalData = data as Array<{ id: string; nombre_completo: string }>
+          setPersonalOptions(personalData)
+          if (userId) {
+            const match = personalData.find((p) => p.id === userId)
+            if (match) setOdontologoId(match.id)
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadPersonal()
+    return () => { mounted = false }
+  }, [userId])
 
   useEffect(() => {
     const searchCie10 = async () => {
@@ -105,15 +131,16 @@ export default function DiagnosticoFormModal({
       query = query.order('codigo', { ascending: true })
 
       if (!shouldSearchAll) {
-  const normalized = term.trim()
+        const normalized = term.trim()
+        const safe = normalized.replace(/[,%()"']/g, ' ').trim()
         const orConditions: string[] = []
-        if (normalized.includes(' - ')) {
-          const [codePart, descPart] = normalized.split(' - ', 2).map(s => s.trim())
+        if (safe.includes(' - ')) {
+          const [codePart, descPart] = safe.split(' - ', 2).map((s) => s.trim())
           if (codePart) orConditions.push(`codigo.ilike.%${codePart}%`)
           if (descPart) orConditions.push(`descripcion.ilike.%${descPart}%`)
         }
-        orConditions.push(`codigo.ilike.%${normalized}%`)
-        orConditions.push(`descripcion.ilike.%${normalized}%`)
+        orConditions.push(`codigo.ilike.%${safe}%`)
+        orConditions.push(`descripcion.ilike.%${safe}%`)
         const filtered = orConditions.filter(Boolean)
         if (filtered.length > 0) query = query.or(filtered.join(','))
       }
@@ -127,9 +154,9 @@ export default function DiagnosticoFormModal({
         } else {
           setCie10Options(data || [])
         }
-      } catch (err) {
+        } catch (err) {
         console.error('Unexpected error searching CIE10:', err, typeof err === 'object' ? JSON.stringify(err) : err)
-          toast({ title: 'Error', description: 'No se pudo conectar al servicio de CIE10.' , variant: 'destructive' })
+          toast.error('No se pudo conectar al servicio de CIE10.', { style: { backgroundColor: '#FF0000', color: 'white' } })
         setCie10Options([])
       }
     }
@@ -140,29 +167,66 @@ export default function DiagnosticoFormModal({
   }, [cie10SearchTerm, supabase, isCie10Open])
 
   useEffect(() => {
-    if (isCie10Open) {
-      setTimeout(() => {
-        const el = document.querySelector('[data-slot="command-input"]') as HTMLInputElement | null
-        if (el) el.focus()
-      }, 0)
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (!cieWrapperRef.current) return
+      if (!cieWrapperRef.current.contains(e.target as Node)) {
+        setIsCie10Open(false)
+      }
     }
-  }, [isCie10Open])
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsCie10Open(false)
+    }
+    document.addEventListener('mousedown', onDocMouseDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocMouseDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [])
 
   const validate = () => {
-    const newErrors: { tipo?: string; cie10Id?: string } = {}
+    // Tratar las tres comprobaciones como advertencias que bloquean el guardado
+    const newErrors: { odontologoId?: string } = {}
+    const newWarnings: { tipo?: string; cie10?: string; odontologo?: string } = {}
+
     if (!tipo) {
-      newErrors.tipo = 'El tipo es requerido.'
+      newWarnings.tipo = 'Falta seleccionar el tipo de diagnóstico.'
     }
     if (!cie10Id) {
-      newErrors.cie10Id = 'Debe seleccionar un diagnóstico CIE10.'
+      newWarnings.cie10 = 'Falta seleccionar el código CIE10.'
     }
+    if (!odontologoId) {
+      newWarnings.odontologo = 'Falta seleccionar el odontólogo asignado.'
+    } else {
+      const exists = personalOptions.some((p) => p.id === odontologoId)
+      if (!exists) {
+        newErrors.odontologoId = 'El odontólogo seleccionado no existe en la lista. Seleccione uno válido.'
+      }
+    }
+
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    // isValid sólo si no hay errores ni advertencias
+    const hasErrors = Object.keys(newErrors).length > 0
+    const hasWarnings = Object.keys(newWarnings).length > 0
+    return { isValid: !hasErrors && !hasWarnings, errors: newErrors, warnings: newWarnings }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validate()) {
+    const validation = validate()
+    // Si hay errores reales (p. ej. odontólogo inválido) mostrar en rojo y bloquear
+    if (validation.errors && Object.keys(validation.errors).length > 0) {
+      Object.values(validation.errors).forEach((msg) => {
+        if (msg) toast.error(msg, { style: { backgroundColor: '#FF0000', color: 'white' } })
+      })
+      return
+    }
+
+    // Si hay advertencias (faltan selecciones), mostrar advertencias amarillas y bloquear el guardado
+    if (validation.warnings && Object.keys(validation.warnings).length > 0) {
+      Object.values(validation.warnings).forEach((msg) => {
+        if (msg) toast.warning(msg, { style: { backgroundColor: '#FFA500', color: 'white' }, duration: 4000 })
+      })
       return
     }
     setIsSubmitting(true)
@@ -170,14 +234,30 @@ export default function DiagnosticoFormModal({
     const formData = {
       id: diagnostico?.id ?? undefined,
       tipo: String(tipo ?? ''),
-      cie10_id: String(cie10Id ?? ''),
+      // enviar null en vez de cadena vacía para campos opcionales que no se seleccionaron
+      cie10_id: cie10Id ?? null,
       caso_id: String(casoId ?? ''),
-      odontologo_id: String(userId ?? ''),
+      odontologo_id: odontologoId ?? null,
     }
 
     console.debug('upsertDiagnostico payload:', formData)
 
     try {
+      if (validation.warnings.cie10) {
+        toast.warning(validation.warnings.cie10, { style: { backgroundColor: '#FFA500', color: 'white' }, duration: 4000 })
+      }
+      if (validation.warnings.odontologo) {
+        toast.warning(validation.warnings.odontologo, { style: { backgroundColor: '#FFA500', color: 'white' }, duration: 4000 })
+      }
+
+      if (odontologoId && !personalOptions.some((p) => p.id === odontologoId)) {
+        const msg = 'El odontólogo seleccionado no está disponible. Por favor seleccione un odontólogo válido.'
+        setErrors((prev) => ({ ...prev, odontologoId: msg }))
+        toast.error(msg, { style: { backgroundColor: '#FF0000', color: 'white' } })
+        setIsSubmitting(false)
+        return
+      }
+
       const result = await upsertDiagnostico(formData)
 
       if (result.error) {
@@ -205,14 +285,35 @@ export default function DiagnosticoFormModal({
           }
           setErrors((prev) => ({ ...prev, ...fieldErrors }))
         }
-        toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+        toast.error(errorMessage, { style: { backgroundColor: '#FF0000', color: 'white' } })
       } else {
-        toast({ title: 'Éxito', description: 'Diagnóstico guardado correctamente.' })
+        toast.success('Diagnóstico guardado correctamente.', { style: { backgroundColor: '#008000', color: 'white' } })
         onClose()
       }
     } catch (err) {
       console.error('Unexpected upsert error:', err)
-      toast({ title: 'Error', description: 'Ocurrió un error al guardar el diagnóstico.', variant: 'destructive' })
+      toast.error('Ocurrió un error al guardar el diagnóstico.', { style: { backgroundColor: '#FF0000', color: 'white' } })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!diagnostico?.id) return
+    const ok = confirm('¿Confirma eliminar este diagnóstico? Esta acción no se puede deshacer.')
+    if (!ok) return
+    setIsSubmitting(true)
+    try {
+      const res: ActionResult = await deleteDiagnostico(diagnostico.id)
+      if (res?.error) {
+        toast.error(res.error?.message || 'No se pudo eliminar.', { style: { backgroundColor: '#FF0000', color: 'white' } })
+      } else {
+        toast.success('Diagnóstico eliminado correctamente.', { style: { backgroundColor: '#008000', color: 'white' } })
+        onClose()
+      }
+    } catch (err) {
+      console.error('Error eliminando diagnóstico:', err)
+      toast.error('Ocurrió un error al eliminar.', { style: { backgroundColor: '#FF0000', color: 'white' } })
     } finally {
       setIsSubmitting(false)
     }
@@ -231,6 +332,7 @@ export default function DiagnosticoFormModal({
           <DialogTitle>
             {diagnostico ? 'Editar Diagnóstico' : 'Nuevo Diagnóstico'}
           </DialogTitle>
+          <DialogDescription>Formulario para crear o editar un diagnóstico del caso.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -248,29 +350,71 @@ export default function DiagnosticoFormModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cie10">Diagnóstico CIE10</Label>
-            <Popover open={isCie10Open} onOpenChange={setIsCie10Open}>
-              <PopoverTrigger asChild>
-                <div className="w-full">
-                  <div className="flex w-full items-center gap-2 rounded-md border px-3 py-2">
-                    <input
-                      id="cie10"
-                      className="flex-1 bg-transparent outline-none text-sm"
-                      placeholder={selectedCie10 ? undefined : 'Buscar código o descripción CIE10...'}
-                      value={cie10SearchTerm}
-                      onChange={(e) => {
-                        setCie10SearchTerm(String(e.target.value ?? ''))
-                        setIsCie10Open(true)
-                      }}
-                      onFocus={() => setIsCie10Open(true)}
-                    />
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </div>
-                </div>
-              </PopoverTrigger>
+            <Label htmlFor="odontologo">Odontólogo</Label>
+            <Select onValueChange={(v) => setOdontologoId(v)} value={odontologoId ?? ''}>
+              <SelectTrigger>
+                <SelectValue placeholder={personalOptions.length > 0 ? 'Seleccione un odontólogo' : 'Cargando...'} />
+              </SelectTrigger>
+              <SelectContent>
+                {personalOptions.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.nombre_completo}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.odontologoId && <p className="text-sm text-red-500">{errors.odontologoId}</p>}
+          </div>
 
-              <PopoverContent className="w-[500px] p-2">
-                <div className="max-h-[300px] overflow-y-auto">
+          <div className="space-y-2">
+            <Label htmlFor="cie10">Diagnóstico CIE10</Label>
+            <div ref={cieWrapperRef} className="relative w-full">
+              <div
+                className="w-full"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  setIsCie10Open(true)
+                  inputRef.current?.focus()
+                }}
+              >
+                <div className="flex w-full items-center gap-2 rounded-md border px-3 py-2 bg-background">
+                  <input
+                    id="cie10"
+                    ref={inputRef}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    name="cie10-autocomplete"
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder={selectedCie10 ? undefined : 'Buscar código o descripción CIE10...'}
+                    value={cie10SearchTerm}
+                    onChange={(e) => {
+                      setCie10SearchTerm(String(e.target.value ?? ''))
+                      setIsCie10Open(true)
+                    }}
+                    onFocus={() => setIsCie10Open(true)}
+                  />
+                      {selectedCie10State ? (
+                        <button
+                          type="button"
+                          aria-label="Limpiar selección CIE10"
+                          className="ml-2 h-6 w-6 flex items-center justify-center text-sm text-muted-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedCie10State(null)
+                            setCie10Id(null)
+                            setCie10SearchTerm('')
+                            setIsCie10Open(true)
+                            setTimeout(() => inputRef.current?.focus(), 0)
+                          }}
+                        >
+                          ✕
+                        </button>
+                      ) : (
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      )}
+                </div>
+              </div>
+
+              {isCie10Open && (
+                <div className="absolute left-0 top-full mt-1 w-[500px] max-h-[300px] overflow-y-auto rounded-md border bg-white dark:bg-gray-800 shadow z-50 p-1">
                   {cie10Options.length === 0 ? (
                     <div className="py-4 text-center text-sm text-muted-foreground">No se encontraron resultados.</div>
                   ) : (
@@ -303,8 +447,8 @@ export default function DiagnosticoFormModal({
                     </ul>
                   )}
                 </div>
-              </PopoverContent>
-            </Popover>
+              )}
+            </div>
             {errors.cie10Id && <p className="text-sm text-red-500">{errors.cie10Id}</p>}
           </div>
 
@@ -314,9 +458,14 @@ export default function DiagnosticoFormModal({
                 Cancelar
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Guardando...' : 'Guardar Diagnóstico'}
-            </Button>
+              {diagnostico && (
+                <Button type="button" variant="ghost" onClick={handleDelete} disabled={isSubmitting}>
+                  Eliminar
+                </Button>
+              )}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Guardando...' : 'Guardar Diagnóstico'}
+              </Button>
           </DialogFooter>
         </form>
       </DialogContent>

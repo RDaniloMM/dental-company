@@ -87,13 +87,19 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
   });
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-6">Casos Clínicos del Paciente</h1>
-      <CasosList
-        casos={casosConUltimaCita}
-        historiaId={historia.id}
-        numeroHistoria={paciente.numero_historia}
-      />
+    <div className="w-full max-w-none">
+      <div className="rounded-lg border border-border bg-card">
+        <div className="bg-blue-500 dark:bg-blue-800 p-4 rounded-t-lg text-center">
+          <h2 className="text-2xl font-bold text-white">Casos Clínicos del Paciente</h2>
+        </div>
+        <div className="p-4">
+          <CasosList
+            casos={casosConUltimaCita}
+            historiaId={historia.id}
+            numeroHistoria={paciente.numero_historia}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -92,6 +92,7 @@ export default function FichaOdontologicaContent({
                 height={200}
                 className="mx-auto mb-4 h-auto"
                 priority
+                style={{ width: 'auto', height: 'auto' }}
               />
               <p className="text-xl font-semibold text-gray-700 dark:text-gray-300">
                 Tu sonrisa es nuestra sonrisa

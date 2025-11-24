@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from 'sonner'
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -36,7 +36,8 @@ type CasoDetailActionsProps = {
 export default function CasoDetailActions({
   caso,
   numeroHistoria,
-}: CasoDetailActionsProps) {
+  showBack = true,
+}: CasoDetailActionsProps & { showBack?: boolean }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -68,16 +69,9 @@ export default function CasoDetailActions({
       .eq("id", caso.id);
 
     if (error) {
-      toast({
-        title: "Error al actualizar caso",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || 'Error al actualizar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
     } else {
-      toast({
-        title: "Caso actualizado",
-        description: "El caso clínico ha sido actualizado exitosamente.",
-      });
+      toast.success('El caso clínico ha sido actualizado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
       setIsEditModalOpen(false);
       router.refresh(); // Refrescar la página para mostrar los cambios
     }
@@ -90,27 +84,22 @@ export default function CasoDetailActions({
       .eq("id", caso.id);
 
     if (error) {
-      toast({
-        title: "Error al cerrar caso",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || 'Error al cerrar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
     } else {
-      toast({
-        title: "Caso cerrado",
-        description: "El caso clínico ha sido cerrado exitosamente.",
-      });
+      toast.success('El caso clínico ha sido cerrado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
       router.push(`/admin/ficha-odontologica/${numeroHistoria}/casos`);
     }
   };
 
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" asChild>
-        <Link href={`/admin/ficha-odontologica/${numeroHistoria}/casos`}>
-          <ChevronLeft className="mr-2 h-4 w-4" /> Volver a Casos
-        </Link>
-      </Button>
+    <div className="flex gap-2 items-center">
+      {showBack && (
+        <Button variant="outline" asChild>
+          <Link href={`/admin/ficha-odontologica/${numeroHistoria}/casos`}>
+            <ChevronLeft className="mr-2 h-4 w-4" /> Volver a Casos
+          </Link>
+        </Button>
+      )}
       {canEdit && (
         <Button variant="outline" onClick={() => setIsEditModalOpen(true)}>
           <Edit className="mr-2 h-4 w-4" /> Editar Caso

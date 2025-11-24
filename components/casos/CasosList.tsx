@@ -24,7 +24,7 @@ import {
 import CasoFormModal from "./CasoFormModal";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,7 +69,7 @@ export default function CasosList({
 }: CasosListProps) {
   const router = useRouter();
   const supabase = createClient();
-  const { toast } = useToast();
+  // using sonner toast to match antecedentes notification mechanic
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Estado de carga
 
@@ -132,19 +132,12 @@ export default function CasosList({
         .eq("id", editingCaso.id);
 
       if (error) {
-        toast({
-          title: "Error al actualizar caso",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(error.message || 'Error al actualizar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
       } else {
         setCasos(
           casos.map((c) => (c.id === editingCaso.id ? { ...c, ...payload } : c))
         );
-        toast({
-          title: "Caso actualizado",
-          description: "El caso clínico ha sido actualizado exitosamente.",
-        });
+        toast.success('El caso clínico ha sido actualizado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
       }
     } else {
       // Crear caso
@@ -155,17 +148,10 @@ export default function CasosList({
         .single();
 
       if (error) {
-        toast({
-          title: "Error al crear caso",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(error.message || 'Error al crear caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
       } else {
         setCasos([...casos, data]);
-        toast({
-          title: "Caso creado",
-          description: "El nuevo caso clínico ha sido creado exitosamente.",
-        });
+        toast.success('El nuevo caso clínico ha sido creado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
       }
     }
     setIsModalOpen(false);
@@ -179,11 +165,7 @@ export default function CasosList({
       .eq("id", casoId);
 
     if (error) {
-      toast({
-        title: "Error al cerrar caso",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || 'Error al cerrar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
     } else {
       setCasos(
         casos.map((c) =>
@@ -192,10 +174,7 @@ export default function CasosList({
             : c
         )
       );
-      toast({
-        title: "Caso cerrado",
-        description: "El caso clínico ha sido cerrado exitosamente.",
-      });
+      toast.success('El caso clínico ha sido cerrado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
     }
   };
 
@@ -207,17 +186,10 @@ export default function CasosList({
       .eq("id", casoId);
 
     if (error) {
-      toast({
-        title: "Error al eliminar caso",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || 'Error al eliminar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
     } else {
       setCasos(casos.filter((c) => c.id !== casoId));
-      toast({
-        title: "Caso eliminado",
-        description: "El caso clínico ha sido eliminado exitosamente (soft-delete).",
-      });
+      toast.success('El caso clínico ha sido eliminado exitosamente (soft-delete).', { style: { backgroundColor: '#008000', color: 'white' } })
     }
   };
 

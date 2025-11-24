@@ -1,2 +1,0 @@
--- Notas sugeridas para la base de datos en supabase
--- Puedes ejecutar este script en el editor SQL de Supabase para crear las tablas y relaciones necesarias

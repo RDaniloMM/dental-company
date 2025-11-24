@@ -1,6 +1,18 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.ajustes_aplicacion (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  clave text NOT NULL UNIQUE,
+  valor text,
+  grupo text NOT NULL,
+  tipo USER-DEFINED NOT NULL,
+  descripcion text,
+  orden integer DEFAULT 0,
+  updated_at timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ajustes_aplicacion_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.antecedentes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   historia_id uuid NOT NULL,
