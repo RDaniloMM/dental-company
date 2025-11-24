@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type BranchContextType = {
   currentBranch: number;
@@ -82,9 +82,11 @@ export type BranchMessagesProps = HTMLAttributes<HTMLDivElement>;
 
 export const BranchMessages = ({ children, ...props }: BranchMessagesProps) => {
   const { currentBranch, setBranches, branches } = useBranch();
-  const childrenArray = Array.isArray(children) ? children : [children];
+  const childrenArray = useMemo(
+    () => (Array.isArray(children) ? children : [children]),
+    [children],
+  );
 
-  // Use useEffect to update branches when they change
   useEffect(() => {
     if (branches.length !== childrenArray.length) {
       setBranches(childrenArray);
@@ -116,7 +118,6 @@ export const BranchSelector = ({
 }: BranchSelectorProps) => {
   const { totalBranches } = useBranch();
 
-  // Don't render if there's only one branch
   if (totalBranches <= 1) {
     return null;
   }

@@ -1,7 +1,6 @@
-import FichaSidebar from "@/components/ficha-sidebar";
+import { redirect } from "next/navigation";
+import HistoriaLayoutClient from "./layout-client";
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
-import React from "react";
 
 export default async function HistoriaLayout({
   children,
@@ -10,26 +9,33 @@ export default async function HistoriaLayout({
   children: React.ReactNode;
   params: Promise<{ numero_historia: string }>;
 }) {
-  const { numero_historia } = await params;
+  const resolvedParams = await params;
   const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  // Buscar el paciente por número de historia
-  const { data: patient, error } = await supabase
+  if (!session) {
+    redirect("/admin/login");
+  }
+
+  const { data: paciente, error } = await supabase
     .from("pacientes")
     .select("id")
-    .eq("numero_historia", numero_historia)
+    .eq("numero_historia", resolvedParams.numero_historia)
     .single();
 
-  if (error || !patient) {
-    notFound();
+  if (error || !paciente) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        No se pudo encontrar al paciente.
+      </div>
+    );
   }
-  return (
-    <div className="grid grid-cols-[300px_1fr]  w-full bg-muted/40">
-      {/* Sidebar */}
-      <FichaSidebar patientId={patient.id} numeroHistoria={numero_historia} />
 
-      {/* Contenido */}
-      <div>{children}</div>
-    </div>
+  return (
+    <HistoriaLayoutClient patientId={paciente.id}>
+      {children}
+    </HistoriaLayoutClient>
   );
 }

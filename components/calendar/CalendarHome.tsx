@@ -36,7 +36,7 @@ export default function CalendarioHome() {
   return (
     <div className="flex h-full">
       {/* Sección izquierda: 2/3 */}
-      <section className="flex-[2] p-4 flex flex-col space-y-4 bg-white">
+      <section className="flex-[2] p-4 flex flex-col space-y-4 bg-card text-card-foreground border border-border rounded-md">
         <CalendarAgregar onCitaCreada={handleCitaCreada} />
         <div className="flex-1">
           <VistaCalendario calendarKey={calendarKey} />
@@ -44,14 +44,14 @@ export default function CalendarioHome() {
       </section>
 
       {/* Separator vertical */}
-      <div className="w-px bg-gray-300"></div>
+      <div className="w-px p-2" />
 
       {/* Sección derecha: 1/3 */}
-      <section className="flex-[1] p-4 bg-white flex flex-col">
-        <h3 className="text-xl font-semibold">Citas Futuras</h3>
+      <section className="flex-[1] p-4 bg-card text-card-foreground border border-border rounded-md flex flex-col">
+        <h3 className="text-xl text-center font-semibold">Citas Futuras</h3>
 
         {/* Separator horizontal */}
-        <div className="my-2 border-t border-gray-300"></div>
+        <div className="my-2 border-t border-border" />
 
         <CalendarioCitas citas={citas} />
 

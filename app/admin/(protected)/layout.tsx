@@ -1,8 +1,3 @@
-// import { redirect } from "next/navigation";
-// import { createClient } from "@/lib/supabase/server";
-
-// import { ToasterClient } from "@/components/ui/toasteClient"; // 👈 Importa el wrapper cliente
-
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -10,15 +5,26 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-// import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb";
-// import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import ToasterClient from "@/components/ui/toasteClient";
+import PatientSearch from "@/components/patient-search";
+import { createClient } from "@/lib/supabase/server";
 
-export default function ProtectedLayout({
+
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const { data: patients, error } = await supabase
+    .from("pacientes")
+    .select("id, nombres, apellidos, numero_historia");
+
+  if (error) {
+    console.error("Error fetching patients in layout:", error);
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -26,10 +32,13 @@ export default function ProtectedLayout({
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          {/* <DynamicBreadcrumb /> */}
 
-          <div className="flex items-center gap-4 ml-auto">
-            {/* {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />} */}
+          <div className="flex flex-1 h-auto rounded-lg">
+            <PatientSearch patients={patients || []} />
+          </div>
+
+          <div className="flex items-center gap-4 ml-auto order-b px-2">
+            <Separator orientation="vertical" className="mr-2 h-4" />
             <ThemeSwitcher />
           </div>
         </header>
@@ -40,31 +49,7 @@ export default function ProtectedLayout({
             </div>
           </div>
         </main>
-        <footer className="border-t border-gray-200 bg-gray-50 px-6 py-4 dark: bg-transparent">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-center items-center gap-2">
-            <span className="text-sm text-gray-500">
-              © 2025 Glorious. Todos los derechos reservados.
-            </span>
-            {/* <div className="flex gap-4 text-sm text-gray-500">
-              <a
-                href="/privacy"
-                className="hover:text-gray-700 transition-colors"
-              >
-                Privacidad
-              </a>
-              <a
-                href="/terms"
-                className="hover:text-gray-700 transition-colors"
-              >
-                Términos
-              </a>
-              <a href="/help" className="hover:text-gray-700 transition-colors">
-                Ayuda
-              </a>
-            </div> */}
-          </div>
-        </footer>
-        {/* <ToasterClient /> */}
+        <ToasterClient />
       </SidebarInset>
     </SidebarProvider>
   );

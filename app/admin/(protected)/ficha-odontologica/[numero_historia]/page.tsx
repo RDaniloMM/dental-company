@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { FichaOdontologicaForm } from "@/components/ficha-odontologica-form";
+import FichaOdontologicaContent from "./client-content";
 
 type FichaOdontologicaPageProps = {
   params: Promise<{ numero_historia: string }>;
@@ -20,14 +20,20 @@ export default async function FichaOdontologicaPage({
     return redirect("/admin/login");
   }
 
+  const { data: patient, error } = await supabase
+    .from("pacientes")
+    .select("id")
+    .eq("numero_historia", resolvedParams.numero_historia)
+    .single();
+
+  if (error || !patient) {
+    console.error("Patient not found:", error);
+    return redirect("/admin/dashboard");
+  }
+
   return (
-    <div className="flex-1 w-full flex flex-col items-center px-4">
-      <div className="w-full max-w-4xl">
-        <h1 className="text-2xl font-bold mb-6">Ficha Odontológica</h1>
-        <FichaOdontologicaForm
-          numero_historia={resolvedParams.numero_historia}
-        />
-      </div>
+    <div className="w-full h-full">
+      <FichaOdontologicaContent patientId={patient.id} />
     </div>
   );
 }

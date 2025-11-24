@@ -26,6 +26,7 @@ import {
   SquareIcon,
   XIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { nanoid } from "nanoid";
 import {
   type ChangeEventHandler,
@@ -90,7 +91,7 @@ export function PromptInputAttachment({
       {...props}
     >
       {data.mediaType?.startsWith("image/") && data.url ? (
-        <img
+        <Image
           alt={data.filename || "attachment"}
           className="size-full rounded-md object-cover"
           height={56}
@@ -198,15 +199,12 @@ export type PromptInputProps = Omit<
   HTMLAttributes<HTMLFormElement>,
   "onSubmit"
 > & {
-  accept?: string; // e.g., "image/*" or leave undefined for any
+  accept?: string;
   multiple?: boolean;
-  // When true, accepts drops anywhere on document. Default false (opt-in).
   globalDrop?: boolean;
-  // Render a hidden input with given name and keep it in sync for native form posts. Default false.
   syncHiddenInput?: boolean;
-  // Minimal constraints
   maxFiles?: number;
-  maxFileSize?: number; // bytes
+  maxFileSize?: number; 
   onError?: (err: {
     code: "max_files" | "max_file_size" | "accept";
     message: string;
@@ -235,7 +233,6 @@ export const PromptInput = ({
   const anchorRef = useRef<HTMLSpanElement>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  // Find nearest form to scope drag & drop
   useEffect(() => {
     const root = anchorRef.current?.closest("form");
     if (root instanceof HTMLFormElement) {
@@ -252,7 +249,6 @@ export const PromptInput = ({
       if (!accept || accept.trim() === "") {
         return true;
       }
-      // Simple check: if accept includes "image/*", filter to images; otherwise allow.
       if (accept.includes("image/*")) {
         return f.type.startsWith("image/");
       }
@@ -332,18 +328,14 @@ export const PromptInput = ({
     });
   }, []);
 
-  // Note: File input cannot be programmatically set for security reasons
-  // The syncHiddenInput prop is no longer functional
   useEffect(() => {
     if (syncHiddenInput && inputRef.current) {
-      // Clear the input when items are cleared
       if (items.length === 0) {
         inputRef.current.value = "";
       }
     }
   }, [items, syncHiddenInput]);
 
-  // Attach drop handlers on nearest form and document (opt-in)
   useEffect(() => {
     const form = formRef.current;
     if (!form) {
@@ -418,9 +410,7 @@ export const PromptInput = ({
     const formData = new FormData(event.currentTarget);
     const text = (formData.get("message") as string) || "";
 
-    // Convert blob URLs to data URLs asynchronously
     Promise.all(
-      //items.map(async ({id, ...item }) => {
       items.map(async ({ ...item }) => {
         if (item.url && item.url.startsWith("blob:")) {
           return {
@@ -494,17 +484,13 @@ export const PromptInputTextarea = ({
 
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter") {
-      // Don't submit if IME composition is in progress
       if (e.nativeEvent.isComposing) {
         return;
       }
-
       if (e.shiftKey) {
-        // Allow newline
         return;
       }
 
-      // Submit on Enter (without Shift)
       e.preventDefault();
       const form = e.currentTarget.form;
       if (form) {
@@ -652,9 +638,6 @@ export const PromptInputActionMenuItem = ({
 }: PromptInputActionMenuItemProps) => (
   <DropdownMenuItem className={cn(className)} {...props} />
 );
-
-// Note: Actions that perform side-effects (like opening a file dialog)
-// are provided in opt-in modules (e.g., prompt-input-attachments).
 
 export type PromptInputSubmitProps = ComponentProps<typeof Button> & {
   status?: ChatStatus;
