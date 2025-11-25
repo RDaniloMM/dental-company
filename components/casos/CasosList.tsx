@@ -177,14 +177,14 @@ export default function CasosList({
   const handleDeleteCaso = async (casoId: string) => {
     const { error } = await supabase
       .from("casos_clinicos")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("id", casoId);
 
     if (error) {
-      toast.error(error.message || 'Error al eliminar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
+      toast.error('Error al eliminar el caso clínico.');
     } else {
       setCasos(casos.filter((c) => c.id !== casoId));
-      toast.success('El caso clínico ha sido eliminado exitosamente (soft-delete).', { style: { backgroundColor: '#008000', color: 'white' } })
+      toast.success('El caso clínico ha sido eliminado permanentemente.', { style: { backgroundColor: '#008000', color: 'white' } })
     }
   };
 
