@@ -15,7 +15,6 @@ export async function POST(req: Request) {
   try {
     // Log para debugging (incluye información de IP si está disponible)
  
-
     // Verificar API key
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       console.error("GOOGLE_GENERATIVE_AI_API_KEY no configurada");
