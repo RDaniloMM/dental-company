@@ -26,6 +26,62 @@ export async function GET() {
       now.setDate(now.getDate() - now.getDay())
     ).toISOString();
 
+    // Generar datos históricos de los últimos 6 meses
+    const historicoMeses = [];
+    for (let i = 5; i >= 0; i--) {
+      const mesDate = new Date();
+      mesDate.setMonth(mesDate.getMonth() - i);
+      const inicioMes = new Date(mesDate.getFullYear(), mesDate.getMonth(), 1);
+      const finMes = new Date(mesDate.getFullYear(), mesDate.getMonth() + 1, 0);
+
+      historicoMeses.push({
+        mes: inicioMes.toLocaleDateString("es-ES", { month: "short" }),
+        mesCompleto: inicioMes.toLocaleDateString("es-ES", {
+          month: "long",
+          year: "numeric",
+        }),
+        inicio: inicioMes.toISOString(),
+        fin: finMes.toISOString(),
+      });
+    }
+
+    // Obtener datos históricos de pacientes por mes
+    const pacientesPorMes = await Promise.all(
+      historicoMeses.map(async (mes) => {
+        const { count } = await supabase
+          .from("pacientes")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", mes.inicio)
+          .lte("created_at", mes.fin);
+        return { mes: mes.mes, pacientes: count || 0 };
+      })
+    );
+
+    // Obtener datos históricos de ingresos por mes
+    const ingresosPorMes = await Promise.all(
+      historicoMeses.map(async (mes) => {
+        const { data } = await supabase
+          .from("transacciones_financieras")
+          .select("monto")
+          .gte("fecha_transaccion", mes.inicio)
+          .lte("fecha_transaccion", mes.fin);
+        const total = data?.reduce((acc, t) => acc + Number(t.monto), 0) || 0;
+        return { mes: mes.mes, ingresos: total };
+      })
+    );
+
+    // Obtener datos históricos de citas por mes
+    const citasPorMes = await Promise.all(
+      historicoMeses.map(async (mes) => {
+        const { count } = await supabase
+          .from("citas")
+          .select("*", { count: "exact", head: true })
+          .gte("fecha_inicio", mes.inicio)
+          .lte("fecha_inicio", mes.fin);
+        return { mes: mes.mes, citas: count || 0 };
+      })
+    );
+
     // 1. Total de pacientes
     const { count: totalPacientes } = await supabase
       .from("pacientes")
@@ -246,6 +302,7 @@ export async function GET() {
         total: totalPacientes || 0,
         nuevosEsteMes: pacientesNuevos || 0,
         crecimiento: crecimientoPacientes,
+        historico: pacientesPorMes,
       },
       citas: {
         total: totalCitas || 0,
@@ -254,11 +311,13 @@ export async function GET() {
         porEstado: estadosCitas,
         tasaAsistencia,
         proximas: proximasCitas || [],
+        historico: citasPorMes,
       },
       finanzas: {
         ingresosMes,
         ingresosMesAnterior,
         crecimiento: crecimientoIngresos,
+        historico: ingresosPorMes,
       },
       tratamientos: {
         total: planesPorEstado?.length || 0,
