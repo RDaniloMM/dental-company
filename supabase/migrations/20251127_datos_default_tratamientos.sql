@@ -14,7 +14,7 @@ ON CONFLICT (nombre) DO NOTHING;
 INSERT INTO public.monedas (codigo, nombre, simbolo) VALUES
   ('PEN', 'Soles Peruanos', 'S/'),
   ('USD', 'Dólares Americanos', '$'),
-  ('EUR', 'Pesos chilenos', 'CLP$')
+  ('CLP', 'Pesos Chilenos', 'CLP$')
 ON CONFLICT (codigo) DO NOTHING;
 
 -- Insertar grupos de procedimiento por defecto (si no existen)

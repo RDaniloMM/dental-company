@@ -37,6 +37,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
@@ -46,8 +54,26 @@ import {
   User,
   Phone,
   ClipboardPlus,
+  Settings2,
+  Mail,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// Definición de columnas disponibles para la tabla de pacientes
+const COLUMNAS_PACIENTES = {
+  numero_historia: { label: "N° Historia", default: true },
+  nombre: { label: "Paciente", default: true },
+  dni: { label: "DNI", default: true },
+  edad: { label: "Edad", default: true },
+  telefono: { label: "Teléfono", default: true },
+  email: { label: "Email", default: false },
+  direccion: { label: "Dirección", default: false },
+  sexo: { label: "Sexo", default: true },
+  fecha_registro: { label: "Fecha Registro", default: false },
+} as const;
+
+type ColumnaPaciente = keyof typeof COLUMNAS_PACIENTES;
 
 interface Paciente {
   id: string;
@@ -72,6 +98,15 @@ export default function PacientesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Estado para columnas visibles
+  const [columnasVisibles, setColumnasVisibles] = useState<Record<ColumnaPaciente, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    Object.entries(COLUMNAS_PACIENTES).forEach(([key, value]) => {
+      initial[key] = value.default;
+    });
+    return initial as Record<ColumnaPaciente, boolean>;
+  });
 
   // Form state para nuevo paciente
   const [formData, setFormData] = useState({
@@ -411,6 +446,32 @@ export default function PacientesPage() {
                 className='pl-9'
               />
             </div>
+            {/* Selector de columnas */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant='outline' size='icon'>
+                  <Settings2 className='h-4 w-4' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end' className='w-48'>
+                <DropdownMenuLabel>Columnas visibles</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {Object.entries(COLUMNAS_PACIENTES).map(([key, { label }]) => (
+                  <DropdownMenuCheckboxItem
+                    key={key}
+                    checked={columnasVisibles[key as ColumnaPaciente]}
+                    onCheckedChange={(checked) =>
+                      setColumnasVisibles((prev) => ({
+                        ...prev,
+                        [key]: checked,
+                      }))
+                    }
+                  >
+                    {label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent>
@@ -419,79 +480,125 @@ export default function PacientesPage() {
               <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>N° Historia</TableHead>
-                  <TableHead>Paciente</TableHead>
-                  <TableHead>DNI</TableHead>
-                  <TableHead>Edad</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead>Sexo</TableHead>
-                  <TableHead className='text-right'>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPacientes.length === 0 ? (
+            <div className='rounded-md border overflow-x-auto'>
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className='text-center py-8'
-                    >
-                      <User className='h-12 w-12 mx-auto text-muted-foreground mb-2' />
-                      <p className='text-muted-foreground'>
-                        No se encontraron pacientes
-                      </p>
-                    </TableCell>
+                    {columnasVisibles.numero_historia && <TableHead>N° Historia</TableHead>}
+                    {columnasVisibles.nombre && <TableHead>Paciente</TableHead>}
+                    {columnasVisibles.dni && <TableHead>DNI</TableHead>}
+                    {columnasVisibles.edad && <TableHead>Edad</TableHead>}
+                    {columnasVisibles.telefono && <TableHead>Teléfono</TableHead>}
+                    {columnasVisibles.email && <TableHead>Email</TableHead>}
+                    {columnasVisibles.direccion && <TableHead>Dirección</TableHead>}
+                    {columnasVisibles.sexo && <TableHead>Sexo</TableHead>}
+                    {columnasVisibles.fecha_registro && <TableHead>Fecha Registro</TableHead>}
+                    <TableHead className='text-right'>Acciones</TableHead>
                   </TableRow>
-                ) : (
-                  filteredPacientes.map((paciente) => (
-                    <TableRow key={paciente.id}>
-                      <TableCell>
-                        <Badge variant='outline'>
-                          {paciente.numero_historia}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className='font-medium'>
-                        {paciente.nombres} {paciente.apellidos}
-                      </TableCell>
-                      <TableCell>{paciente.dni || "-"}</TableCell>
-                      <TableCell>
-                        {calcularEdad(paciente.fecha_nacimiento)} años
-                      </TableCell>
-                      <TableCell>
-                        {paciente.telefono ? (
-                          <span className='flex items-center gap-1'>
-                            <Phone className='h-3 w-3' />
-                            {paciente.telefono}
-                          </span>
-                        ) : (
-                          "-"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            paciente.sexo === "M" ? "default" : "secondary"
-                          }
-                        >
-                          {paciente.sexo === "M" ? "M" : "F"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className='text-right'>
-                        <Button
-                          size='sm'
-                          onClick={() => goToFicha(paciente.numero_historia)}
-                        >
-                          <FileText className='h-4 w-4 mr-1' />
-                          Ver Ficha
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {filteredPacientes.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={Object.values(columnasVisibles).filter(Boolean).length + 1}
+                        className='text-center py-8'
+                      >
+                        <User className='h-12 w-12 mx-auto text-muted-foreground mb-2' />
+                        <p className='text-muted-foreground'>
+                          No se encontraron pacientes
+                        </p>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredPacientes.map((paciente) => (
+                      <TableRow key={paciente.id}>
+                        {columnasVisibles.numero_historia && (
+                          <TableCell>
+                            <Badge variant='outline'>
+                              {paciente.numero_historia}
+                            </Badge>
+                          </TableCell>
+                        )}
+                        {columnasVisibles.nombre && (
+                          <TableCell className='font-medium'>
+                            {paciente.nombres} {paciente.apellidos}
+                          </TableCell>
+                        )}
+                        {columnasVisibles.dni && (
+                          <TableCell>{paciente.dni || "-"}</TableCell>
+                        )}
+                        {columnasVisibles.edad && (
+                          <TableCell>
+                            {calcularEdad(paciente.fecha_nacimiento)} años
+                          </TableCell>
+                        )}
+                        {columnasVisibles.telefono && (
+                          <TableCell>
+                            {paciente.telefono ? (
+                              <span className='flex items-center gap-1'>
+                                <Phone className='h-3 w-3' />
+                                {paciente.telefono}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                        )}
+                        {columnasVisibles.email && (
+                          <TableCell>
+                            {paciente.email ? (
+                              <span className='flex items-center gap-1'>
+                                <Mail className='h-3 w-3' />
+                                {paciente.email}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                        )}
+                        {columnasVisibles.direccion && (
+                          <TableCell>
+                            {paciente.direccion ? (
+                              <span className='flex items-center gap-1 max-w-[200px] truncate'>
+                                <MapPin className='h-3 w-3 flex-shrink-0' />
+                                {paciente.direccion}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                        )}
+                        {columnasVisibles.sexo && (
+                          <TableCell>
+                            <Badge
+                              variant={
+                                paciente.sexo === "M" ? "default" : "secondary"
+                              }
+                            >
+                              {paciente.sexo === "M" ? "M" : "F"}
+                            </Badge>
+                          </TableCell>
+                        )}
+                        {columnasVisibles.fecha_registro && (
+                          <TableCell>
+                            {new Date(paciente.created_at).toLocaleDateString()}
+                          </TableCell>
+                        )}
+                        <TableCell className='text-right'>
+                          <Button
+                            size='sm'
+                            onClick={() => goToFicha(paciente.numero_historia)}
+                          >
+                            <FileText className='h-4 w-4 mr-1' />
+                            Ver Ficha
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

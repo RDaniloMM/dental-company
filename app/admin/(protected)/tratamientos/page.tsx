@@ -40,6 +40,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Stethoscope,
   FolderTree,
   DollarSign,
@@ -48,7 +56,23 @@ import {
   Edit,
   Trash2,
   Package,
+  Settings2,
 } from "lucide-react";
+
+// Definición de columnas disponibles para la tabla de procedimientos
+const COLUMNAS_PROCEDIMIENTOS = {
+  nombre: { label: "Nombre", default: true },
+  descripcion: { label: "Descripción", default: false },
+  grupo: { label: "Grupo", default: true },
+  medida: { label: "Medida", default: true },
+  tipo: { label: "Tipo", default: false },
+  precio_pen: { label: "Precio (S/)", default: true },
+  precio_clp: { label: "Precio (CLP$)", default: true },
+  precio_usd: { label: "Precio ($)", default: false },
+  estado: { label: "Estado", default: true },
+} as const;
+
+type ColumnaProc = keyof typeof COLUMNAS_PROCEDIMIENTOS;
 
 interface Procedimiento {
   id: string;
@@ -100,6 +124,15 @@ export default function TratamientosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [grupoFilter, setGrupoFilter] = useState("todos");
 
+  // Estado para columnas visibles
+  const [columnasVisibles, setColumnasVisibles] = useState<Record<ColumnaProc, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    Object.entries(COLUMNAS_PROCEDIMIENTOS).forEach(([key, value]) => {
+      initial[key] = value.default;
+    });
+    return initial as Record<ColumnaProc, boolean>;
+  });
+
   // Form states - Procedimientos
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProcedimiento, setEditingProcedimiento] =
@@ -143,7 +176,14 @@ export default function TratamientosPage() {
     if (procRes.data) setProcedimientos(procRes.data);
     if (gruposRes.data) setGrupos(gruposRes.data);
     if (unidadesRes.data) setUnidades(unidadesRes.data);
-    if (monedasRes.data) setMonedas(monedasRes.data);
+    // Filtrar monedas duplicadas por código (mantener solo la primera)
+    if (monedasRes.data) {
+      const uniqueMonedas = monedasRes.data.filter(
+        (moneda, index, self) =>
+          index === self.findIndex((m) => m.codigo === moneda.codigo)
+      );
+      setMonedas(uniqueMonedas);
+    }
     if (preciosRes.data) setPrecios(preciosRes.data);
     setLoading(false);
   }, [supabase]);
@@ -713,6 +753,32 @@ export default function TratamientosPage() {
                 >
                   Actualizar
                 </Button>
+                {/* Selector de columnas */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant='outline' size='icon'>
+                      <Settings2 className='h-4 w-4' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end' className='w-48'>
+                    <DropdownMenuLabel>Columnas visibles</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {Object.entries(COLUMNAS_PROCEDIMIENTOS).map(([key, { label }]) => (
+                      <DropdownMenuCheckboxItem
+                        key={key}
+                        checked={columnasVisibles[key as ColumnaProc]}
+                        onCheckedChange={(checked) =>
+                          setColumnasVisibles((prev) => ({
+                            ...prev,
+                            [key]: checked,
+                          }))
+                        }
+                      >
+                        {label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {loading ? (
@@ -724,18 +790,25 @@ export default function TratamientosPage() {
                   No se encontraron procedimientos
                 </p>
               ) : (
-                <div className='rounded-md border'>
+                <div className='rounded-md border overflow-x-auto'>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Grupo</TableHead>
-                        <TableHead>Medida</TableHead>
-                        <TableHead className='text-right'>
-                          Precio (S/)
-                        </TableHead>
-                        <TableHead className='text-right'>Precio ($)</TableHead>
-                        <TableHead>Estado</TableHead>
+                        {columnasVisibles.nombre && <TableHead>Nombre</TableHead>}
+                        {columnasVisibles.descripcion && <TableHead>Descripción</TableHead>}
+                        {columnasVisibles.grupo && <TableHead>Grupo</TableHead>}
+                        {columnasVisibles.medida && <TableHead>Medida</TableHead>}
+                        {columnasVisibles.tipo && <TableHead>Tipo</TableHead>}
+                        {columnasVisibles.precio_pen && (
+                          <TableHead className='text-right'>Precio (S/)</TableHead>
+                        )}
+                        {columnasVisibles.precio_clp && (
+                          <TableHead className='text-right'>Precio (CLP$)</TableHead>
+                        )}
+                        {columnasVisibles.precio_usd && (
+                          <TableHead className='text-right'>Precio ($)</TableHead>
+                        )}
+                        {columnasVisibles.estado && <TableHead>Estado</TableHead>}
                         <TableHead className='text-right'>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -745,29 +818,51 @@ export default function TratamientosPage() {
                           key={proc.id}
                           className={!proc.activo ? "opacity-50" : ""}
                         >
-                          <TableCell>
-                            <div className='font-medium'>{proc.nombre}</div>
-                            {proc.descripcion && (
-                              <div className='text-sm text-muted-foreground line-clamp-1'>
-                                {proc.descripcion}
+                          {columnasVisibles.nombre && (
+                            <TableCell>
+                              <div className='font-medium'>{proc.nombre}</div>
+                            </TableCell>
+                          )}
+                          {columnasVisibles.descripcion && (
+                            <TableCell>
+                              <div className='text-sm text-muted-foreground line-clamp-2'>
+                                {proc.descripcion || "-"}
                               </div>
-                            )}
-                          </TableCell>
-                          <TableCell>{getGrupoName(proc.grupo_id)}</TableCell>
-                          <TableCell>{proc.medida || "-"}</TableCell>
-                          <TableCell className='text-right'>
-                            {getPrecio(proc.id, "PEN")?.toFixed(2) || "-"}
-                          </TableCell>
-                          <TableCell className='text-right'>
-                            {getPrecio(proc.id, "USD")?.toFixed(2) || "-"}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={proc.activo ? "default" : "secondary"}
-                            >
-                              {proc.activo ? "Activo" : "Inactivo"}
-                            </Badge>
-                          </TableCell>
+                            </TableCell>
+                          )}
+                          {columnasVisibles.grupo && (
+                            <TableCell>{getGrupoName(proc.grupo_id)}</TableCell>
+                          )}
+                          {columnasVisibles.medida && (
+                            <TableCell>{proc.medida || "-"}</TableCell>
+                          )}
+                          {columnasVisibles.tipo && (
+                            <TableCell>{proc.tipo || "-"}</TableCell>
+                          )}
+                          {columnasVisibles.precio_pen && (
+                            <TableCell className='text-right'>
+                              {getPrecio(proc.id, "PEN")?.toFixed(2) || "-"}
+                            </TableCell>
+                          )}
+                          {columnasVisibles.precio_clp && (
+                            <TableCell className='text-right'>
+                              {getPrecio(proc.id, "CLP")?.toFixed(2) || "-"}
+                            </TableCell>
+                          )}
+                          {columnasVisibles.precio_usd && (
+                            <TableCell className='text-right'>
+                              {getPrecio(proc.id, "USD")?.toFixed(2) || "-"}
+                            </TableCell>
+                          )}
+                          {columnasVisibles.estado && (
+                            <TableCell>
+                              <Badge
+                                variant={proc.activo ? "default" : "secondary"}
+                              >
+                                {proc.activo ? "Activo" : "Inactivo"}
+                              </Badge>
+                            </TableCell>
+                          )}
                           <TableCell className='text-right'>
                             <div className='flex justify-end gap-2'>
                               <Button
