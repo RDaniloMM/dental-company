@@ -233,11 +233,13 @@ export default function CMSPage() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [miembroFotoUrl, setMiembroFotoUrl] = useState<string>("");
   const [miembroFotoPublicId, setMiembroFotoPublicId] = useState<string>("");
-  
+
   // Estados para curriculum
   const [curriculumFormacion, setCurriculumFormacion] = useState<string>("");
-  const [curriculumExperiencia, setCurriculumExperiencia] = useState<string>("");
-  const [curriculumEspecialidades, setCurriculumEspecialidades] = useState<string>("");
+  const [curriculumExperiencia, setCurriculumExperiencia] =
+    useState<string>("");
+  const [curriculumEspecialidades, setCurriculumEspecialidades] =
+    useState<string>("");
   const [curriculumFilosofia, setCurriculumFilosofia] = useState<string>("");
 
   // Cargar datos (inicial)
@@ -999,16 +1001,28 @@ export default function CMSPage() {
                     onSubmit={(e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
-                      
+
                       // Construir objeto curriculum si hay datos
-                      const hasCurriculum = curriculumFormacion || curriculumExperiencia || curriculumEspecialidades || curriculumFilosofia;
-                      const curriculum = hasCurriculum ? {
-                        formacion: curriculumFormacion.split("\n").filter(line => line.trim()),
-                        experiencia: curriculumExperiencia.split("\n").filter(line => line.trim()),
-                        especialidades: curriculumEspecialidades.split("\n").filter(line => line.trim()),
-                        filosofia: curriculumFilosofia.trim(),
-                      } : null;
-                      
+                      const hasCurriculum =
+                        curriculumFormacion ||
+                        curriculumExperiencia ||
+                        curriculumEspecialidades ||
+                        curriculumFilosofia;
+                      const curriculum = hasCurriculum
+                        ? {
+                            formacion: curriculumFormacion
+                              .split("\n")
+                              .filter((line) => line.trim()),
+                            experiencia: curriculumExperiencia
+                              .split("\n")
+                              .filter((line) => line.trim()),
+                            especialidades: curriculumEspecialidades
+                              .split("\n")
+                              .filter((line) => line.trim()),
+                            filosofia: curriculumFilosofia.trim(),
+                          }
+                        : null;
+
                       saveMiembro({
                         id: editingMiembro?.id,
                         nombre: formData.get("nombre") as string,
@@ -1073,7 +1087,9 @@ export default function CMSPage() {
                               <div className='relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 mx-auto'>
                                 <Image
                                   src={
-                                    miembroFotoUrl || editingMiembro?.foto_url || ""
+                                    miembroFotoUrl ||
+                                    editingMiembro?.foto_url ||
+                                    ""
                                   }
                                   alt='Preview'
                                   fill
@@ -1112,49 +1128,65 @@ export default function CMSPage() {
                         <div className='space-y-2'>
                           <Label htmlFor='formacion'>
                             Formación Académica
-                            <span className='text-xs text-muted-foreground ml-1'>(una por línea)</span>
+                            <span className='text-xs text-muted-foreground ml-1'>
+                              (una por línea)
+                            </span>
                           </Label>
                           <Textarea
                             id='formacion'
                             value={curriculumFormacion}
-                            onChange={(e) => setCurriculumFormacion(e.target.value)}
-                            placeholder="Doctorado en Odontología&#10;Maestría en..."
+                            onChange={(e) =>
+                              setCurriculumFormacion(e.target.value)
+                            }
+                            placeholder='Doctorado en Odontología&#10;Maestría en...'
                             rows={3}
                           />
                         </div>
                         <div className='space-y-2'>
                           <Label htmlFor='experiencia'>
                             Experiencia
-                            <span className='text-xs text-muted-foreground ml-1'>(una por línea)</span>
+                            <span className='text-xs text-muted-foreground ml-1'>
+                              (una por línea)
+                            </span>
                           </Label>
                           <Textarea
                             id='experiencia'
                             value={curriculumExperiencia}
-                            onChange={(e) => setCurriculumExperiencia(e.target.value)}
-                            placeholder="10 años de experiencia&#10;Docente universitario..."
+                            onChange={(e) =>
+                              setCurriculumExperiencia(e.target.value)
+                            }
+                            placeholder='10 años de experiencia&#10;Docente universitario...'
                             rows={3}
                           />
                         </div>
                         <div className='space-y-2'>
                           <Label htmlFor='especialidades'>
                             Especialidades
-                            <span className='text-xs text-muted-foreground ml-1'>(una por línea)</span>
+                            <span className='text-xs text-muted-foreground ml-1'>
+                              (una por línea)
+                            </span>
                           </Label>
                           <Textarea
                             id='especialidades'
                             value={curriculumEspecialidades}
-                            onChange={(e) => setCurriculumEspecialidades(e.target.value)}
-                            placeholder="Implantes dentales&#10;Ortodoncia..."
+                            onChange={(e) =>
+                              setCurriculumEspecialidades(e.target.value)
+                            }
+                            placeholder='Implantes dentales&#10;Ortodoncia...'
                             rows={3}
                           />
                         </div>
                         <div className='space-y-2'>
-                          <Label htmlFor='filosofia'>Filosofía profesional</Label>
+                          <Label htmlFor='filosofia'>
+                            Filosofía profesional
+                          </Label>
                           <Textarea
                             id='filosofia'
                             value={curriculumFilosofia}
-                            onChange={(e) => setCurriculumFilosofia(e.target.value)}
-                            placeholder="Mi objetivo es..."
+                            onChange={(e) =>
+                              setCurriculumFilosofia(e.target.value)
+                            }
+                            placeholder='Mi objetivo es...'
                             rows={3}
                           />
                         </div>
@@ -1206,12 +1238,18 @@ export default function CMSPage() {
                       <TableCell>{miembro.especialidad}</TableCell>
                       <TableCell>
                         {miembro.curriculum ? (
-                          <Badge variant='outline' className='text-blue-600 border-blue-600'>
+                          <Badge
+                            variant='outline'
+                            className='text-blue-600 border-blue-600'
+                          >
                             <FileText className='h-3 w-3 mr-1' />
                             Sí
                           </Badge>
                         ) : (
-                          <Badge variant='outline' className='text-gray-400 border-gray-400'>
+                          <Badge
+                            variant='outline'
+                            className='text-gray-400 border-gray-400'
+                          >
                             No
                           </Badge>
                         )}
@@ -1247,9 +1285,15 @@ export default function CMSPage() {
                             );
                             // Cargar curriculum existente
                             const cv = miembro.curriculum;
-                            setCurriculumFormacion(cv?.formacion?.join("\n") || "");
-                            setCurriculumExperiencia(cv?.experiencia?.join("\n") || "");
-                            setCurriculumEspecialidades(cv?.especialidades?.join("\n") || "");
+                            setCurriculumFormacion(
+                              cv?.formacion?.join("\n") || ""
+                            );
+                            setCurriculumExperiencia(
+                              cv?.experiencia?.join("\n") || ""
+                            );
+                            setCurriculumEspecialidades(
+                              cv?.especialidades?.join("\n") || ""
+                            );
                             setCurriculumFilosofia(cv?.filosofia || "");
                             setDialogType("miembro");
                             setDialogOpen(true);

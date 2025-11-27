@@ -788,7 +788,8 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
           >
             {displayEquipo.map((member) => {
               // Verificar curriculum en BD o en datos hardcodeados (fallback)
-              const hasCurriculum = member.curriculum || curriculumData[member.nombre];
+              const hasCurriculum =
+                member.curriculum || curriculumData[member.nombre];
               return (
                 <div
                   key={member.id}
