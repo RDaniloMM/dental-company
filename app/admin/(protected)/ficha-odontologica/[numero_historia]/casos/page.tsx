@@ -34,7 +34,7 @@ export default async function CasosPage({
   }
 
   // Buscar historia clínica existente
-  let { data: historia, error: historiaError } = await supabase
+  const { data: historia, error: historiaError } = await supabase
     .from("historias_clinicas")
     .select("id")
     .eq("paciente_id", paciente.id)
