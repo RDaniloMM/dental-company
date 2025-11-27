@@ -99,15 +99,17 @@ export function NavMain({ items }: NavMainProps) {
                     isCollapsed && "cursor-default"
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    {section.icon && <section.icon className="h-4 w-4" />}
-                    <span>{labelMap[section.url || ""] || section.title}</span>
+                  <div className='flex items-center gap-2'>
+                    {section.icon && <section.icon className='h-4 w-4' />}
+                    <span className='group-data-[collapsible=icon]:hidden'>
+                      {labelMap[section.url || ""] || section.title}
+                    </span>
                   </div>
 
                   {hasChildren && (
                     <ChevronRight
                       className={cn(
-                        "h-4 w-4 ml-auto transition-transform duration-200",
+                        "h-4 w-4 ml-auto transition-transform duration-200 group-data-[collapsible=icon]:hidden",
                         isOpen && "rotate-90"
                       )}
                     />
@@ -126,8 +128,10 @@ export function NavMain({ items }: NavMainProps) {
                         : "hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    {section.icon && <section.icon className="h-4 w-4" />}
-                    <span>{labelMap[section.url || ""] || section.title}</span>
+                    {section.icon && <section.icon className='h-4 w-4' />}
+                    <span className='group-data-[collapsible=icon]:hidden'>
+                      {labelMap[section.url || ""] || section.title}
+                    </span>
                   </Link>
                 </SidebarMenuButton>
               )}

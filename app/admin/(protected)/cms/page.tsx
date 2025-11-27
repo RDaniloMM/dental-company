@@ -65,6 +65,13 @@ interface Servicio {
   visible: boolean;
 }
 
+interface Curriculum {
+  formacion: string[];
+  experiencia: string[];
+  especialidades: string[];
+  filosofia: string;
+}
+
 interface Miembro {
   id: string;
   nombre: string;
@@ -74,6 +81,7 @@ interface Miembro {
   foto_public_id?: string;
   orden: number;
   visible: boolean;
+  curriculum?: Curriculum | null;
 }
 
 interface Invitacion {
@@ -225,6 +233,12 @@ export default function CMSPage() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [miembroFotoUrl, setMiembroFotoUrl] = useState<string>("");
   const [miembroFotoPublicId, setMiembroFotoPublicId] = useState<string>("");
+  
+  // Estados para curriculum
+  const [curriculumFormacion, setCurriculumFormacion] = useState<string>("");
+  const [curriculumExperiencia, setCurriculumExperiencia] = useState<string>("");
+  const [curriculumEspecialidades, setCurriculumEspecialidades] = useState<string>("");
+  const [curriculumFilosofia, setCurriculumFilosofia] = useState<string>("");
 
   // Cargar datos (inicial)
   const fetchData = async () => {
@@ -963,6 +977,11 @@ export default function CMSPage() {
                       setEditingMiembro(null);
                       setMiembroFotoUrl("");
                       setMiembroFotoPublicId("");
+                      // Limpiar campos de curriculum
+                      setCurriculumFormacion("");
+                      setCurriculumExperiencia("");
+                      setCurriculumEspecialidades("");
+                      setCurriculumFilosofia("");
                       setDialogOpen(true);
                     }}
                   >
@@ -970,7 +989,7 @@ export default function CMSPage() {
                     Añadir Miembro
                   </Button>
                 </DialogTrigger>
-                <DialogContent className='max-w-lg'>
+                <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto'>
                   <DialogHeader>
                     <DialogTitle>
                       {editingMiembro?.id ? "Editar Miembro" : "Nuevo Miembro"}
@@ -980,6 +999,16 @@ export default function CMSPage() {
                     onSubmit={(e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
+                      
+                      // Construir objeto curriculum si hay datos
+                      const hasCurriculum = curriculumFormacion || curriculumExperiencia || curriculumEspecialidades || curriculumFilosofia;
+                      const curriculum = hasCurriculum ? {
+                        formacion: curriculumFormacion.split("\n").filter(line => line.trim()),
+                        experiencia: curriculumExperiencia.split("\n").filter(line => line.trim()),
+                        especialidades: curriculumEspecialidades.split("\n").filter(line => line.trim()),
+                        filosofia: curriculumFilosofia.trim(),
+                      } : null;
+                      
                       saveMiembro({
                         id: editingMiembro?.id,
                         nombre: formData.get("nombre") as string,
@@ -993,86 +1022,145 @@ export default function CMSPage() {
                           "",
                         orden: Number(formData.get("orden")) || 0,
                         visible: true,
+                        curriculum,
                       });
                     }}
                     className='space-y-4'
                   >
-                    <div className='space-y-2'>
-                      <Label htmlFor='nombre'>Nombre</Label>
-                      <Input
-                        id='nombre'
-                        name='nombre'
-                        defaultValue={editingMiembro?.nombre}
-                        required
-                      />
-                    </div>
-                    <div className='space-y-2'>
-                      <Label htmlFor='cargo'>Cargo</Label>
-                      <Input
-                        id='cargo'
-                        name='cargo'
-                        defaultValue={editingMiembro?.cargo}
-                      />
-                    </div>
-                    <div className='space-y-2'>
-                      <Label htmlFor='especialidad'>Especialidad</Label>
-                      <Input
-                        id='especialidad'
-                        name='especialidad'
-                        defaultValue={editingMiembro?.especialidad}
-                      />
-                    </div>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      {/* Columna izquierda: Datos básicos */}
+                      <div className='space-y-4'>
+                        <div className='space-y-2'>
+                          <Label htmlFor='nombre'>Nombre *</Label>
+                          <Input
+                            id='nombre'
+                            name='nombre'
+                            defaultValue={editingMiembro?.nombre}
+                            required
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='cargo'>Cargo</Label>
+                          <Input
+                            id='cargo'
+                            name='cargo'
+                            defaultValue={editingMiembro?.cargo}
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='especialidad'>Especialidad</Label>
+                          <Input
+                            id='especialidad'
+                            name='especialidad'
+                            defaultValue={editingMiembro?.especialidad}
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='orden'>Orden</Label>
+                          <Input
+                            id='orden'
+                            name='orden'
+                            type='number'
+                            defaultValue={editingMiembro?.orden || 0}
+                          />
+                        </div>
 
-                    {/* Componente de subida de foto */}
-                    <div className='space-y-2'>
-                      <Label>Foto del miembro</Label>
-                      <div className='space-y-3'>
-                        {/* Preview de la imagen actual */}
-                        {(miembroFotoUrl || editingMiembro?.foto_url) && (
-                          <div className='relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 mx-auto'>
-                            <Image
-                              src={
-                                miembroFotoUrl || editingMiembro?.foto_url || ""
-                              }
-                              alt='Preview'
-                              fill
-                              className='object-cover'
-                            />
-                            <button
-                              type='button'
-                              onClick={() => {
-                                setMiembroFotoUrl("");
-                                setMiembroFotoPublicId("");
+                        {/* Componente de subida de foto */}
+                        <div className='space-y-2'>
+                          <Label>Foto del miembro</Label>
+                          <div className='space-y-3'>
+                            {(miembroFotoUrl || editingMiembro?.foto_url) && (
+                              <div className='relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 mx-auto'>
+                                <Image
+                                  src={
+                                    miembroFotoUrl || editingMiembro?.foto_url || ""
+                                  }
+                                  alt='Preview'
+                                  fill
+                                  className='object-cover'
+                                />
+                                <button
+                                  type='button'
+                                  onClick={() => {
+                                    setMiembroFotoUrl("");
+                                    setMiembroFotoPublicId("");
+                                  }}
+                                  className='absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors'
+                                >
+                                  <X className='h-3 w-3' />
+                                </button>
+                              </div>
+                            )}
+                            <PhotoUploader
+                              onUpload={(url, publicId) => {
+                                setMiembroFotoUrl(url);
+                                setMiembroFotoPublicId(publicId);
                               }}
-                              className='absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors'
-                            >
-                              <X className='h-3 w-3' />
-                            </button>
+                              isUploading={isUploadingPhoto}
+                              setIsUploading={setIsUploadingPhoto}
+                              oldPublicId={editingMiembro?.foto_public_id}
+                            />
                           </div>
-                        )}
+                        </div>
+                      </div>
 
-                        {/* Dropzone para subir */}
-                        <PhotoUploader
-                          onUpload={(url, publicId) => {
-                            setMiembroFotoUrl(url);
-                            setMiembroFotoPublicId(publicId);
-                          }}
-                          isUploading={isUploadingPhoto}
-                          setIsUploading={setIsUploadingPhoto}
-                          oldPublicId={editingMiembro?.foto_public_id}
-                        />
+                      {/* Columna derecha: Curriculum */}
+                      <div className='space-y-4'>
+                        <h4 className='font-semibold text-sm text-muted-foreground'>
+                          Curriculum Vitae (opcional)
+                        </h4>
+                        <div className='space-y-2'>
+                          <Label htmlFor='formacion'>
+                            Formación Académica
+                            <span className='text-xs text-muted-foreground ml-1'>(una por línea)</span>
+                          </Label>
+                          <Textarea
+                            id='formacion'
+                            value={curriculumFormacion}
+                            onChange={(e) => setCurriculumFormacion(e.target.value)}
+                            placeholder="Doctorado en Odontología&#10;Maestría en..."
+                            rows={3}
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='experiencia'>
+                            Experiencia
+                            <span className='text-xs text-muted-foreground ml-1'>(una por línea)</span>
+                          </Label>
+                          <Textarea
+                            id='experiencia'
+                            value={curriculumExperiencia}
+                            onChange={(e) => setCurriculumExperiencia(e.target.value)}
+                            placeholder="10 años de experiencia&#10;Docente universitario..."
+                            rows={3}
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='especialidades'>
+                            Especialidades
+                            <span className='text-xs text-muted-foreground ml-1'>(una por línea)</span>
+                          </Label>
+                          <Textarea
+                            id='especialidades'
+                            value={curriculumEspecialidades}
+                            onChange={(e) => setCurriculumEspecialidades(e.target.value)}
+                            placeholder="Implantes dentales&#10;Ortodoncia..."
+                            rows={3}
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='filosofia'>Filosofía profesional</Label>
+                          <Textarea
+                            id='filosofia'
+                            value={curriculumFilosofia}
+                            onChange={(e) => setCurriculumFilosofia(e.target.value)}
+                            placeholder="Mi objetivo es..."
+                            rows={3}
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div className='space-y-2'>
-                      <Label htmlFor='orden'>Orden</Label>
-                      <Input
-                        id='orden'
-                        name='orden'
-                        type='number'
-                        defaultValue={editingMiembro?.orden || 0}
-                      />
-                    </div>
                     <DialogFooter>
                       <Button
                         type='submit'
@@ -1097,6 +1185,7 @@ export default function CMSPage() {
                     <TableHead>Nombre</TableHead>
                     <TableHead>Cargo</TableHead>
                     <TableHead>Especialidad</TableHead>
+                    <TableHead>CV</TableHead>
                     <TableHead>Visible</TableHead>
                     <TableHead className='text-right'>Acciones</TableHead>
                   </TableRow>
@@ -1115,6 +1204,18 @@ export default function CMSPage() {
                       </TableCell>
                       <TableCell>{miembro.cargo}</TableCell>
                       <TableCell>{miembro.especialidad}</TableCell>
+                      <TableCell>
+                        {miembro.curriculum ? (
+                          <Badge variant='outline' className='text-blue-600 border-blue-600'>
+                            <FileText className='h-3 w-3 mr-1' />
+                            Sí
+                          </Badge>
+                        ) : (
+                          <Badge variant='outline' className='text-gray-400 border-gray-400'>
+                            No
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell>
                         {miembro.visible ? (
                           <Badge
@@ -1144,6 +1245,12 @@ export default function CMSPage() {
                             setMiembroFotoPublicId(
                               miembro.foto_public_id || ""
                             );
+                            // Cargar curriculum existente
+                            const cv = miembro.curriculum;
+                            setCurriculumFormacion(cv?.formacion?.join("\n") || "");
+                            setCurriculumExperiencia(cv?.experiencia?.join("\n") || "");
+                            setCurriculumEspecialidades(cv?.especialidades?.join("\n") || "");
+                            setCurriculumFilosofia(cv?.filosofia || "");
                             setDialogType("miembro");
                             setDialogOpen(true);
                           }}

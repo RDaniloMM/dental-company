@@ -123,6 +123,13 @@ const curriculumData: Record<
 };
 
 // Tipos
+interface Curriculum {
+  formacion: string[];
+  experiencia: string[];
+  especialidades: string[];
+  filosofia: string;
+}
+
 interface CMSData {
   secciones: Array<{
     id: string;
@@ -144,6 +151,7 @@ interface CMSData {
     cargo: string;
     especialidad: string;
     foto_url: string;
+    curriculum?: Curriculum | null;
   }>;
   carrusel: Array<{
     id: string;
@@ -567,7 +575,8 @@ const CurriculumModal = ({
 }) => {
   if (!isOpen || !member) return null;
 
-  const curriculum = curriculumData[member.nombre];
+  // Usar curriculum de la BD, con fallback al hardcodeado para compatibilidad
+  const curriculum = member.curriculum || curriculumData[member.nombre];
 
   if (!curriculum) return null;
 
@@ -715,13 +724,14 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
     CMSData["equipo"][0] | null
   >(null);
 
-  const defaultEquipo = [
+  const defaultEquipo: CMSData["equipo"] = [
     {
       id: "1",
       nombre: "Dr. Ulises Peñaloza",
       cargo: "Director Médico",
       especialidad: "Periodoncia e Implantología",
       foto_url: "/ulises_penaloza.jpeg",
+      curriculum: null, // Se usará el fallback hardcodeado
     },
     {
       id: "2",
@@ -729,6 +739,7 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
       cargo: "Ortodoncista",
       especialidad: "Ortodoncia y Ortopedia Maxilar",
       foto_url: "/dentista.png",
+      curriculum: null,
     },
     {
       id: "3",
@@ -736,6 +747,7 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
       cargo: "Odontóloga General",
       especialidad: "Salud Pública",
       foto_url: "/dentista.png",
+      curriculum: null,
     },
   ];
 
@@ -775,7 +787,8 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
             }`}
           >
             {displayEquipo.map((member) => {
-              const hasCurriculum = curriculumData[member.nombre];
+              // Verificar curriculum en BD o en datos hardcodeados (fallback)
+              const hasCurriculum = member.curriculum || curriculumData[member.nombre];
               return (
                 <div
                   key={member.id}
