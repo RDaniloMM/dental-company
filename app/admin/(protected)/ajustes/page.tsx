@@ -124,7 +124,8 @@ export default function AjustesPage() {
       });
     } catch (error: unknown) {
       console.error("Error completo:", error);
-      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
       setEmailMessage({
         type: "error",
         text: `Error: ${errorMessage}`,
