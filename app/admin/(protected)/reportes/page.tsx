@@ -170,20 +170,10 @@ export default function ReportesPage() {
         return;
       }
 
-      // Obtener antecedentes y cuestionario
-      const { data: antecedentes } = await supabase
-        .from("antecedentes")
-        .select("*")
-        .eq("paciente_id", selectedPaciente.id)
-        .single();
+      // Extraer hábitos del paciente (es JSONB en la BD)
+      const habitos = pacienteCompleto.habitos || {};
 
-      const { data: cuestionario } = await supabase
-        .from("cuestionarios")
-        .select("*")
-        .eq("paciente_id", selectedPaciente.id)
-        .single();
-
-      // Construir FormData para el PDF
+      // Construir FormData para el PDF con la estructura esperada
       const formData = {
         filiacion: {
           nombres: pacienteCompleto.nombres || "",
@@ -194,12 +184,37 @@ export default function ReportesPage() {
           email: pacienteCompleto.email || "",
           alerta_medica: pacienteCompleto.alerta_medica || "",
           direccion: pacienteCompleto.direccion || "",
-          dni: pacienteCompleto.dni || "",
-          genero: pacienteCompleto.genero || "",
+          sexo: pacienteCompleto.genero || "no_especifica",
+          estado_civil: pacienteCompleto.estado_civil || "",
+          lugar_procedencia: pacienteCompleto.lugar_procedencia || "",
+          recomendado_por: pacienteCompleto.recomendado_por || "",
         },
-        antecedentes: antecedentes || {},
-        cuestionario: cuestionario || {},
-        seguimientos: [],
+        antecedentes: pacienteCompleto.antecedentes_patologicos || {
+          cardiovascular: { no_refiere: true },
+          respiratorio: { no_refiere: true },
+          endocrino_metabolico: { no_refiere: true },
+          neurologico_psiquiatrico: { no_refiere: true },
+          hematologico_inmunologico: { no_refiere: true },
+          digestivo_hepatico: { no_refiere: true },
+          renal: { no_refiere: true },
+          alergias: { no_refiere: true },
+          otros_relevantes: { no_refiere: true },
+        },
+        habitos: {
+          tabaco: habitos.tabaco || "nunca",
+          tabaco_actual_detalle: habitos.tabaco_actual_detalle || "",
+          alcohol: habitos.alcohol || "no",
+          alcohol_frecuente_detalle: habitos.alcohol_frecuente_detalle || "",
+          drogas_recreacionales: habitos.drogas_recreacionales || false,
+          drogas_tipo: habitos.drogas_tipo || "",
+        },
+        examen_clinico: {
+          talla: pacienteCompleto.talla_m?.toString() || "",
+          peso: pacienteCompleto.peso_kg?.toString() || "",
+          imc: pacienteCompleto.imc?.toString() || "",
+          pa: pacienteCompleto.presion_arterial || "",
+        },
+        seguimiento: [],
       };
 
       const response = await fetch("/api/generate-pdf", {
