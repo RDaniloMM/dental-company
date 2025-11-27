@@ -4,13 +4,7 @@ import * as React from "react";
 import {
   Home,
   Users,
-  Calendar,
-  ClipboardList,
-  // Album,
   Settings,
-  // FileText,
-  BarChart3,
-  // UserCog,
   GalleryVerticalEnd,
   LayoutDashboard,
   Bot,
@@ -25,7 +19,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-  useSidebar, // 👈 importante
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const data = {
@@ -49,59 +43,9 @@ const data = {
     },
     {
       title: "Pacientes",
-      url: "/pacientes",
+      url: "/admin/dashboard",
       icon: Users,
-      items: [
-        { title: "Lista de pacientes", url: "/pacientes/lista" },
-        { title: "Registrar paciente", url: "/pacientes/nuevo" },
-        // { title: "Historial clínico", url: "/pacientes/historial" },
-      ],
-    },
-    {
-      title: "Citas",
-      url: "/citas",
-      icon: Calendar,
-      items: [
-        { title: "Calendario", url: "/citas/calendario" },
-        // { title: "Agendar cita", url: "/citas/nueva" },
-        { title: "Citas pasadas", url: "/citas/historial" },
-      ],
-    },
-    // {
-    //   title: "Odontograma",
-    //   url: "/odontograma",
-    //   icon: Album,
-    //   items: [
-    //     { title: "Odontograma actual", url: "/odontograma/actual" },
-    //     { title: "Historial de tratamientos", url: "/odontograma/historial" },
-    //   ],
-    // },
-    {
-      title: "Tratamientos",
-      url: "/tratamientos",
-      icon: ClipboardList,
-      items: [
-        { title: "Lista de tratamientos", url: "/tratamientos/lista" },
-        // { title: "Nuevo tratamiento", url: "/tratamientos/nuevo" },
-      ],
-    },
-    {
-      title: "Reportes",
-      url: "/reportes",
-      icon: BarChart3,
-      items: [
-        { title: "Financieros", url: "/reportes/financieros" },
-        // { title: "Pacientes atendidos", url: "/reportes/pacientes" },
-      ],
-    },
-    {
-      title: "Configuración",
-      url: "/configuracion",
-      icon: Settings,
-      items: [
-        { title: "Usuarios y roles", url: "/configuracion/usuarios" },
-        { title: "Perfil del doctor", url: "/configuracion/perfil" },
-      ],
+      items: [{ title: "Buscar paciente", url: "/admin/dashboard" }],
     },
     {
       title: "Gestor CMS",
@@ -115,27 +59,12 @@ const data = {
       icon: Bot,
       items: [{ title: "FAQs y Contexto", url: "/admin/chatbot" }],
     },
-    // {
-    //   title: "Administración",
-    //   url: "/admin",
-    //   icon: UserCog,
-    //   items: [
-    //     { title: "Gestión de personal", url: "/admin/personal" },
-    //     { title: "Logs del sistema", url: "/admin/logs" },
-    //   ],
-    // },
-    // {
-    //   title: "Documentos",
-    //   url: "/documentos",
-    //   icon: FileText,
-    //   items: [
-    //     {
-    //       title: "Consentimientos informados",
-    //       url: "/documentos/consentimientos",
-    //     },
-    //     { title: "Recetas y certificados", url: "/documentos/recetas" },
-    //   ],
-    // },
+    {
+      title: "Configuración",
+      url: "/admin/usuarios",
+      icon: Settings,
+      items: [{ title: "Usuarios y Personal", url: "/admin/usuarios" }],
+    },
   ],
 };
 

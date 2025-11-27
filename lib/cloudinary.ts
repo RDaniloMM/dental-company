@@ -12,13 +12,6 @@ interface UploadResult {
   secure_url: string;
 }
 
-interface UploadOptions {
-  folder: string;
-  publicId: string;
-  // Tipo de imagen para aplicar optimizaciones específicas
-  tipo?: "perfil" | "carrusel" | "general";
-}
-
 export function uploadImage(
   file: Buffer,
   folder: string,
