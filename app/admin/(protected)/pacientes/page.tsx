@@ -38,7 +38,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, FileText, Loader2, User, Phone } from "lucide-react";
+import {
+  Search,
+  Plus,
+  FileText,
+  Loader2,
+  User,
+  Phone,
+  ClipboardPlus,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface Paciente {
@@ -121,7 +129,7 @@ export default function PacientesPage() {
   };
 
   // Crear nuevo paciente
-  const handleCreatePaciente = async () => {
+  const handleCreatePaciente = async (redirectToFicha = false) => {
     if (!formData.nombres || !formData.apellidos || !formData.dni) {
       toast.error("Complete los campos obligatorios");
       return;
@@ -152,7 +160,13 @@ export default function PacientesPage() {
         email: "",
         direccion: "",
       });
-      loadPacientes();
+
+      if (redirectToFicha) {
+        // Redirigir al formulario completo de filiación
+        router.push(`/admin/ficha-odontologica/${numero_historia}/filiacion`);
+      } else {
+        loadPacientes();
+      }
     } catch (error) {
       console.error("Error creando paciente:", error);
       toast.error("Error al registrar paciente");
@@ -311,7 +325,7 @@ export default function PacientesPage() {
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className='flex-col sm:flex-row gap-2'>
               <Button
                 variant='outline'
                 onClick={() => setDialogOpen(false)}
@@ -319,11 +333,20 @@ export default function PacientesPage() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleCreatePaciente}
+                variant='secondary'
+                onClick={() => handleCreatePaciente(false)}
                 disabled={saving}
               >
                 {saving && <Loader2 className='h-4 w-4 mr-2 animate-spin' />}
-                Registrar
+                Registro Rápido
+              </Button>
+              <Button
+                onClick={() => handleCreatePaciente(true)}
+                disabled={saving}
+              >
+                {saving && <Loader2 className='h-4 w-4 mr-2 animate-spin' />}
+                <ClipboardPlus className='h-4 w-4 mr-2' />
+                Registrar y Completar Ficha
               </Button>
             </DialogFooter>
           </DialogContent>
