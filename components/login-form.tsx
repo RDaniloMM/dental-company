@@ -95,17 +95,23 @@ export function LoginForm({
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors'
+                  className='h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 transition-colors'
                 />
               </div>
               <div className='grid gap-2'>
-                <div className='flex items-center'>
+                <div className='flex items-center justify-between'>
                   <Label
                     htmlFor='password'
                     className='text-gray-700 font-medium'
                   >
                     Contraseña
                   </Label>
+                  <Link
+                    href='/admin/forgot-password'
+                    className='text-xs text-blue-600 hover:text-blue-700 hover:underline'
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
                 </div>
                 <Input
                   id='password'
@@ -113,7 +119,7 @@ export function LoginForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors'
+                  className='h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 transition-colors'
                 />
               </div>
 

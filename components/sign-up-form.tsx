@@ -190,7 +190,7 @@ export function SignUpForm({
       className={cn("flex flex-col gap-6", className)}
       {...props}
     >
-      <Card className='border-0 shadow-2xl bg-white/95 backdrop-blur-md'>
+      <Card className='border-0 shadow-2xl bg-white'>
         <CardHeader className='text-center items-center pb-2'>
           <div className='mb-4 p-3 bg-blue-50 rounded-2xl'>
             <Image
@@ -234,7 +234,7 @@ export function SignUpForm({
                         setInviteCode(e.target.value.toUpperCase())
                       }
                       className={cn(
-                        "h-11 uppercase tracking-widest font-mono pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                        "h-11 uppercase tracking-widest font-mono pr-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 transition-colors",
                         codeVerified === true &&
                           "border-green-500 bg-green-50 focus-visible:ring-green-500",
                         codeVerified === false &&
@@ -288,7 +288,7 @@ export function SignUpForm({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}
-                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50'
+                  className='h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 transition-colors disabled:opacity-50'
                 />
               </div>
 
@@ -307,7 +307,7 @@ export function SignUpForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}
-                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50'
+                  className='h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 transition-colors disabled:opacity-50'
                 />
               </div>
 
@@ -326,14 +326,16 @@ export function SignUpForm({
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}
-                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50'
+                  className='h-11 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 transition-colors disabled:opacity-50'
                 />
               </div>
 
               {error && (
-                <div className='flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg'>
-                  <XCircle className='w-4 h-4 text-red-500 flex-shrink-0' />
-                  <p className='text-sm text-red-600'>{error}</p>
+                <div className='flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg'>
+                  <XCircle className='w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0' />
+                  <p className='text-sm text-red-600 dark:text-red-400'>
+                    {error}
+                  </p>
                 </div>
               )}
 
@@ -353,7 +355,7 @@ export function SignUpForm({
               </Button>
             </div>
 
-            <div className='mt-6 pt-6 border-t border-gray-100 text-center text-sm text-gray-600'>
+            <div className='mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center text-sm text-gray-600 dark:text-gray-400'>
               ¿Ya tienes una cuenta?{" "}
               <Link
                 href='/admin/login'
