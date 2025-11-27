@@ -25,7 +25,6 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingRecovery, setIsCheckingRecovery] = useState(true);
   const router = useRouter();
 
   // Detectar si hay un token de recuperación en la URL
@@ -48,12 +47,9 @@ export function LoginForm({
           if (!error) {
             // Redirigir a la página de actualizar contraseña
             router.push("/admin/update-password");
-            return;
           }
         }
       }
-
-      setIsCheckingRecovery(false);
     };
 
     checkRecoveryToken();
