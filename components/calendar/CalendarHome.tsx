@@ -34,28 +34,23 @@ export default function CalendarioHome() {
     fetchCitas();
   }, [fetchCitas]);
   return (
-    <div className="flex h-full">
-      {/* Sección izquierda: 2/3 */}
-      <section className="flex-[2] p-4 flex flex-col space-y-4 bg-card text-card-foreground border border-border rounded-md">
+    <div className="flex flex-col lg:flex-row h-full gap-4">
+      {/* Sección izquierda: calendario */}
+      <section className="flex-1 lg:flex-[2] p-4 flex flex-col space-y-4 bg-card text-card-foreground border border-border rounded-md">
         <CalendarAgregar onCitaCreada={handleCitaCreada} />
-        <div className="flex-1">
+        <div className="flex-1 min-h-[400px]">
           <VistaCalendario calendarKey={calendarKey} />
         </div>
       </section>
 
-      {/* Separator vertical */}
-      <div className="w-px p-2" />
-
-      {/* Sección derecha: 1/3 */}
-      <section className="flex-[1] p-4 bg-card text-card-foreground border border-border rounded-md flex flex-col">
+      {/* Sección derecha: citas futuras */}
+      <section className="flex-1 lg:flex-[1] p-4 bg-card text-card-foreground border border-border rounded-md flex flex-col max-h-[500px] lg:max-h-none">
         <h3 className="text-xl text-center font-semibold">Citas Futuras</h3>
 
         {/* Separator horizontal */}
         <div className="my-2 border-t border-border" />
 
         <CalendarioCitas citas={citas} />
-
-        {/* Puedes agregar otro separator debajo si quieres */}
       </section>
     </div>
   );

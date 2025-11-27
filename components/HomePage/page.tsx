@@ -8,9 +8,7 @@ export default async function HomePage() {
       <main className='h-full'>
         <div className='flex flex-col gap-6 h-full'>
           {/* KPI Cards */}
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-            <KPICards />
-          </div>
+          <KPICards />
 
           {/* Gráficos */}
           <KPICharts />
