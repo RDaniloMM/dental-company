@@ -437,9 +437,14 @@ export default function CMSPage() {
     }
   };
 
-  // Eliminar servicio
+  // Eliminar servicio (soft delete - solo oculta)
   const deleteServicio = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este servicio?")) return;
+    if (
+      !confirm(
+        "¿Estás seguro de ocultar este servicio? Podrás restaurarlo después."
+      )
+    )
+      return;
 
     try {
       const res = await fetch(`/api/cms?tipo=servicio&id=${id}`, {
@@ -447,12 +452,34 @@ export default function CMSPage() {
       });
 
       if (res.ok) {
-        toast.success("Servicio eliminado");
+        toast.success("Servicio ocultado. Puedes restaurarlo desde la lista.");
         await refreshServicios();
       }
     } catch (error) {
-      console.error("Error eliminando:", error);
-      toast.error("Error al eliminar");
+      console.error("Error ocultando:", error);
+      toast.error("Error al ocultar");
+    }
+  };
+
+  // Restaurar servicio (cambiar visible a true)
+  const restaurarServicio = async (servicio: Servicio) => {
+    try {
+      const res = await fetch("/api/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "servicio",
+          data: { ...servicio, visible: true },
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Servicio restaurado");
+        await refreshServicios();
+      }
+    } catch (error) {
+      console.error("Error restaurando:", error);
+      toast.error("Error al restaurar");
     }
   };
 
@@ -836,7 +863,12 @@ export default function CMSPage() {
                 </TableHeader>
                 <TableBody>
                   {servicios.map((servicio) => (
-                    <TableRow key={servicio.id}>
+                    <TableRow
+                      key={servicio.id}
+                      className={
+                        !servicio.visible ? "opacity-50 bg-gray-50" : ""
+                      }
+                    >
                       <TableCell>{servicio.orden}</TableCell>
                       <TableCell className='font-medium'>
                         {servicio.nombre}
@@ -849,9 +881,21 @@ export default function CMSPage() {
                       </TableCell>
                       <TableCell>
                         {servicio.visible ? (
-                          <Eye className='h-4 w-4 text-green-600' />
+                          <Badge
+                            variant='outline'
+                            className='text-green-600 border-green-600'
+                          >
+                            <Eye className='h-3 w-3 mr-1' />
+                            Visible
+                          </Badge>
                         ) : (
-                          <EyeOff className='h-4 w-4 text-gray-400' />
+                          <Badge
+                            variant='outline'
+                            className='text-gray-400 border-gray-400'
+                          >
+                            <EyeOff className='h-3 w-3 mr-1' />
+                            Oculto
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className='text-right space-x-2'>
@@ -866,13 +910,26 @@ export default function CMSPage() {
                         >
                           <Pencil className='h-4 w-4' />
                         </Button>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          onClick={() => deleteServicio(servicio.id)}
-                        >
-                          <Trash2 className='h-4 w-4 text-red-500' />
-                        </Button>
+                        {servicio.visible ? (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => deleteServicio(servicio.id)}
+                            title='Ocultar servicio'
+                          >
+                            <Trash2 className='h-4 w-4 text-red-500' />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => restaurarServicio(servicio)}
+                            title='Restaurar servicio'
+                            className='text-green-600 hover:text-green-700'
+                          >
+                            <RefreshCw className='h-4 w-4' />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

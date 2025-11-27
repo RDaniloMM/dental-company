@@ -214,8 +214,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
     }
 
-    // Para equipo: soft delete (solo ocultar) a menos que sea permanente
-    if (tipo === "equipo" && !permanent) {
+    // Para equipo y servicios: soft delete (solo ocultar) a menos que sea permanente
+    if ((tipo === "equipo" || tipo === "servicio") && !permanent) {
       const { error } = await supabase
         .from(table)
         .update({ visible: false })
