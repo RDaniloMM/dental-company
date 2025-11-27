@@ -8,6 +8,9 @@ import {
   GalleryVerticalEnd,
   LayoutDashboard,
   Bot,
+  CalendarDays,
+  Stethoscope,
+  BarChart3,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -43,9 +46,30 @@ const data = {
     },
     {
       title: "Pacientes",
-      url: "/admin/dashboard",
+      url: "/admin/pacientes",
       icon: Users,
-      items: [{ title: "Buscar paciente", url: "/admin/dashboard" }],
+      items: [
+        { title: "Lista de Pacientes", url: "/admin/pacientes" },
+        { title: "Buscar Paciente", url: "/admin/dashboard" },
+      ],
+    },
+    {
+      title: "Citas",
+      url: "/admin/citas",
+      icon: CalendarDays,
+      items: [{ title: "Calendario", url: "/admin/citas" }],
+    },
+    {
+      title: "Tratamientos",
+      url: "/admin/tratamientos",
+      icon: Stethoscope,
+      items: [{ title: "Procedimientos", url: "/admin/tratamientos" }],
+    },
+    {
+      title: "Reportes",
+      url: "/admin/reportes",
+      icon: BarChart3,
+      items: [{ title: "Reportes de Pacientes", url: "/admin/reportes" }],
     },
     {
       title: "Gestor CMS",
@@ -61,9 +85,9 @@ const data = {
     },
     {
       title: "Configuración",
-      url: "/admin/usuarios",
+      url: "/admin/ajustes",
       icon: Settings,
-      items: [{ title: "Usuarios y Personal", url: "/admin/usuarios" }],
+      items: [{ title: "Ajustes", url: "/admin/ajustes" }],
     },
   ],
 };
