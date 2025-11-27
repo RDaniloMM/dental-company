@@ -69,7 +69,7 @@ const COLUMNAS_PACIENTES = {
   telefono: { label: "Teléfono", default: true },
   email: { label: "Email", default: false },
   direccion: { label: "Dirección", default: false },
-  sexo: { label: "Sexo", default: true },
+  genero: { label: "Sexo", default: true },
   fecha_registro: { label: "Fecha Registro", default: false },
 } as const;
 
@@ -82,7 +82,7 @@ interface Paciente {
   apellidos: string;
   dni: string;
   fecha_nacimiento: string;
-  sexo: string;
+  genero: string;
   telefono: string;
   email: string;
   direccion: string;
@@ -116,7 +116,7 @@ export default function PacientesPage() {
     apellidos: "",
     dni: "",
     fecha_nacimiento: "",
-    genero: "Masculino",
+    genero: "M",
     telefono: "",
     email: "",
     direccion: "",
@@ -188,7 +188,7 @@ export default function PacientesPage() {
         apellidos: "",
         dni: "",
         fecha_nacimiento: "",
-        genero: "Masculino",
+        genero: "M",
         telefono: "",
         email: "",
         direccion: "",
@@ -312,7 +312,7 @@ export default function PacientesPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='genero'>Género</Label>
+                <Label htmlFor='genero'>Sexo</Label>
                 <Select
                   value={formData.genero}
                   onValueChange={(value) =>
@@ -323,8 +323,8 @@ export default function PacientesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='Masculino'>Masculino</SelectItem>
-                    <SelectItem value='Femenino'>Femenino</SelectItem>
+                    <SelectItem value='M'>Masculino</SelectItem>
+                    <SelectItem value='F'>Femenino</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -421,7 +421,7 @@ export default function PacientesPage() {
           <CardHeader className='pb-2'>
             <CardDescription>Masculino</CardDescription>
             <CardTitle className='text-3xl'>
-              {pacientes.filter((p) => p.sexo === "M").length}
+              {pacientes.filter((p) => p.genero === "M").length}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -429,7 +429,7 @@ export default function PacientesPage() {
           <CardHeader className='pb-2'>
             <CardDescription>Femenino</CardDescription>
             <CardTitle className='text-3xl'>
-              {pacientes.filter((p) => p.sexo === "F").length}
+              {pacientes.filter((p) => p.genero === "F").length}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -505,7 +505,7 @@ export default function PacientesPage() {
                     {columnasVisibles.direccion && (
                       <TableHead>Dirección</TableHead>
                     )}
-                    {columnasVisibles.sexo && <TableHead>Sexo</TableHead>}
+                    {columnasVisibles.genero && <TableHead>Sexo</TableHead>}
                     {columnasVisibles.fecha_registro && (
                       <TableHead>Fecha Registro</TableHead>
                     )}
@@ -587,14 +587,18 @@ export default function PacientesPage() {
                             )}
                           </TableCell>
                         )}
-                        {columnasVisibles.sexo && (
+                        {columnasVisibles.genero && (
                           <TableCell>
                             <Badge
                               variant={
-                                paciente.sexo === "M" ? "default" : "secondary"
+                                paciente.genero === "M"
+                                  ? "default"
+                                  : "secondary"
                               }
                             >
-                              {paciente.sexo === "M" ? "M" : "F"}
+                              {paciente.genero === "M"
+                                ? "Masculino"
+                                : "Femenino"}
                             </Badge>
                           </TableCell>
                         )}
