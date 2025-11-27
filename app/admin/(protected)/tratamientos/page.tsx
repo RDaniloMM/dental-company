@@ -125,7 +125,9 @@ export default function TratamientosPage() {
   const [grupoFilter, setGrupoFilter] = useState("todos");
 
   // Estado para columnas visibles
-  const [columnasVisibles, setColumnasVisibles] = useState<Record<ColumnaProc, boolean>>(() => {
+  const [columnasVisibles, setColumnasVisibles] = useState<
+    Record<ColumnaProc, boolean>
+  >(() => {
     const initial: Record<string, boolean> = {};
     Object.entries(COLUMNAS_PROCEDIMIENTOS).forEach(([key, value]) => {
       initial[key] = value.default;
@@ -756,27 +758,35 @@ export default function TratamientosPage() {
                 {/* Selector de columnas */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant='outline' size='icon'>
+                    <Button
+                      variant='outline'
+                      size='icon'
+                    >
                       <Settings2 className='h-4 w-4' />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align='end' className='w-48'>
+                  <DropdownMenuContent
+                    align='end'
+                    className='w-48'
+                  >
                     <DropdownMenuLabel>Columnas visibles</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {Object.entries(COLUMNAS_PROCEDIMIENTOS).map(([key, { label }]) => (
-                      <DropdownMenuCheckboxItem
-                        key={key}
-                        checked={columnasVisibles[key as ColumnaProc]}
-                        onCheckedChange={(checked) =>
-                          setColumnasVisibles((prev) => ({
-                            ...prev,
-                            [key]: checked,
-                          }))
-                        }
-                      >
-                        {label}
-                      </DropdownMenuCheckboxItem>
-                    ))}
+                    {Object.entries(COLUMNAS_PROCEDIMIENTOS).map(
+                      ([key, { label }]) => (
+                        <DropdownMenuCheckboxItem
+                          key={key}
+                          checked={columnasVisibles[key as ColumnaProc]}
+                          onCheckedChange={(checked) =>
+                            setColumnasVisibles((prev) => ({
+                              ...prev,
+                              [key]: checked,
+                            }))
+                          }
+                        >
+                          {label}
+                        </DropdownMenuCheckboxItem>
+                      )
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -794,21 +804,35 @@ export default function TratamientosPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        {columnasVisibles.nombre && <TableHead>Nombre</TableHead>}
-                        {columnasVisibles.descripcion && <TableHead>Descripción</TableHead>}
+                        {columnasVisibles.nombre && (
+                          <TableHead>Nombre</TableHead>
+                        )}
+                        {columnasVisibles.descripcion && (
+                          <TableHead>Descripción</TableHead>
+                        )}
                         {columnasVisibles.grupo && <TableHead>Grupo</TableHead>}
-                        {columnasVisibles.medida && <TableHead>Medida</TableHead>}
+                        {columnasVisibles.medida && (
+                          <TableHead>Medida</TableHead>
+                        )}
                         {columnasVisibles.tipo && <TableHead>Tipo</TableHead>}
                         {columnasVisibles.precio_pen && (
-                          <TableHead className='text-right'>Precio (S/)</TableHead>
+                          <TableHead className='text-right'>
+                            Precio (S/)
+                          </TableHead>
                         )}
                         {columnasVisibles.precio_clp && (
-                          <TableHead className='text-right'>Precio (CLP$)</TableHead>
+                          <TableHead className='text-right'>
+                            Precio (CLP$)
+                          </TableHead>
                         )}
                         {columnasVisibles.precio_usd && (
-                          <TableHead className='text-right'>Precio ($)</TableHead>
+                          <TableHead className='text-right'>
+                            Precio ($)
+                          </TableHead>
                         )}
-                        {columnasVisibles.estado && <TableHead>Estado</TableHead>}
+                        {columnasVisibles.estado && (
+                          <TableHead>Estado</TableHead>
+                        )}
                         <TableHead className='text-right'>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>

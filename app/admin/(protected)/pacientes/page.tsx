@@ -100,7 +100,9 @@ export default function PacientesPage() {
   const [saving, setSaving] = useState(false);
 
   // Estado para columnas visibles
-  const [columnasVisibles, setColumnasVisibles] = useState<Record<ColumnaPaciente, boolean>>(() => {
+  const [columnasVisibles, setColumnasVisibles] = useState<
+    Record<ColumnaPaciente, boolean>
+  >(() => {
     const initial: Record<string, boolean> = {};
     Object.entries(COLUMNAS_PACIENTES).forEach(([key, value]) => {
       initial[key] = value.default;
@@ -449,11 +451,17 @@ export default function PacientesPage() {
             {/* Selector de columnas */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant='outline' size='icon'>
+                <Button
+                  variant='outline'
+                  size='icon'
+                >
                   <Settings2 className='h-4 w-4' />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-48'>
+              <DropdownMenuContent
+                align='end'
+                className='w-48'
+              >
                 <DropdownMenuLabel>Columnas visibles</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {Object.entries(COLUMNAS_PACIENTES).map(([key, { label }]) => (
@@ -484,15 +492,23 @@ export default function PacientesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    {columnasVisibles.numero_historia && <TableHead>N° Historia</TableHead>}
+                    {columnasVisibles.numero_historia && (
+                      <TableHead>N° Historia</TableHead>
+                    )}
                     {columnasVisibles.nombre && <TableHead>Paciente</TableHead>}
                     {columnasVisibles.dni && <TableHead>DNI</TableHead>}
                     {columnasVisibles.edad && <TableHead>Edad</TableHead>}
-                    {columnasVisibles.telefono && <TableHead>Teléfono</TableHead>}
+                    {columnasVisibles.telefono && (
+                      <TableHead>Teléfono</TableHead>
+                    )}
                     {columnasVisibles.email && <TableHead>Email</TableHead>}
-                    {columnasVisibles.direccion && <TableHead>Dirección</TableHead>}
+                    {columnasVisibles.direccion && (
+                      <TableHead>Dirección</TableHead>
+                    )}
                     {columnasVisibles.sexo && <TableHead>Sexo</TableHead>}
-                    {columnasVisibles.fecha_registro && <TableHead>Fecha Registro</TableHead>}
+                    {columnasVisibles.fecha_registro && (
+                      <TableHead>Fecha Registro</TableHead>
+                    )}
                     <TableHead className='text-right'>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -500,7 +516,10 @@ export default function PacientesPage() {
                   {filteredPacientes.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={Object.values(columnasVisibles).filter(Boolean).length + 1}
+                        colSpan={
+                          Object.values(columnasVisibles).filter(Boolean)
+                            .length + 1
+                        }
                         className='text-center py-8'
                       >
                         <User className='h-12 w-12 mx-auto text-muted-foreground mb-2' />
