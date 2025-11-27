@@ -34,7 +34,9 @@ export default async function CasosPage({
   }
 
   // Buscar historia clínica existente
-  const { data: historia, error: historiaError } = await supabase
+  let historiaId: string | null = null;
+
+  const { data: historiaExistente, error: historiaError } = await supabase
     .from("historias_clinicas")
     .select("id")
     .eq("paciente_id", paciente.id)
@@ -56,7 +58,7 @@ export default async function CasosPage({
         </div>
       );
     }
-    historia = newHistoria;
+    historiaId = newHistoria?.id ?? null;
   } else if (historiaError) {
     console.error("Error fetching historia clínica:", historiaError);
     return (
@@ -64,9 +66,11 @@ export default async function CasosPage({
         Error al cargar la historia clínica del paciente.
       </div>
     );
+  } else {
+    historiaId = historiaExistente?.id ?? null;
   }
 
-  if (!historia) {
+  if (!historiaId) {
     return (
       <div className='p-6 text-center text-red-500'>
         No se pudo obtener la historia clínica del paciente.
@@ -79,7 +83,7 @@ export default async function CasosPage({
     .select(
       "id, nombre_caso, diagnostico_preliminar, descripcion, fecha_inicio, fecha_cierre, estado, citas(fecha_inicio)"
     )
-    .eq("historia_id", historia.id)
+    .eq("historia_id", historiaId)
     .order("fecha_inicio", { ascending: false });
 
   if (casosError) {
@@ -120,7 +124,7 @@ export default async function CasosPage({
         <div className='p-4'>
           <CasosList
             casos={casosConUltimaCita}
-            historiaId={historia.id}
+            historiaId={historiaId}
             numeroHistoria={paciente.numero_historia}
           />
         </div>
