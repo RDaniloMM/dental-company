@@ -227,7 +227,7 @@ export function SignUpForm({
                     <Input
                       id='inviteCode'
                       type='text'
-                      placeholder='Ej: DENTAL2025'
+                      placeholder='Ej: DC1234'
                       required
                       value={inviteCode}
                       onChange={(e) =>
