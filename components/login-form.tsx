@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, LogIn } from "lucide-react";
 
 export function LoginForm({
@@ -25,7 +25,39 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingRecovery, setIsCheckingRecovery] = useState(true);
   const router = useRouter();
+
+  // Detectar si hay un token de recuperación en la URL
+  useEffect(() => {
+    const checkRecoveryToken = async () => {
+      const hash = window.location.hash;
+
+      if (hash && hash.includes("type=recovery")) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+
+        if (accessToken && refreshToken) {
+          const supabase = createClient();
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (!error) {
+            // Redirigir a la página de actualizar contraseña
+            router.push("/admin/update-password");
+            return;
+          }
+        }
+      }
+
+      setIsCheckingRecovery(false);
+    };
+
+    checkRecoveryToken();
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

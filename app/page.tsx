@@ -3,8 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { createClient } from "@/lib/supabase/client";
 import { FloatingChatbot } from "@/components/floating-chatbot";
 import {
   Stethoscope,
@@ -1053,6 +1055,35 @@ export default function LandingPage() {
   const [cmsData, setCmsData] = useState<CMSData>(defaultData);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  // Detectar token de recuperación de contraseña en la URL
+  useEffect(() => {
+    const checkRecoveryToken = async () => {
+      const hash = window.location.hash;
+
+      if (hash && hash.includes("type=recovery")) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+
+        if (accessToken && refreshToken) {
+          const supabase = createClient();
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (!error) {
+            router.push("/admin/update-password");
+            return;
+          }
+        }
+      }
+    };
+
+    checkRecoveryToken();
+  }, [router]);
 
   // Cargar datos del CMS
   useEffect(() => {
