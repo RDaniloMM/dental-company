@@ -42,8 +42,6 @@ import {
   BookOpen,
   Tag,
   HelpCircle,
-  Eye,
-  EyeOff,
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -228,7 +226,10 @@ export default function ChatbotFAQsPage() {
                     id: editingFAQ?.id,
                     pregunta: formData.get("pregunta") as string,
                     respuesta: formData.get("respuesta") as string,
-                    keywords: formData.get("keywords") as string,
+                    keywords: (formData.get("keywords") as string)
+                      .split(",")
+                      .map((k) => k.trim())
+                      .filter((k) => k.length > 0),
                     categoria: formData.get("categoria") as string,
                     prioridad: Number(formData.get("prioridad")) || 0,
                     activo: true,
