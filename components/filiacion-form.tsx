@@ -85,7 +85,16 @@ export default function FiliacionForm({
   const [age, setAge] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [showCustomNacionalidad, setShowCustomNacionalidad] = useState(() => {
-    const nacionalidadesPredefinidas = ["Peruano", "Chileno", "Argentino", "Boliviano", "Colombiano", "Ecuatoriano", "Venezolano", ""];
+    const nacionalidadesPredefinidas = [
+      "Peruano",
+      "Chileno",
+      "Argentino",
+      "Boliviano",
+      "Colombiano",
+      "Ecuatoriano",
+      "Venezolano",
+      "",
+    ];
     return !nacionalidadesPredefinidas.includes(patient.pais || "");
   });
 
