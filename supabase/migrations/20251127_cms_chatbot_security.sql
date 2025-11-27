@@ -371,3 +371,13 @@ CREATE POLICY "Verificar código público" ON public.codigos_invitacion FOR SELE
 -- Políticas para config seguridad
 CREATE POLICY "Config seguridad lectura pública" ON public.config_seguridad FOR SELECT USING (true);
 CREATE POLICY "Config seguridad admin write" ON public.config_seguridad FOR ALL USING (auth.role() = 'authenticated');
+
+-- =================================================================
+-- 8. CÓDIGO DE INVITACIÓN INICIAL
+-- =================================================================
+
+-- Insertar código de invitación por defecto (DENTAL2025)
+INSERT INTO public.codigos_invitacion (codigo, rol_asignado, usos_maximos, activo) VALUES
+    ('DENTAL2025', 'Odontólogo', 10, true),
+    ('ADMIN2025', 'Administrador', 3, true)
+ON CONFLICT (codigo) DO NOTHING;

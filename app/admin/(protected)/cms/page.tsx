@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Palette,
   FileText,
@@ -44,6 +45,10 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
+  Shield,
+  Key,
+  Copy,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -64,6 +69,18 @@ interface Miembro {
   foto_url: string;
   orden: number;
   visible: boolean;
+}
+
+interface Invitacion {
+  id: string;
+  codigo: string;
+  rol_asignado: string;
+  usos_maximos: number;
+  usos_actuales: number;
+  activo: boolean;
+  expira_at: string | null;
+  created_at: string;
+  used_at: string | null;
 }
 
 interface TemaConfig {
@@ -96,6 +113,12 @@ export default function CMSPage() {
     "servicio"
   );
 
+  // Estados para seguridad
+  const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
+  const [registroPublico, setRegistroPublico] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
   // Cargar datos
   const fetchData = async () => {
     setIsLoading(true);
@@ -115,8 +138,117 @@ export default function CMSPage() {
     }
   };
 
+  // Cargar configuración de seguridad
+  const fetchSecurityConfig = async () => {
+    try {
+      const [configRes, invitesRes] = await Promise.all([
+        fetch("/api/auth/config"),
+        fetch("/api/auth/invitaciones"),
+      ]);
+
+      if (configRes.ok) {
+        const config = await configRes.json();
+        setRegistroPublico(config.publicRegistration);
+      }
+
+      if (invitesRes.ok) {
+        const invites = await invitesRes.json();
+        setInvitaciones(invites);
+      }
+    } catch (error) {
+      console.error("Error cargando config seguridad:", error);
+    }
+  };
+
+  // Toggle registro público
+  const toggleRegistroPublico = async (enabled: boolean) => {
+    try {
+      const res = await fetch("/api/auth/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clave: "registro_publico_habilitado",
+          valor: enabled ? "true" : "false",
+        }),
+      });
+
+      if (res.ok) {
+        setRegistroPublico(enabled);
+        toast.success(
+          enabled
+            ? "Registro público habilitado"
+            : "Registro público deshabilitado - Se requiere código de invitación"
+        );
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al actualizar configuración");
+    }
+  };
+
+  // Crear código de invitación
+  const crearInvitacion = async (formData: FormData) => {
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/auth/invitaciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigo: formData.get("codigo") || undefined,
+          rol_asignado: formData.get("rol") || "Odontólogo",
+          usos_maximos: Number(formData.get("usos")) || 1,
+          expira_en_dias: formData.get("expira")
+            ? Number(formData.get("expira"))
+            : undefined,
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Código de invitación creado");
+        fetchSecurityConfig();
+        setInviteDialogOpen(false);
+      } else {
+        const error = await res.json();
+        toast.error(error.error || "Error al crear código");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al crear invitación");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Eliminar invitación
+  const eliminarInvitacion = async (id: string) => {
+    if (!confirm("¿Eliminar este código de invitación?")) return;
+
+    try {
+      const res = await fetch(`/api/auth/invitaciones?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("Código eliminado");
+        fetchSecurityConfig();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al eliminar");
+    }
+  };
+
+  // Copiar código
+  const copiarCodigo = async (codigo: string) => {
+    await navigator.clipboard.writeText(codigo);
+    setCopiedCode(codigo);
+    setTimeout(() => setCopiedCode(null), 2000);
+    toast.success("Código copiado");
+  };
+
   useEffect(() => {
     fetchData();
+    fetchSecurityConfig();
   }, []);
 
   // Guardar tema
@@ -266,7 +398,7 @@ export default function CMSPage() {
         defaultValue='general'
         className='space-y-6'
       >
-        <TabsList className='grid w-full grid-cols-4'>
+        <TabsList className='grid w-full grid-cols-5'>
           <TabsTrigger
             value='general'
             className='flex items-center gap-2'
@@ -294,6 +426,13 @@ export default function CMSPage() {
           >
             <Palette className='h-4 w-4' />
             Tema
+          </TabsTrigger>
+          <TabsTrigger
+            value='seguridad'
+            className='flex items-center gap-2'
+          >
+            <Shield className='h-4 w-4' />
+            Seguridad
           </TabsTrigger>
         </TabsList>
 
@@ -830,6 +969,232 @@ export default function CMSPage() {
               </p>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Tab: Seguridad */}
+        <TabsContent value='seguridad'>
+          <div className='space-y-6'>
+            {/* Configuración de Registro */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <Shield className='h-5 w-5' />
+                  Control de Acceso
+                </CardTitle>
+                <CardDescription>
+                  Configura cómo los usuarios pueden registrarse en el sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-6'>
+                <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg'>
+                  <div className='space-y-1'>
+                    <h4 className='font-medium'>Registro Público</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {registroPublico
+                        ? "Cualquier persona puede crear una cuenta"
+                        : "Se requiere código de invitación para registrarse"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={registroPublico}
+                    onCheckedChange={toggleRegistroPublico}
+                  />
+                </div>
+
+                {!registroPublico && (
+                  <div className='p-4 border border-amber-200 bg-amber-50 dark:bg-amber-950/20 rounded-lg'>
+                    <p className='text-sm text-amber-800 dark:text-amber-200'>
+                      <strong>Modo Seguro Activo:</strong> Los nuevos usuarios
+                      necesitan un código de invitación válido para registrarse.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Códigos de Invitación */}
+            <Card>
+              <CardHeader>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <CardTitle className='flex items-center gap-2'>
+                      <Key className='h-5 w-5' />
+                      Códigos de Invitación
+                    </CardTitle>
+                    <CardDescription>
+                      Gestiona los códigos para invitar nuevos usuarios
+                    </CardDescription>
+                  </div>
+                  <Dialog
+                    open={inviteDialogOpen}
+                    onOpenChange={setInviteDialogOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className='h-4 w-4 mr-2' />
+                        Nuevo Código
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Crear Código de Invitación</DialogTitle>
+                        <DialogDescription>
+                          El código será usado por el nuevo usuario para
+                          registrarse
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          crearInvitacion(new FormData(e.currentTarget));
+                        }}
+                        className='space-y-4'
+                      >
+                        <div className='space-y-2'>
+                          <Label htmlFor='codigo'>Código (opcional)</Label>
+                          <Input
+                            id='codigo'
+                            name='codigo'
+                            placeholder='Dejar vacío para generar automáticamente'
+                          />
+                          <p className='text-xs text-muted-foreground'>
+                            Si no especificas, se generará uno como DC-XXXXXX
+                          </p>
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='rol'>Rol asignado</Label>
+                          <select
+                            id='rol'
+                            name='rol'
+                            className='w-full border rounded-md p-2'
+                          >
+                            <option value='Odontólogo'>Odontólogo</option>
+                            <option value='Recepcionista'>Recepcionista</option>
+                            <option value='Auxiliar'>Auxiliar</option>
+                            <option value='Administrador'>Administrador</option>
+                          </select>
+                        </div>
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div className='space-y-2'>
+                            <Label htmlFor='usos'>Usos máximos</Label>
+                            <Input
+                              id='usos'
+                              name='usos'
+                              type='number'
+                              defaultValue={1}
+                              min={1}
+                              max={100}
+                            />
+                          </div>
+                          <div className='space-y-2'>
+                            <Label htmlFor='expira'>Expira en (días)</Label>
+                            <Input
+                              id='expira'
+                              name='expira'
+                              type='number'
+                              placeholder='Sin expiración'
+                              min={1}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type='submit'
+                            disabled={isSaving}
+                          >
+                            {isSaving && (
+                              <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                            )}
+                            <Save className='h-4 w-4 mr-2' />
+                            Crear Código
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {invitaciones.length === 0 ? (
+                  <div className='text-center py-8 text-muted-foreground'>
+                    <Key className='h-12 w-12 mx-auto mb-4 opacity-20' />
+                    <p>No hay códigos de invitación creados</p>
+                    <p className='text-sm'>
+                      Crea uno para invitar nuevos usuarios
+                    </p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Código</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead>Usos</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Expira</TableHead>
+                        <TableHead className='text-right'>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {invitaciones.map((inv) => (
+                        <TableRow key={inv.id}>
+                          <TableCell>
+                            <div className='flex items-center gap-2'>
+                              <code className='bg-muted px-2 py-1 rounded font-mono text-sm'>
+                                {inv.codigo}
+                              </code>
+                              <Button
+                                variant='ghost'
+                                size='sm'
+                                onClick={() => copiarCodigo(inv.codigo)}
+                              >
+                                {copiedCode === inv.codigo ? (
+                                  <Check className='h-4 w-4 text-green-500' />
+                                ) : (
+                                  <Copy className='h-4 w-4' />
+                                )}
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant='outline'>{inv.rol_asignado}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {inv.usos_actuales} / {inv.usos_maximos}
+                          </TableCell>
+                          <TableCell>
+                            {inv.activo ? (
+                              inv.usos_actuales >= inv.usos_maximos ? (
+                                <Badge variant='secondary'>Agotado</Badge>
+                              ) : (
+                                <Badge className='bg-green-500'>Activo</Badge>
+                              )
+                            ) : (
+                              <Badge variant='destructive'>Inactivo</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {inv.expira_at
+                              ? new Date(inv.expira_at).toLocaleDateString()
+                              : "Sin expiración"}
+                          </TableCell>
+                          <TableCell className='text-right'>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              onClick={() => eliminarInvitacion(inv.id)}
+                            >
+                              <Trash2 className='h-4 w-4 text-red-500' />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
