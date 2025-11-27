@@ -100,7 +100,7 @@ export default function TratamientosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [grupoFilter, setGrupoFilter] = useState("todos");
 
-  // Form states
+  // Form states - Procedimientos
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProcedimiento, setEditingProcedimiento] =
     useState<Procedimiento | null>(null);
@@ -111,8 +111,19 @@ export default function TratamientosPage() {
     unidad_id: "",
     medida: "",
     tipo: "",
-    precio_soles: "",
-    precio_dolares: "",
+  });
+  // Precios dinámicos por moneda: { moneda_id: precio_string }
+  const [formPrecios, setFormPrecios] = useState<Record<string, string>>({});
+
+  // Form states - Grupos
+  const [grupoDialogOpen, setGrupoDialogOpen] = useState(false);
+  const [editingGrupo, setEditingGrupo] = useState<GrupoProcedimiento | null>(
+    null
+  );
+  const [grupoFormData, setGrupoFormData] = useState({
+    nombre: "",
+    descripcion: "",
+    unidad_id: "",
   });
 
   const fetchData = useCallback(async () => {
@@ -174,8 +185,15 @@ export default function TratamientosPage() {
   const handleOpenDialog = (procedimiento?: Procedimiento) => {
     if (procedimiento) {
       setEditingProcedimiento(procedimiento);
-      const precioSoles = getPrecio(procedimiento.id, "PEN");
-      const precioDolares = getPrecio(procedimiento.id, "USD");
+      // Cargar precios existentes para cada moneda
+      const preciosMap: Record<string, string> = {};
+      monedas.forEach((moneda) => {
+        const precio = getPrecio(procedimiento.id, moneda.codigo);
+        if (precio !== null) {
+          preciosMap[moneda.id] = precio.toString();
+        }
+      });
+      setFormPrecios(preciosMap);
       setFormData({
         nombre: procedimiento.nombre,
         descripcion: procedimiento.descripcion || "",
@@ -183,11 +201,10 @@ export default function TratamientosPage() {
         unidad_id: procedimiento.unidad_id || "",
         medida: procedimiento.medida || "",
         tipo: procedimiento.tipo || "",
-        precio_soles: precioSoles?.toString() || "",
-        precio_dolares: precioDolares?.toString() || "",
       });
     } else {
       setEditingProcedimiento(null);
+      setFormPrecios({});
       setFormData({
         nombre: "",
         descripcion: "",
@@ -195,8 +212,6 @@ export default function TratamientosPage() {
         unidad_id: "",
         medida: "",
         tipo: "",
-        precio_soles: "",
-        precio_dolares: "",
       });
     }
     setDialogOpen(true);
@@ -253,37 +268,26 @@ export default function TratamientosPage() {
   };
 
   const updatePrecios = async (procedimientoId: string) => {
-    const monedaSoles = monedas.find((m) => m.codigo === "PEN");
-    const monedaDolares = monedas.find((m) => m.codigo === "USD");
+    const hoy = new Date().toISOString().split("T")[0];
 
-    // Actualizar precio en soles
-    if (formData.precio_soles && monedaSoles) {
-      await supabase.from("procedimiento_precios").upsert(
-        {
-          procedimiento_id: procedimientoId,
-          moneda_id: monedaSoles.id,
-          precio: parseFloat(formData.precio_soles),
-          vigente_desde: new Date().toISOString().split("T")[0],
-        },
-        {
-          onConflict: "procedimiento_id,moneda_id,vigente_desde",
-        }
-      );
-    }
+    // Iterar sobre todas las monedas y actualizar/crear precios
+    for (const moneda of monedas) {
+      const precioStr = formPrecios[moneda.id];
 
-    // Actualizar precio en dólares
-    if (formData.precio_dolares && monedaDolares) {
-      await supabase.from("procedimiento_precios").upsert(
-        {
-          procedimiento_id: procedimientoId,
-          moneda_id: monedaDolares.id,
-          precio: parseFloat(formData.precio_dolares),
-          vigente_desde: new Date().toISOString().split("T")[0],
-        },
-        {
-          onConflict: "procedimiento_id,moneda_id,vigente_desde",
-        }
-      );
+      if (precioStr && parseFloat(precioStr) > 0) {
+        // Insertar o actualizar precio para esta moneda
+        await supabase.from("procedimiento_precios").upsert(
+          {
+            procedimiento_id: procedimientoId,
+            moneda_id: moneda.id,
+            precio: parseFloat(precioStr),
+            vigente_desde: hoy,
+          },
+          {
+            onConflict: "procedimiento_id,moneda_id,vigente_desde",
+          }
+        );
+      }
     }
   };
 
@@ -298,6 +302,86 @@ export default function TratamientosPage() {
       fetchData();
     } catch (error) {
       console.error("Error toggling procedimiento:", error);
+    }
+  };
+
+  // Funciones para manejar grupos
+  const handleOpenGrupoDialog = (grupo?: GrupoProcedimiento) => {
+    if (grupo) {
+      setEditingGrupo(grupo);
+      setGrupoFormData({
+        nombre: grupo.nombre,
+        descripcion: grupo.descripcion || "",
+        unidad_id: grupo.unidad_id || "",
+      });
+    } else {
+      setEditingGrupo(null);
+      setGrupoFormData({
+        nombre: "",
+        descripcion: "",
+        unidad_id: "",
+      });
+    }
+    setGrupoDialogOpen(true);
+  };
+
+  const handleSaveGrupo = async () => {
+    try {
+      const data = {
+        nombre: grupoFormData.nombre,
+        descripcion: grupoFormData.descripcion || null,
+        unidad_id: grupoFormData.unidad_id || null,
+      };
+
+      if (editingGrupo) {
+        const { error } = await supabase
+          .from("grupos_procedimiento")
+          .update(data)
+          .eq("id", editingGrupo.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("grupos_procedimiento")
+          .insert(data);
+        if (error) throw error;
+      }
+
+      setGrupoDialogOpen(false);
+      setEditingGrupo(null);
+      fetchData();
+    } catch (error) {
+      console.error("Error guardando grupo:", error);
+      alert("Error al guardar el grupo");
+    }
+  };
+
+  const handleDeleteGrupo = async (grupo: GrupoProcedimiento) => {
+    // Verificar si hay procedimientos en este grupo
+    const procedimientosEnGrupo = procedimientos.filter(
+      (p) => p.grupo_id === grupo.id
+    );
+
+    if (procedimientosEnGrupo.length > 0) {
+      alert(
+        `No se puede eliminar el grupo "${grupo.nombre}" porque tiene ${procedimientosEnGrupo.length} procedimiento(s) asignados.`
+      );
+      return;
+    }
+
+    if (!confirm(`¿Estás seguro de eliminar el grupo "${grupo.nombre}"?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("grupos_procedimiento")
+        .delete()
+        .eq("id", grupo.id);
+      if (error) throw error;
+      fetchData();
+    } catch (error) {
+      console.error("Error eliminando grupo:", error);
+      alert("Error al eliminar el grupo");
     }
   };
 
@@ -448,36 +532,48 @@ export default function TratamientosPage() {
                   />
                 </div>
               </div>
-              <div className='grid grid-cols-2 gap-4 pt-2 border-t'>
-                <div className='space-y-2'>
-                  <Label htmlFor='precio_soles'>Precio en Soles (S/)</Label>
-                  <Input
-                    id='precio_soles'
-                    type='number'
-                    step='0.01'
-                    value={formData.precio_soles}
-                    onChange={(e) =>
-                      setFormData({ ...formData, precio_soles: e.target.value })
-                    }
-                    placeholder='0.00'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='precio_dolares'>Precio en Dólares ($)</Label>
-                  <Input
-                    id='precio_dolares'
-                    type='number'
-                    step='0.01'
-                    value={formData.precio_dolares}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        precio_dolares: e.target.value,
-                      })
-                    }
-                    placeholder='0.00'
-                  />
-                </div>
+
+              {/* Precios dinámicos por moneda */}
+              <div className='pt-2 border-t'>
+                <Label className='text-sm font-medium mb-3 block'>
+                  Precios por Moneda
+                </Label>
+                {monedas.length === 0 ? (
+                  <p className='text-sm text-muted-foreground'>
+                    No hay monedas configuradas. Configúralas en la base de
+                    datos.
+                  </p>
+                ) : (
+                  <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+                    {monedas.map((moneda) => (
+                      <div
+                        key={moneda.id}
+                        className='space-y-2'
+                      >
+                        <Label
+                          htmlFor={`precio_${moneda.id}`}
+                          className='text-xs'
+                        >
+                          {moneda.nombre} ({moneda.simbolo})
+                        </Label>
+                        <Input
+                          id={`precio_${moneda.id}`}
+                          type='number'
+                          step='0.01'
+                          min='0'
+                          value={formPrecios[moneda.id] || ""}
+                          onChange={(e) =>
+                            setFormPrecios({
+                              ...formPrecios,
+                              [moneda.id]: e.target.value,
+                            })
+                          }
+                          placeholder='0.00'
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>
@@ -705,11 +801,17 @@ export default function TratamientosPage() {
           className='space-y-4'
         >
           <Card>
-            <CardHeader>
-              <CardTitle>Grupos de Procedimientos</CardTitle>
-              <CardDescription>
-                Categorías para organizar los procedimientos
-              </CardDescription>
+            <CardHeader className='flex flex-row items-center justify-between'>
+              <div>
+                <CardTitle>Grupos de Procedimientos</CardTitle>
+                <CardDescription>
+                  Categorías para organizar los procedimientos
+                </CardDescription>
+              </div>
+              <Button onClick={() => handleOpenGrupoDialog()}>
+                <Plus className='h-4 w-4 mr-2' />
+                Nuevo Grupo
+              </Button>
             </CardHeader>
             <CardContent>
               {grupos.length === 0 ? (
@@ -725,10 +827,28 @@ export default function TratamientosPage() {
                     return (
                       <Card key={grupo.id}>
                         <CardHeader className='pb-2'>
-                          <CardTitle className='text-lg flex items-center gap-2'>
-                            <FolderTree className='h-5 w-5 text-blue-600' />
-                            {grupo.nombre}
-                          </CardTitle>
+                          <div className='flex items-center justify-between'>
+                            <CardTitle className='text-lg flex items-center gap-2'>
+                              <FolderTree className='h-5 w-5 text-blue-600' />
+                              {grupo.nombre}
+                            </CardTitle>
+                            <div className='flex gap-1'>
+                              <Button
+                                variant='ghost'
+                                size='icon'
+                                onClick={() => handleOpenGrupoDialog(grupo)}
+                              >
+                                <Edit className='h-4 w-4' />
+                              </Button>
+                              <Button
+                                variant='ghost'
+                                size='icon'
+                                onClick={() => handleDeleteGrupo(grupo)}
+                              >
+                                <Trash2 className='h-4 w-4' />
+                              </Button>
+                            </div>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           <p className='text-sm text-muted-foreground mb-2'>
@@ -752,6 +872,90 @@ export default function TratamientosPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog para crear/editar grupo */}
+      <Dialog
+        open={grupoDialogOpen}
+        onOpenChange={setGrupoDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingGrupo ? "Editar Grupo" : "Nuevo Grupo"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingGrupo
+                ? "Modifica los datos del grupo"
+                : "Crea una nueva categoría para organizar procedimientos"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='grupo_nombre'>Nombre del Grupo *</Label>
+              <Input
+                id='grupo_nombre'
+                value={grupoFormData.nombre}
+                onChange={(e) =>
+                  setGrupoFormData({ ...grupoFormData, nombre: e.target.value })
+                }
+                placeholder='Ej: Ortodoncia, Endodoncia, etc.'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='grupo_descripcion'>Descripción</Label>
+              <Textarea
+                id='grupo_descripcion'
+                value={grupoFormData.descripcion}
+                onChange={(e) =>
+                  setGrupoFormData({
+                    ...grupoFormData,
+                    descripcion: e.target.value,
+                  })
+                }
+                placeholder='Descripción opcional del grupo'
+                rows={3}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='grupo_unidad'>Unidad</Label>
+              <Select
+                value={grupoFormData.unidad_id}
+                onValueChange={(value) =>
+                  setGrupoFormData({ ...grupoFormData, unidad_id: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Seleccionar unidad (opcional)' />
+                </SelectTrigger>
+                <SelectContent>
+                  {unidades.map((unidad) => (
+                    <SelectItem
+                      key={unidad.id}
+                      value={unidad.id}
+                    >
+                      {unidad.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setGrupoDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveGrupo}
+              disabled={!grupoFormData.nombre}
+            >
+              {editingGrupo ? "Guardar Cambios" : "Crear Grupo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
