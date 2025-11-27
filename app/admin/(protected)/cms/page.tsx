@@ -603,41 +603,44 @@ export default function CMSPage() {
         defaultValue='general'
         className='space-y-6'
       >
-        <TabsList className='grid w-full grid-cols-5'>
+        <TabsList className='flex flex-wrap justify-start gap-1 h-auto p-1 md:grid md:w-full md:grid-cols-5'>
           <TabsTrigger
             value='general'
-            className='flex items-center gap-2'
+            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
           >
-            <Settings className='h-4 w-4' />
-            General
+            <Settings className='h-3 w-3 md:h-4 md:w-4' />
+            <span className='hidden sm:inline'>General</span>
+            <span className='sm:hidden'>Gen.</span>
           </TabsTrigger>
           <TabsTrigger
             value='servicios'
-            className='flex items-center gap-2'
+            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
           >
-            <FileText className='h-4 w-4' />
-            Servicios
+            <FileText className='h-3 w-3 md:h-4 md:w-4' />
+            <span className='hidden sm:inline'>Servicios</span>
+            <span className='sm:hidden'>Serv.</span>
           </TabsTrigger>
           <TabsTrigger
             value='equipo'
-            className='flex items-center gap-2'
+            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
           >
-            <Users className='h-4 w-4' />
+            <Users className='h-3 w-3 md:h-4 md:w-4' />
             Equipo
           </TabsTrigger>
           <TabsTrigger
             value='tema'
-            className='flex items-center gap-2'
+            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
           >
-            <Palette className='h-4 w-4' />
+            <Palette className='h-3 w-3 md:h-4 md:w-4' />
             Tema
           </TabsTrigger>
           <TabsTrigger
             value='seguridad'
-            className='flex items-center gap-2'
+            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
           >
-            <Shield className='h-4 w-4' />
-            Seguridad
+            <Shield className='h-3 w-3 md:h-4 md:w-4' />
+            <span className='hidden sm:inline'>Seguridad</span>
+            <span className='sm:hidden'>Seg.</span>
           </TabsTrigger>
         </TabsList>
 
