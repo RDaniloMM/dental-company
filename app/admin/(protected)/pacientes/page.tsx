@@ -159,7 +159,9 @@ export default function PacientesPage() {
 
       if (redirectToFicha && newPaciente?.numero_historia) {
         // Redirigir al formulario completo de filiación
-        router.push(`/admin/ficha-odontologica/${newPaciente.numero_historia}/filiacion`);
+        router.push(
+          `/admin/ficha-odontologica/${newPaciente.numero_historia}/filiacion`
+        );
       } else {
         loadPacientes();
       }
