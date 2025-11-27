@@ -176,7 +176,7 @@ export function SignUpForm({
         className={cn("flex flex-col gap-6", className)}
         {...props}
       >
-        <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-md">
+        <Card className='border-0 shadow-2xl bg-white/95 backdrop-blur-md'>
           <CardContent className='py-12 flex items-center justify-center'>
             <Loader2 className='h-8 w-8 animate-spin text-blue-500' />
           </CardContent>
@@ -190,27 +190,27 @@ export function SignUpForm({
       className={cn("flex flex-col gap-6", className)}
       {...props}
     >
-      <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-md">
+      <Card className='border-0 shadow-2xl bg-white/95 backdrop-blur-md'>
         <CardHeader className='text-center items-center pb-2'>
-          <div className="mb-4 p-3 bg-blue-50 rounded-2xl">
+          <div className='mb-4 p-3 bg-blue-50 rounded-2xl'>
             <Image
               src='/logo.png'
               width={140}
               height={50}
               alt='Logo Dental Company'
-              className="h-12 w-auto"
+              className='h-12 w-auto'
             />
           </div>
           <CardTitle className='text-2xl font-bold text-gray-900'>
             Crear Cuenta
           </CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardDescription className='text-gray-600'>
             {publicRegistration
               ? "Completa tus datos para registrarte"
               : "Ingresa tu código de invitación para comenzar"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className='pt-4'>
           <form onSubmit={handleSignUp}>
             <div className='flex flex-col gap-5'>
               {/* Código de invitación (si es requerido) */}
@@ -257,21 +257,27 @@ export function SignUpForm({
                     <div className='flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-lg'>
                       <CheckCircle className='h-4 w-4 text-green-600' />
                       <p className='text-xs text-green-700'>
-                        Código válido • Rol asignado: <strong>{assignedRole}</strong>
+                        Código válido • Rol asignado:{" "}
+                        <strong>{assignedRole}</strong>
                       </p>
                     </div>
                   )}
-                  {!codeVerified && !publicRegistration && inviteCode.length === 0 && (
-                    <p className='text-xs text-gray-500 flex items-center gap-1'>
-                      <ShieldAlert className='h-3 w-3' />
-                      Solicita un código al administrador del sistema
-                    </p>
-                  )}
+                  {!codeVerified &&
+                    !publicRegistration &&
+                    inviteCode.length === 0 && (
+                      <p className='text-xs text-gray-500 flex items-center gap-1'>
+                        <ShieldAlert className='h-3 w-3' />
+                        Solicita un código al administrador del sistema
+                      </p>
+                    )}
                 </div>
               )}
 
               <div className='grid gap-2'>
-                <Label htmlFor='username' className="text-gray-700 font-medium">
+                <Label
+                  htmlFor='username'
+                  className='text-gray-700 font-medium'
+                >
                   Usuario
                 </Label>
                 <Input
@@ -282,45 +288,51 @@ export function SignUpForm({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}
-                  className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50"
+                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50'
                 />
               </div>
-              
+
               <div className='grid gap-2'>
-                <Label htmlFor='password' className="text-gray-700 font-medium">
+                <Label
+                  htmlFor='password'
+                  className='text-gray-700 font-medium'
+                >
                   Contraseña
                 </Label>
                 <Input
                   id='password'
                   type='password'
                   required
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder='Mínimo 6 caracteres'
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}
-                  className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50"
+                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50'
                 />
               </div>
-              
+
               <div className='grid gap-2'>
-                <Label htmlFor='repeat-password' className="text-gray-700 font-medium">
+                <Label
+                  htmlFor='repeat-password'
+                  className='text-gray-700 font-medium'
+                >
                   Confirmar Contraseña
                 </Label>
                 <Input
                   id='repeat-password'
                   type='password'
                   required
-                  placeholder="Repite tu contraseña"
+                  placeholder='Repite tu contraseña'
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}
-                  className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50"
+                  className='h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors disabled:opacity-50'
                 />
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <div className='flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg'>
+                  <XCircle className='w-4 h-4 text-red-500 flex-shrink-0' />
                   <p className='text-sm text-red-600'>{error}</p>
                 </div>
               )}
@@ -340,7 +352,7 @@ export function SignUpForm({
                 )}
               </Button>
             </div>
-            
+
             <div className='mt-6 pt-6 border-t border-gray-100 text-center text-sm text-gray-600'>
               ¿Ya tienes una cuenta?{" "}
               <Link
