@@ -31,16 +31,43 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
     );
   }
 
-  const { data: historia, error: historiaError } = await supabase
+  // Buscar historia clínica existente
+  let { data: historia, error: historiaError } = await supabase
     .from("historias_clinicas")
     .select("id")
     .eq("paciente_id", paciente.id)
     .single();
 
-  if (historiaError || !historia) {
+  // Si no existe, crear una nueva historia clínica automáticamente
+  if (historiaError && historiaError.code === "PGRST116") {
+    const { data: newHistoria, error: createError } = await supabase
+      .from("historias_clinicas")
+      .insert({ paciente_id: paciente.id })
+      .select("id")
+      .single();
+    
+    if (createError) {
+      console.error("Error creando historia clínica:", createError);
+      return (
+        <div className="p-6 text-center text-red-500">
+          Error al crear la historia clínica del paciente.
+        </div>
+      );
+    }
+    historia = newHistoria;
+  } else if (historiaError) {
+    console.error("Error fetching historia clínica:", historiaError);
     return (
       <div className="p-6 text-center text-red-500">
-        No se pudo encontrar la historia clínica del paciente.
+        Error al cargar la historia clínica del paciente.
+      </div>
+    );
+  }
+
+  if (!historia) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        No se pudo obtener la historia clínica del paciente.
       </div>
     );
   }

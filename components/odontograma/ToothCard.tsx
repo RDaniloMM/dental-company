@@ -45,6 +45,7 @@ export default function ToothCard({
 
   const labelDiv = (
     <div
+      className="tooth-label-container"
       style={{
         width: "50px",
         height: `${maxHeight}px`,
@@ -56,10 +57,8 @@ export default function ToothCard({
         fontWeight: "bold",
         marginBottom: isTop ? 4 : 0,
         marginTop: !isTop ? 4 : 0,
-        border: "1px solid #3b82f6",
         borderRadius: "6px",
         padding: "2px",
-        backgroundColor: "#f0f9ff",
         position: "relative",
         cursor: showTooltip ? "pointer" : "default",
       }}
@@ -67,36 +66,35 @@ export default function ToothCard({
       {visibleLabels.map((g, idx) => (
         <span
           key={idx}
-          style={{
-            color:
-              g.color === "red"
-                ? "#ef4444"
-                : g.color === "blue"
-                ? "#3b82f6"
-                : "#000",
-            fontSize: "12px",
-          }}
+          className={`${
+            g.color === "red"
+              ? "text-red-500"
+              : g.color === "blue"
+              ? "text-blue-500"
+              : "text-foreground"
+          }`}
+          style={{ fontSize: "12px" }}
         >
           {g.label}
         </span>
       ))}
       {showTooltip && (
-        <span style={{ fontSize: "10px" }}>+{hiddenLabels.length}</span>
+        <span className="text-muted-foreground" style={{ fontSize: "10px" }}>
+          +{hiddenLabels.length}
+        </span>
       )}
 
-      {/* 🆕 Tooltip estilizado con hover interno */}
+      {/* Tooltip estilizado con hover interno */}
       {showTooltip && (
         <div
+          className="tooth-tooltip bg-popover border border-border text-popover-foreground"
           style={{
             position: "absolute",
             top: "-5px",
             left: "110%",
-            backgroundColor: "#ffffff",
-            border: "1px solid #3b82f6",
             borderRadius: "6px",
             padding: "6px 8px",
             fontSize: "12px",
-            color: "#000",
             whiteSpace: "nowrap",
             boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
             opacity: 0,
@@ -109,15 +107,13 @@ export default function ToothCard({
           {hiddenLabels.map((g, idx) => (
             <div
               key={idx}
-              style={{
-                color:
-                  g.color === "red"
-                    ? "#ef4444"
-                    : g.color === "blue"
-                    ? "#3b82f6"
-                    : "#000",
-                fontWeight: "bold",
-              }}
+              className={`font-bold ${
+                g.color === "red"
+                  ? "text-red-500"
+                  : g.color === "blue"
+                  ? "text-blue-500"
+                  : "text-foreground"
+              }`}
             >
               {g.label}
             </div>
@@ -125,9 +121,13 @@ export default function ToothCard({
         </div>
       )}
 
-      {/* 🆕 Estilo de hover inline (sin clases externas) */}
+      {/* Estilo de hover inline */}
       <style jsx>{`
-        div:hover > div {
+        .tooth-label-container {
+          border: 1px solid hsl(var(--border));
+          background-color: hsl(var(--muted));
+        }
+        .tooth-label-container:hover .tooth-tooltip {
           opacity: 1 !important;
           pointer-events: auto !important;
           transform: translateY(0px) !important;
@@ -140,6 +140,7 @@ export default function ToothCard({
     <motion.div
       key={id}
       id={`tooth-${id}`}
+      className="tooth-card"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -152,8 +153,8 @@ export default function ToothCard({
         position: "relative",
       }}
       whileHover={{
-        borderColor: "#87b3fbff",
-        backgroundColor: "#cde0f6ff",
+        borderColor: "hsl(var(--primary) / 0.5)",
+        backgroundColor: "hsl(var(--primary) / 0.1)",
       }}
       transition={{ duration: 0.3 }}
       onClick={() => setSelectedTooth({ id, isTop })}
@@ -162,10 +163,10 @@ export default function ToothCard({
         <>
           {labelDiv}
           <button
+            className="text-foreground font-bold"
             style={{
               background: "transparent",
               border: "none",
-              fontWeight: "bold",
             }}
           >
             {id}
@@ -246,10 +247,10 @@ export default function ToothCard({
           </div>
 
           <button
+            className="text-foreground font-bold"
             style={{
               background: "transparent",
               border: "none",
-              fontWeight: "bold",
             }}
           >
             {id}

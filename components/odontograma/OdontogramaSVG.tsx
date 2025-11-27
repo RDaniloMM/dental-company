@@ -168,18 +168,18 @@ export default function OdontogramaSVG({
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-3xl shadow-xl p-6 max-w-[800px] w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-200"
+              className="bg-background rounded-3xl shadow-xl p-6 max-w-[800px] w-full max-h-[90vh] flex flex-col overflow-hidden border border-border"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
             >
-              <h2 className="text-2xl font-semibold mb-4 text-center text-blue-800">
+              <h2 className="text-2xl font-semibold mb-4 text-center text-primary">
                 Diente {selectedTooth.id}
               </h2>
 
               <div className="flex w-full gap-4">
-                <div className="flex-1 flex flex-col justify-center items-center bg-blue-50 p-4 rounded-xl relative">
+                <div className="flex-1 flex flex-col justify-center items-center bg-muted p-4 rounded-xl relative">
                   {/* Diente base */}
                   <ToothCard
                     id={selectedTooth.id}
@@ -236,7 +236,7 @@ export default function OdontogramaSVG({
                   )}
                 </div>
 
-                <div className="flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-gray-200">
+                <div className="flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-border">
                   <CondicionMenu
                     toothId={selectedTooth.id}
                     selectedCondition={selectedCondition}

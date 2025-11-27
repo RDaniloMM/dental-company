@@ -463,18 +463,18 @@ export default function CondicionMenu({
   };
 
   return (
-    <div className="bg-white rounded-2xl w-full h-full flex flex-col">
-      <h2 className="text-lg font-semibold text-blue-700 p-4 border-b sticky top-0 bg-white z-10">
+    <div className="bg-background rounded-2xl w-full h-full flex flex-col">
+      <h2 className="text-lg font-semibold text-primary p-4 border-b sticky top-0 bg-background z-10">
         Condición del diente {toothId}
       </h2>
       {/* Campo de búsqueda */}
-      <div className="p-4 sticky top-0 bg-white z-10 border-b">
+      <div className="p-4 sticky top-0 bg-background z-10 border-b">
         <input
           type="text"
           placeholder="Buscar condición..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm"
+          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none text-sm bg-background text-foreground"
         />
       </div>
       <hr />
@@ -490,8 +490,8 @@ export default function CondicionMenu({
                 key={c}
                 className={`p-2 border rounded-lg text-sm min-h-[40px] flex items-center ${
                   habilitadas.includes(c)
-                    ? "cursor-pointer hover:bg-blue-100"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    ? "cursor-pointer hover:bg-primary/10"
+                    : "bg-muted text-muted-foreground cursor-not-allowed"
                 }`}
                 onClick={() => {
                   if (!habilitadas.includes(c)) return;
@@ -634,7 +634,7 @@ export default function CondicionMenu({
       ) : opcionesCondiciones[selectedCondition] ? (
         // ---------- Condiciones con opciones de color ----------
         <div className="flex flex-col items-center gap-4 p-4">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-muted-foreground">
             Selecciona tipo de {selectedCondition.toLowerCase()}:
           </p>
           <div className="flex flex-col gap-2">
@@ -737,7 +737,7 @@ export default function CondicionMenu({
       ) : (
         // ---------- Otras condiciones que solo necesitan dirección o color ----------
         <div className="flex flex-col items-center justify-center flex-1 gap-4 p-4">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-muted-foreground">
             {selectedCondition === "Diastema"
               ? "Selecciona la dirección del diastema"
               : selectedCondition === "Fusion"
@@ -1258,13 +1258,13 @@ export default function CondicionMenu({
 
       {showRangeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-3xl flex flex-col gap-4">
+          <div className="bg-background p-6 rounded-xl shadow-lg w-full max-w-3xl flex flex-col gap-4">
             <h3 className="text-lg font-semibold text-center">
               Selecciona el diente final
             </h3>
-            <p className="text-center text-sm text-gray-600">
+            <p className="text-center text-sm text-muted-foreground">
               Diente actual:{" "}
-              <span className="font-bold text-blue-600">{toothId}</span>
+              <span className="font-bold text-primary">{toothId}</span>
             </p>
             <div className="flex gap-2 overflow-x-auto py-1 px-1">
               {dientesParaMostrar.map((d) => (
@@ -1272,7 +1272,7 @@ export default function CondicionMenu({
                   key={d}
                   onClick={() => setRangeEnd(d)}
                   className={`px-3 py-2 border rounded transition-colors ${
-                    rangeEnd === d ? "bg-blue-600 text-white" : "bg-white"
+                    rangeEnd === d ? "bg-primary text-primary-foreground" : "bg-background"
                   } ${d === toothId ? "ring-2 ring-blue-400 font-bold" : ""}`}
                 >
                   {d}
@@ -1299,16 +1299,16 @@ export default function CondicionMenu({
 
       {showDiastemaDirection && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4">
-            <h3 className="text-lg font-semibold text-blue-700">
+          <div className="bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4">
+            <h3 className="text-lg font-semibold text-primary">
               Dirección del diastema
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Selecciona hacia dónde va el espacio
             </p>
             <div className="flex gap-4">
               <button
-                className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-4 py-2 rounded-lg"
+                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1331,7 +1331,7 @@ export default function CondicionMenu({
               </button>
 
               <button
-                className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-4 py-2 rounded-lg"
+                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1355,7 +1355,7 @@ export default function CondicionMenu({
             </div>
 
             <button
-              className="mt-4 text-gray-500 text-sm underline"
+              className="mt-4 text-muted-foreground text-sm underline"
               onClick={() => setShowDiastemaDirection(false)}
             >
               Cancelar
@@ -1368,17 +1368,17 @@ export default function CondicionMenu({
 ============================================================ */}
       {showFusionDirection && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4">
-            <h3 className="text-lg font-semibold text-blue-700">
+          <div className="bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4">
+            <h3 className="text-lg font-semibold text-primary">
               Dirección de la fusión
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Selecciona hacia qué lado ocurre la fusión
             </p>
 
             <div className="flex gap-4">
               <button
-                className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-4 py-2 rounded-lg"
+                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1401,7 +1401,7 @@ export default function CondicionMenu({
               </button>
 
               <button
-                className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium px-4 py-2 rounded-lg"
+                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1425,7 +1425,7 @@ export default function CondicionMenu({
             </div>
 
             <button
-              className="mt-4 text-gray-500 text-sm underline"
+              className="mt-4 text-muted-foreground text-sm underline"
               onClick={() => setShowFusionDirection(false)}
             >
               Cancelar
