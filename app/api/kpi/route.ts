@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const supabase = await createClient();
-
     // Fechas para filtros
     const now = new Date();
     const startOfMonth = new Date(

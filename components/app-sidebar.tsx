@@ -12,6 +12,8 @@ import {
   BarChart3,
   // UserCog,
   GalleryVerticalEnd,
+  LayoutDashboard,
+  Bot,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -100,6 +102,18 @@ const data = {
         { title: "Usuarios y roles", url: "/configuracion/usuarios" },
         { title: "Perfil del doctor", url: "/configuracion/perfil" },
       ],
+    },
+    {
+      title: "Gestor CMS",
+      url: "/admin/cms",
+      icon: LayoutDashboard,
+      items: [{ title: "Contenido Web", url: "/admin/cms" }],
+    },
+    {
+      title: "Chatbot",
+      url: "/admin/chatbot",
+      icon: Bot,
+      items: [{ title: "FAQs y Contexto", url: "/admin/chatbot" }],
     },
     // {
     //   title: "Administración",

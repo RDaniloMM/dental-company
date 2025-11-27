@@ -1,20 +1,76 @@
 import { streamText, UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
 import {
-  searchFAQs,
+  searchFAQsFromDB,
+  getContextoFromDB,
+  getTemaFromDB,
   generateRAGContext,
   isRelevantForFAQ,
 } from "@/lib/rag-utils";
+import { createClient } from "@/lib/supabase/server";
+import crypto from "crypto";
 
 // Configuración para Node.js runtime (mejor para problemas de IP con Google Cloud)
 export const runtime = "nodejs";
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+// Tasa de muestreo para logging (10% de las conversaciones)
+const SAMPLE_RATE = 0.1;
+
+// Función para generar hash de IP (privacidad)
+function hashIP(ip: string): string {
+  return crypto.createHash("sha256").update(ip).digest("hex").substring(0, 16);
+}
+
+// Función para logging con muestreo
+async function logConversation(
+  sessionId: string,
+  pregunta: string,
+  respuesta: string | null,
+  modelo: string,
+  tiempoMs: number,
+  error: string | null,
+  ipHash: string,
+  userAgent: string | null
+) {
+  // Aplicar muestreo
+  if (Math.random() > SAMPLE_RATE && !error) {
+    return; // No loguear esta conversación
+  }
+
   try {
-    // Log para debugging (incluye información de IP si está disponible)
- 
+    const supabase = await createClient();
+
+    await supabase.from("chatbot_conversaciones").insert({
+      session_id: sessionId,
+      pregunta: pregunta.substring(0, 1000), // Limitar longitud
+      respuesta: respuesta?.substring(0, 2000),
+      modelo,
+      tiempo_respuesta_ms: tiempoMs,
+      error_tipo: error,
+      ip_hash: ipHash,
+      user_agent: userAgent?.substring(0, 500),
+    });
+  } catch (e) {
+    console.error("Error logging conversation:", e);
+  }
+}
+
+export async function POST(req: Request) {
+  const startTime = Date.now();
+  const sessionId = crypto.randomUUID();
+
+  // Obtener headers para logging
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0] : "unknown";
+  const ipHash = hashIP(ip);
+  const userAgent = req.headers.get("user-agent");
+
+  let userQuery = "";
+  let modelo = "";
+
+  try {
     // Verificar API key
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       console.error("GOOGLE_GENERATIVE_AI_API_KEY no configurada");
@@ -34,12 +90,14 @@ export async function POST(req: Request) {
     const {
       messages,
       model,
-      useFAQ = false,
+      useFAQ = true,
     }: {
       messages: UIMessage[];
       model: string;
       useFAQ?: boolean;
     } = await req.json();
+
+    modelo = model;
 
     // Validar input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -51,14 +109,15 @@ export async function POST(req: Request) {
 
     const geminiModel = google(model);
 
+    // Obtener la última pregunta del usuario
+    const lastMessage = messages[messages.length - 1];
+    userQuery = lastMessage.parts
+      .filter((part) => part.type === "text")
+      .map((part) => part.text)
+      .join(" ");
+
     // Sistema base - Prompt optimizado para asistente público de clínica dental
     let systemPrompt = `Eres el asistente virtual de DENTAL COMPANY, una clínica dental en Tacna, Perú.
-
-INFORMACIÓN DE LA CLÍNICA:
-- Ubicación: Av. General Suarez N° 312, Tacna, Perú
-- Teléfono: +51 952 864 883
-- Email: d.c.com@hotmail.com
-- Horario: Lunes a Viernes 9:00 AM - 7:00 PM, Sábados 9:00 AM - 1:00 PM, Domingos cerrado
 
 TU ROL:
 - Responde de manera amable, profesional y empática
@@ -73,21 +132,23 @@ IMPORTANTE:
 - NO recomiendes tratamientos específicos sin evaluación profesional
 - SIEMPRE recomienda agendar una cita para evaluación personalizada`;
 
-    // Si el modo FAQ está activado, buscar contexto relevante
-    if (useFAQ && messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      const userQuery = lastMessage.parts
-        .filter((part) => part.type === "text")
-        .map((part) => part.text)
-        .join(" ");
+    // Buscar contexto dinámico desde la BD
+    if (useFAQ && messages.length > 0 && isRelevantForFAQ(userQuery)) {
+      try {
+        // Obtener FAQs, contexto y tema en paralelo
+        const [faqs, contextos, tema] = await Promise.all([
+          searchFAQsFromDB(userQuery, 3),
+          getContextoFromDB(),
+          getTemaFromDB(),
+        ]);
 
-      // Solo buscar en FAQ si la consulta es relevante
-      if (isRelevantForFAQ(userQuery)) {
-        const relevantFAQs = searchFAQs(userQuery, 3);
-        if (relevantFAQs.length > 0) {
-          const ragContext = generateRAGContext(relevantFAQs);
+        const ragContext = generateRAGContext(faqs, contextos, tema);
+        if (ragContext) {
           systemPrompt += "\n\n" + ragContext;
         }
+      } catch (ragError) {
+        console.error("Error obteniendo RAG context:", ragError);
+        // Continuar sin contexto RAG
       }
     }
 
@@ -97,6 +158,18 @@ IMPORTANTE:
       system: systemPrompt,
     });
 
+    // Logging asíncrono (no bloquea la respuesta)
+    logConversation(
+      sessionId,
+      userQuery,
+      null, // No tenemos la respuesta completa en streaming
+      modelo,
+      Date.now() - startTime,
+      null,
+      ipHash,
+      userAgent
+    );
+
     // send sources and reasoning back to the client
     return result.toUIMessageStreamResponse({
       sendSources: true,
@@ -104,6 +177,7 @@ IMPORTANTE:
     });
   } catch (error: unknown) {
     const err = error as Error & { statusCode?: number; status?: number };
+    const tiempoTotal = Date.now() - startTime;
 
     // Log detallado del error
     console.error("Error en chatbot API:", {
@@ -113,6 +187,9 @@ IMPORTANTE:
       timestamp: new Date().toISOString(),
       stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
+
+    // Determinar tipo de error para logging
+    let errorTipo = "INTERNAL_ERROR";
 
     // Rate limit / Quota exceeded (Google Cloud)
     if (
@@ -125,6 +202,20 @@ IMPORTANTE:
       err.status === 429
     ) {
       console.warn("Rate limit hit - Google Cloud quota exceeded");
+      errorTipo = "QUOTA_EXCEEDED";
+
+      // Loguear errores siempre
+      logConversation(
+        sessionId,
+        userQuery,
+        null,
+        modelo,
+        tiempoTotal,
+        errorTipo,
+        ipHash,
+        userAgent
+      );
+
       return new Response(
         JSON.stringify({
           error:
@@ -153,6 +244,19 @@ IMPORTANTE:
       err.statusCode === 403
     ) {
       console.warn("Auth error - possible IP block or invalid API key");
+      errorTipo = "AUTH_ERROR";
+
+      logConversation(
+        sessionId,
+        userQuery,
+        null,
+        modelo,
+        tiempoTotal,
+        errorTipo,
+        ipHash,
+        userAgent
+      );
+
       return new Response(
         JSON.stringify({
           error:
@@ -171,6 +275,18 @@ IMPORTANTE:
       err.message?.includes("timeout") ||
       err.message?.includes("ETIMEDOUT")
     ) {
+      errorTipo = "TIMEOUT";
+      logConversation(
+        sessionId,
+        userQuery,
+        null,
+        modelo,
+        tiempoTotal,
+        errorTipo,
+        ipHash,
+        userAgent
+      );
+
       return new Response(
         JSON.stringify({
           error:
@@ -183,6 +299,18 @@ IMPORTANTE:
         }
       );
     }
+
+    // Log error genérico
+    logConversation(
+      sessionId,
+      userQuery,
+      null,
+      modelo,
+      tiempoTotal,
+      errorTipo,
+      ipHash,
+      userAgent
+    );
 
     // Error genérico
     return new Response(
