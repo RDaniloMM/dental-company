@@ -6,6 +6,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const seccion = searchParams.get("seccion");
+    const admin = searchParams.get("admin") === "true"; // Para obtener todos los registros
 
     const supabase = await createClient();
 
@@ -30,21 +31,21 @@ export async function GET(req: Request) {
 
     if (seccionesError) throw seccionesError;
 
-    // Obtener servicios visibles
-    const { data: servicios, error: serviciosError } = await supabase
-      .from("cms_servicios")
-      .select("*")
-      .eq("visible", true)
-      .order("orden", { ascending: true });
+    // Obtener servicios (todos si admin, solo visibles si no)
+    let serviciosQuery = supabase.from("cms_servicios").select("*");
+    if (!admin) serviciosQuery = serviciosQuery.eq("visible", true);
+    const { data: servicios, error: serviciosError } =
+      await serviciosQuery.order("orden", { ascending: true });
 
     if (serviciosError) throw serviciosError;
 
-    // Obtener equipo visible
-    const { data: equipo, error: equipoError } = await supabase
-      .from("cms_equipo")
-      .select("*")
-      .eq("visible", true)
-      .order("orden", { ascending: true });
+    // Obtener equipo (todos si admin, solo visibles si no)
+    let equipoQuery = supabase.from("cms_equipo").select("*");
+    if (!admin) equipoQuery = equipoQuery.eq("visible", true);
+    const { data: equipo, error: equipoError } = await equipoQuery.order(
+      "orden",
+      { ascending: true }
+    );
 
     if (equipoError) throw equipoError;
 
@@ -177,7 +178,7 @@ export async function POST(req: Request) {
   }
 }
 
-// DELETE - Eliminar elemento del CMS
+// DELETE - Eliminar elemento del CMS (soft delete para equipo)
 export async function DELETE(req: Request) {
   try {
     const supabase = await createClient();
@@ -193,6 +194,7 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const tipo = searchParams.get("tipo");
     const id = searchParams.get("id");
+    const permanent = searchParams.get("permanent") === "true"; // Para eliminación permanente opcional
 
     if (!tipo || !id) {
       return NextResponse.json(
@@ -212,6 +214,18 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
     }
 
+    // Para equipo: soft delete (solo ocultar) a menos que sea permanente
+    if (tipo === "equipo" && !permanent) {
+      const { error } = await supabase
+        .from(table)
+        .update({ visible: false })
+        .eq("id", id);
+
+      if (error) throw error;
+      return NextResponse.json({ success: true, softDelete: true });
+    }
+
+    // Para otros tipos o eliminación permanente: eliminar de la BD
     const { error } = await supabase.from(table).delete().eq("id", id);
 
     if (error) throw error;

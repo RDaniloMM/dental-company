@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
+import { useDropzone } from "react-dropzone";
 import {
   Card,
   CardContent,
@@ -49,6 +51,8 @@ import {
   Key,
   Copy,
   Check,
+  Upload,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -67,6 +71,7 @@ interface Miembro {
   cargo: string;
   especialidad: string;
   foto_url: string;
+  foto_public_id?: string;
   orden: number;
   visible: boolean;
 }
@@ -100,6 +105,103 @@ const iconOptions = [
   "FileSearch",
 ];
 
+// Componente de subida de fotos
+interface PhotoUploaderProps {
+  onUpload: (url: string, publicId: string) => void;
+  isUploading: boolean;
+  setIsUploading: (value: boolean) => void;
+  oldPublicId?: string;
+}
+
+function PhotoUploader({
+  onUpload,
+  isUploading,
+  setIsUploading,
+  oldPublicId,
+}: PhotoUploaderProps) {
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length === 0) return;
+
+      const file = acceptedFiles[0];
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("El archivo excede el tamaño máximo de 5MB");
+        return;
+      }
+
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("tipo", "equipo");
+        if (oldPublicId) {
+          formData.append("old_public_id", oldPublicId);
+        }
+
+        const response = await fetch("/api/cms/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Error al subir la imagen");
+        }
+
+        const result = await response.json();
+        onUpload(result.secure_url, result.public_id);
+        toast.success("Imagen subida correctamente");
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Error al subir la imagen"
+        );
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [onUpload, setIsUploading, oldPublicId]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { "image/*": [".jpeg", ".jpg", ".png", ".webp"] },
+    maxFiles: 1,
+    disabled: isUploading,
+  });
+
+  return (
+    <div
+      {...getRootProps()}
+      className={`relative p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors
+        ${
+          isDragActive
+            ? "border-blue-500 bg-blue-50"
+            : "border-gray-300 hover:border-blue-400"
+        }
+        ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
+    >
+      <input {...getInputProps()} />
+      {isUploading ? (
+        <div className='flex flex-col items-center justify-center py-2'>
+          <Loader2 className='h-6 w-6 animate-spin text-blue-500' />
+          <p className='mt-2 text-sm text-gray-500'>Subiendo...</p>
+        </div>
+      ) : (
+        <div className='flex flex-col items-center justify-center py-2'>
+          <Upload className='h-6 w-6 text-gray-400' />
+          <p className='mt-2 text-sm text-gray-500'>
+            {isDragActive
+              ? "Suelta la imagen aquí"
+              : "Arrastra una imagen o haz clic"}
+          </p>
+          <p className='text-xs text-gray-400'>JPG, PNG, WebP (máx. 5MB)</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CMSPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -119,11 +221,16 @@ export default function CMSPage() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  // Cargar datos
+  // Estados para subida de fotos
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [miembroFotoUrl, setMiembroFotoUrl] = useState<string>("");
+  const [miembroFotoPublicId, setMiembroFotoPublicId] = useState<string>("");
+
+  // Cargar datos (inicial)
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/cms");
+      const res = await fetch("/api/cms?admin=true");
       if (res.ok) {
         const data = await res.json();
         setServicios(data.servicios || []);
@@ -135,6 +242,32 @@ export default function CMSPage() {
       toast.error("Error al cargar los datos");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Recargar solo servicios (sin cambiar de tab)
+  const refreshServicios = async () => {
+    try {
+      const res = await fetch("/api/cms?admin=true");
+      if (res.ok) {
+        const data = await res.json();
+        setServicios(data.servicios || []);
+      }
+    } catch (error) {
+      console.error("Error recargando servicios:", error);
+    }
+  };
+
+  // Recargar solo equipo (sin cambiar de tab)
+  const refreshEquipo = async () => {
+    try {
+      const res = await fetch("/api/cms?admin=true");
+      if (res.ok) {
+        const data = await res.json();
+        setEquipo(data.equipo || []);
+      }
+    } catch (error) {
+      console.error("Error recargando equipo:", error);
     }
   };
 
@@ -290,7 +423,7 @@ export default function CMSPage() {
 
       if (res.ok) {
         toast.success(servicio.id ? "Servicio actualizado" : "Servicio creado");
-        fetchData();
+        await refreshServicios();
         setDialogOpen(false);
         setEditingServicio(null);
       } else {
@@ -315,7 +448,7 @@ export default function CMSPage() {
 
       if (res.ok) {
         toast.success("Servicio eliminado");
-        fetchData();
+        await refreshServicios();
       }
     } catch (error) {
       console.error("Error eliminando:", error);
@@ -335,9 +468,11 @@ export default function CMSPage() {
 
       if (res.ok) {
         toast.success(miembro.id ? "Miembro actualizado" : "Miembro añadido");
-        fetchData();
+        await refreshEquipo();
         setDialogOpen(false);
         setEditingMiembro(null);
+        setMiembroFotoUrl("");
+        setMiembroFotoPublicId("");
       }
     } catch (error) {
       console.error("Error guardando miembro:", error);
@@ -347,9 +482,14 @@ export default function CMSPage() {
     }
   };
 
-  // Eliminar miembro
+  // Eliminar miembro (soft delete - solo oculta)
   const deleteMiembro = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este miembro?")) return;
+    if (
+      !confirm(
+        "¿Estás seguro de ocultar este miembro? Podrás restaurarlo después."
+      )
+    )
+      return;
 
     try {
       const res = await fetch(`/api/cms?tipo=equipo&id=${id}`, {
@@ -357,12 +497,34 @@ export default function CMSPage() {
       });
 
       if (res.ok) {
-        toast.success("Miembro eliminado");
-        fetchData();
+        toast.success("Miembro ocultado. Puedes restaurarlo desde la lista.");
+        await refreshEquipo();
       }
     } catch (error) {
-      console.error("Error eliminando:", error);
-      toast.error("Error al eliminar");
+      console.error("Error ocultando:", error);
+      toast.error("Error al ocultar");
+    }
+  };
+
+  // Restaurar miembro (cambiar visible a true)
+  const restaurarMiembro = async (miembro: Miembro) => {
+    try {
+      const res = await fetch("/api/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "equipo",
+          data: { ...miembro, visible: true },
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Miembro restaurado");
+        await refreshEquipo();
+      }
+    } catch (error) {
+      console.error("Error restaurando:", error);
+      toast.error("Error al restaurar");
     }
   };
 
@@ -742,6 +904,8 @@ export default function CMSPage() {
                     onClick={() => {
                       setDialogType("miembro");
                       setEditingMiembro(null);
+                      setMiembroFotoUrl("");
+                      setMiembroFotoPublicId("");
                       setDialogOpen(true);
                     }}
                   >
@@ -749,7 +913,7 @@ export default function CMSPage() {
                     Añadir Miembro
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className='max-w-lg'>
                   <DialogHeader>
                     <DialogTitle>
                       {editingMiembro?.id ? "Editar Miembro" : "Nuevo Miembro"}
@@ -764,7 +928,12 @@ export default function CMSPage() {
                         nombre: formData.get("nombre") as string,
                         cargo: formData.get("cargo") as string,
                         especialidad: formData.get("especialidad") as string,
-                        foto_url: formData.get("foto_url") as string,
+                        foto_url:
+                          miembroFotoUrl || editingMiembro?.foto_url || "",
+                        foto_public_id:
+                          miembroFotoPublicId ||
+                          editingMiembro?.foto_public_id ||
+                          "",
                         orden: Number(formData.get("orden")) || 0,
                         visible: true,
                       });
@@ -796,15 +965,48 @@ export default function CMSPage() {
                         defaultValue={editingMiembro?.especialidad}
                       />
                     </div>
+
+                    {/* Componente de subida de foto */}
                     <div className='space-y-2'>
-                      <Label htmlFor='foto_url'>URL de Foto</Label>
-                      <Input
-                        id='foto_url'
-                        name='foto_url'
-                        defaultValue={editingMiembro?.foto_url}
-                        placeholder='/dentista.png'
-                      />
+                      <Label>Foto del miembro</Label>
+                      <div className='space-y-3'>
+                        {/* Preview de la imagen actual */}
+                        {(miembroFotoUrl || editingMiembro?.foto_url) && (
+                          <div className='relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 mx-auto'>
+                            <Image
+                              src={
+                                miembroFotoUrl || editingMiembro?.foto_url || ""
+                              }
+                              alt='Preview'
+                              fill
+                              className='object-cover'
+                            />
+                            <button
+                              type='button'
+                              onClick={() => {
+                                setMiembroFotoUrl("");
+                                setMiembroFotoPublicId("");
+                              }}
+                              className='absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors'
+                            >
+                              <X className='h-3 w-3' />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Dropzone para subir */}
+                        <PhotoUploader
+                          onUpload={(url, publicId) => {
+                            setMiembroFotoUrl(url);
+                            setMiembroFotoPublicId(publicId);
+                          }}
+                          isUploading={isUploadingPhoto}
+                          setIsUploading={setIsUploadingPhoto}
+                          oldPublicId={editingMiembro?.foto_public_id}
+                        />
+                      </div>
                     </div>
+
                     <div className='space-y-2'>
                       <Label htmlFor='orden'>Orden</Label>
                       <Input
@@ -817,7 +1019,7 @@ export default function CMSPage() {
                     <DialogFooter>
                       <Button
                         type='submit'
-                        disabled={isSaving}
+                        disabled={isSaving || isUploadingPhoto}
                       >
                         {isSaving && (
                           <Loader2 className='h-4 w-4 mr-2 animate-spin' />
@@ -844,7 +1046,12 @@ export default function CMSPage() {
                 </TableHeader>
                 <TableBody>
                   {equipo.map((miembro) => (
-                    <TableRow key={miembro.id}>
+                    <TableRow
+                      key={miembro.id}
+                      className={
+                        !miembro.visible ? "opacity-50 bg-gray-50" : ""
+                      }
+                    >
                       <TableCell>{miembro.orden}</TableCell>
                       <TableCell className='font-medium'>
                         {miembro.nombre}
@@ -853,9 +1060,21 @@ export default function CMSPage() {
                       <TableCell>{miembro.especialidad}</TableCell>
                       <TableCell>
                         {miembro.visible ? (
-                          <Eye className='h-4 w-4 text-green-600' />
+                          <Badge
+                            variant='outline'
+                            className='text-green-600 border-green-600'
+                          >
+                            <Eye className='h-3 w-3 mr-1' />
+                            Visible
+                          </Badge>
                         ) : (
-                          <EyeOff className='h-4 w-4 text-gray-400' />
+                          <Badge
+                            variant='outline'
+                            className='text-gray-400 border-gray-400'
+                          >
+                            <EyeOff className='h-3 w-3 mr-1' />
+                            Oculto
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className='text-right space-x-2'>
@@ -864,19 +1083,36 @@ export default function CMSPage() {
                           size='sm'
                           onClick={() => {
                             setEditingMiembro(miembro);
+                            setMiembroFotoUrl(miembro.foto_url || "");
+                            setMiembroFotoPublicId(
+                              miembro.foto_public_id || ""
+                            );
                             setDialogType("miembro");
                             setDialogOpen(true);
                           }}
                         >
                           <Pencil className='h-4 w-4' />
                         </Button>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          onClick={() => deleteMiembro(miembro.id)}
-                        >
-                          <Trash2 className='h-4 w-4 text-red-500' />
-                        </Button>
+                        {miembro.visible ? (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => deleteMiembro(miembro.id)}
+                            title='Ocultar miembro'
+                          >
+                            <Trash2 className='h-4 w-4 text-red-500' />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => restaurarMiembro(miembro)}
+                            title='Restaurar miembro'
+                            className='text-green-600 hover:text-green-700'
+                          >
+                            <RefreshCw className='h-4 w-4' />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

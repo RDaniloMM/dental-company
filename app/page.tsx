@@ -166,7 +166,7 @@ const defaultData: CMSData = {
   tema: {
     nombre_clinica: "Dental Company",
     slogan: "Tu sonrisa es nuestra sonrisa",
-    whatsapp_numero: "51914340074",
+    whatsapp_numero: "51952864883",
     telefono: "+51 952 864 883",
     email: "d.c.com@hotmail.com",
     direccion: "Av. General Suarez N° 312, Tacna, Perú",
@@ -176,13 +176,7 @@ const defaultData: CMSData = {
 };
 
 // --- Header Moderno ---
-const Header = ({
-  tema,
-  isScrolled,
-}: {
-  tema: Record<string, string>;
-  isScrolled: boolean;
-}) => {
+const Header = ({ isScrolled }: { isScrolled: boolean }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -225,8 +219,7 @@ const Header = ({
               </Link>
             ))}
             <Link
-              href={`https://wa.me/${tema.whatsapp_numero || "51914340074"}`}
-              target='_blank'
+              href={`#contacto`}
               className='bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40'
             >
               Agendar Cita
@@ -265,8 +258,7 @@ const Header = ({
               </Link>
             ))}
             <Link
-              href={`https://wa.me/${tema.whatsapp_numero || "51914340074"}`}
-              target='_blank'
+              href={`#contacto`}
               className='block bg-blue-600 text-white text-center px-6 py-3 rounded-full font-semibold'
             >
               Agendar Cita
@@ -338,8 +330,7 @@ const HeroSection = ({
           </p>
           <div className='flex flex-col sm:flex-row gap-4'>
             <Link
-              href={`https://wa.me/${tema.whatsapp_numero || "51914340074"}`}
-              target='_blank'
+              href='#contacto'
               className='inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-all duration-300 shadow-2xl'
             >
               <Image
@@ -526,7 +517,19 @@ const ServiciosSection = ({
           </p>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6'>
+        <div
+          className={`grid gap-6 ${
+            displayServices.length === 1
+              ? "grid-cols-1 max-w-sm mx-auto"
+              : displayServices.length === 2
+              ? "grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto"
+              : displayServices.length === 3
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto"
+              : displayServices.length === 4
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+          }`}
+        >
           {displayServices.map((service, index) => {
             const Icon = iconMap[service.icono] || Stethoscope;
             return (
@@ -758,7 +761,19 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
             </p>
           </div>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto'>
+          <div
+            className={`grid gap-8 ${
+              displayEquipo.length === 1
+                ? "grid-cols-1 max-w-xs mx-auto"
+                : displayEquipo.length === 2
+                ? "grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto"
+                : displayEquipo.length === 3
+                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto"
+                : displayEquipo.length === 4
+                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto"
+            }`}
+          >
             {displayEquipo.map((member) => {
               const hasCurriculum = curriculumData[member.nombre];
               return (
@@ -816,7 +831,7 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
 
 // --- Contacto Section ---
 const ContactoSection = ({ tema }: { tema: Record<string, string> }) => {
-  const whatsappNumber = tema.whatsapp_numero || "51914340074";
+  const whatsappNumber = tema.whatsapp_numero || "51952864883";
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -1060,10 +1075,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <Header
-        tema={cmsData.tema}
-        isScrolled={isScrolled}
-      />
+      <Header isScrolled={isScrolled} />
 
       <main>
         <HeroSection
