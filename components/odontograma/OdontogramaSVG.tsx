@@ -106,8 +106,8 @@ export default function OdontogramaSVG({
   const bottomTeeth = teethList.slice(16, 32);
 
   return (
-    <div className="relative flex flex-col items-center gap-5 p-4 odontograma-container">
-      <div className="flex gap-1">
+    <div className='relative flex flex-col items-center gap-5 p-4 odontograma-container'>
+      <div className='flex gap-1'>
         {topTeeth.map((id) => (
           <ToothCard
             key={id}
@@ -121,7 +121,7 @@ export default function OdontogramaSVG({
           />
         ))}
       </div>
-      <div className="flex gap-1">
+      <div className='flex gap-1'>
         {bottomTeeth.map((id) => (
           <ToothCard
             key={id}
@@ -136,7 +136,7 @@ export default function OdontogramaSVG({
         ))}
       </div>
 
-      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+      <svg className='absolute top-0 left-0 w-full h-full pointer-events-none'>
         {renderAOF(odontograma)}
         {renderAOR(odontograma)}
         {renderPDCS(odontograma)}
@@ -161,25 +161,25 @@ export default function OdontogramaSVG({
       <AnimatePresence>
         {selectedTooth && (
           <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'
             onClick={() => setSelectedTooth(null)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-background rounded-3xl shadow-xl p-6 max-w-[800px] w-full max-h-[90vh] flex flex-col overflow-hidden border border-border"
+              className='bg-background rounded-3xl shadow-xl p-6 max-w-[800px] w-full max-h-[90vh] flex flex-col overflow-hidden border border-border'
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
             >
-              <h2 className="text-2xl font-semibold mb-4 text-center text-primary">
+              <h2 className='text-2xl font-semibold mb-4 text-center text-primary'>
                 Diente {selectedTooth.id}
               </h2>
 
-              <div className="flex w-full gap-4">
-                <div className="flex-1 flex flex-col justify-center items-center bg-muted p-4 rounded-xl relative">
+              <div className='flex w-full gap-4'>
+                <div className='flex-1 flex flex-col justify-center items-center bg-muted p-4 rounded-xl relative'>
                   {/* Diente base */}
                   <ToothCard
                     id={selectedTooth.id}
@@ -236,7 +236,7 @@ export default function OdontogramaSVG({
                   )}
                 </div>
 
-                <div className="flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-border">
+                <div className='flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-border'>
                   <CondicionMenu
                     toothId={selectedTooth.id}
                     selectedCondition={selectedCondition}
@@ -342,7 +342,7 @@ function DrawingOverlay({
         ref={topCanvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="absolute inset-0 m-auto z-20 cursor-crosshair"
+        className='absolute inset-0 m-auto z-20 cursor-crosshair'
         style={{
           top: "100%",
           left: "50%",
@@ -359,7 +359,7 @@ function DrawingOverlay({
         ref={bottomCanvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="absolute inset-0 m-auto z-20 cursor-crosshair"
+        className='absolute inset-0 m-auto z-20 cursor-crosshair'
         style={{
           top: "100%",
           left: "50%",
@@ -372,10 +372,10 @@ function DrawingOverlay({
       />
 
       {/* Botón guardar */}
-      <div className="absolute bottom-2 right-2 flex gap-2 z-30">
+      <div className='absolute bottom-2 right-2 flex gap-2 z-30'>
         <button
           onClick={handleSave}
-          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+          className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600'
         >
           Guardar
         </button>

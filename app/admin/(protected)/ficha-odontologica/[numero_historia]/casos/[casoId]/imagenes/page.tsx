@@ -50,11 +50,33 @@ interface CasoImagen {
 }
 
 const tiposImagen = [
-  { value: "antes", label: "Antes del tratamiento", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
-  { value: "durante", label: "Durante el tratamiento", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  { value: "despues", label: "Después del tratamiento", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "radiografia", label: "Radiografía", color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-  { value: "general", label: "General", color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" },
+  {
+    value: "antes",
+    label: "Antes del tratamiento",
+    color:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  },
+  {
+    value: "durante",
+    label: "Durante el tratamiento",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  },
+  {
+    value: "despues",
+    label: "Después del tratamiento",
+    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  },
+  {
+    value: "radiografia",
+    label: "Radiografía",
+    color:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  },
+  {
+    value: "general",
+    label: "General",
+    color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+  },
 ];
 
 export default function ImagenesCasoPage() {
@@ -68,7 +90,7 @@ export default function ImagenesCasoPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<CasoImagen | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     titulo: "",
@@ -106,13 +128,13 @@ export default function ImagenesCasoPage() {
   // Dropzone
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
-    
+
     const file = acceptedFiles[0];
     if (file.size > 10 * 1024 * 1024) {
       toast.error("El archivo excede el tamaño máximo de 10MB");
       return;
     }
-    
+
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
   }, []);
@@ -170,7 +192,9 @@ export default function ImagenesCasoPage() {
       loadImagenes();
     } catch (error) {
       console.error("Error subiendo imagen:", error);
-      toast.error(error instanceof Error ? error.message : "Error al subir la imagen");
+      toast.error(
+        error instanceof Error ? error.message : "Error al subir la imagen"
+      );
     } finally {
       setUploading(false);
     }
@@ -205,35 +229,41 @@ export default function ImagenesCasoPage() {
   };
 
   const resetForm = () => {
-    setFormData({ titulo: "", descripcion: "", tipo: "general", fecha_captura: "" });
+    setFormData({
+      titulo: "",
+      descripcion: "",
+      tipo: "general",
+      fecha_captura: "",
+    });
     setPreviewUrl("");
     setSelectedFile(null);
   };
 
   const getTipoBadge = (tipo: string) => {
-    const tipoInfo = tiposImagen.find(t => t.value === tipo) || tiposImagen[4];
+    const tipoInfo =
+      tiposImagen.find((t) => t.value === tipo) || tiposImagen[4];
     return <Badge className={tipoInfo.color}>{tipoInfo.label}</Badge>;
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className='flex items-center justify-center h-64'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className='p-6 space-y-6'>
+      <div className='flex items-center justify-between'>
         <div>
-          <h2 className="text-2xl font-bold">Imágenes del Caso</h2>
-          <p className="text-muted-foreground">
+          <h2 className='text-2xl font-bold'>Imágenes del Caso</h2>
+          <p className='text-muted-foreground'>
             Gestiona las imágenes asociadas a este caso clínico
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className='h-4 w-4 mr-2' />
           Nueva Imagen
         </Button>
       </div>
@@ -241,65 +271,73 @@ export default function ImagenesCasoPage() {
       {/* Grid de imágenes */}
       {imagenes.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center">
+          <CardContent className='flex flex-col items-center justify-center py-12'>
+            <ImageIcon className='h-12 w-12 text-muted-foreground mb-4' />
+            <p className='text-muted-foreground text-center'>
               No hay imágenes para este caso.
               <br />
               Sube la primera imagen para comenzar a documentar el tratamiento.
             </p>
-            <Button className="mt-4" onClick={() => setDialogOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
+            <Button
+              className='mt-4'
+              onClick={() => setDialogOpen(true)}
+            >
+              <Upload className='h-4 w-4 mr-2' />
               Subir Imagen
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
           {imagenes.map((imagen) => (
-            <Card key={imagen.id} className="overflow-hidden group">
-              <div className="relative aspect-square">
+            <Card
+              key={imagen.id}
+              className='overflow-hidden group'
+            >
+              <div className='relative aspect-square'>
                 <Image
                   src={imagen.url}
                   alt={imagen.titulo || "Imagen del caso"}
                   fill
-                  className="object-cover"
+                  className='object-cover'
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                <div className='absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100'>
                   <Button
-                    size="icon"
-                    variant="secondary"
+                    size='icon'
+                    variant='secondary'
                     onClick={() => {
                       setSelectedImage(imagen);
                       setViewerOpen(true);
                     }}
                   >
-                    <ZoomIn className="h-4 w-4" />
+                    <ZoomIn className='h-4 w-4' />
                   </Button>
                   <Button
-                    size="icon"
-                    variant="destructive"
+                    size='icon'
+                    variant='destructive'
                     onClick={() => handleDelete(imagen)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className='h-4 w-4' />
                   </Button>
                 </div>
               </div>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
+              <CardContent className='p-3'>
+                <div className='flex items-center justify-between mb-2'>
                   {getTipoBadge(imagen.tipo)}
                   {imagen.fecha_captura && (
-                    <span className="text-xs text-muted-foreground flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
+                    <span className='text-xs text-muted-foreground flex items-center'>
+                      <Calendar className='h-3 w-3 mr-1' />
                       {new Date(imagen.fecha_captura).toLocaleDateString()}
                     </span>
                   )}
                 </div>
                 {imagen.titulo && (
-                  <p className="font-medium text-sm truncate">{imagen.titulo}</p>
+                  <p className='font-medium text-sm truncate'>
+                    {imagen.titulo}
+                  </p>
                 )}
                 {imagen.descripcion && (
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className='text-xs text-muted-foreground truncate'>
                     {imagen.descripcion}
                   </p>
                 )}
@@ -310,16 +348,19 @@ export default function ImagenesCasoPage() {
       )}
 
       {/* Dialog para subir imagen */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => {
-        setDialogOpen(open);
-        if (!open) resetForm();
-      }}>
-        <DialogContent className="max-w-lg">
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) resetForm();
+        }}
+      >
+        <DialogContent className='max-w-lg'>
           <DialogHeader>
             <DialogTitle>Subir Nueva Imagen</DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-4">
+
+          <div className='space-y-4'>
             {/* Dropzone */}
             <div
               {...getRootProps()}
@@ -331,34 +372,34 @@ export default function ImagenesCasoPage() {
             >
               <input {...getInputProps()} />
               {previewUrl ? (
-                <div className="relative">
+                <div className='relative'>
                   <Image
                     src={previewUrl}
-                    alt="Preview"
+                    alt='Preview'
                     width={200}
                     height={200}
-                    className="mx-auto rounded-lg object-cover"
+                    className='mx-auto rounded-lg object-cover'
                   />
                   <Button
-                    size="icon"
-                    variant="destructive"
-                    className="absolute top-0 right-0"
+                    size='icon'
+                    variant='destructive'
+                    className='absolute top-0 right-0'
                     onClick={(e) => {
                       e.stopPropagation();
                       setPreviewUrl("");
                       setSelectedFile(null);
                     }}
                   >
-                    <X className="h-4 w-4" />
+                    <X className='h-4 w-4' />
                   </Button>
                 </div>
               ) : (
                 <>
-                  <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
+                  <Upload className='h-10 w-10 mx-auto text-muted-foreground mb-2' />
+                  <p className='text-sm text-muted-foreground'>
                     Arrastra una imagen o haz clic para seleccionar
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className='text-xs text-muted-foreground mt-1'>
                     JPG, PNG o WebP (máx. 10MB)
                   </p>
                 </>
@@ -366,61 +407,78 @@ export default function ImagenesCasoPage() {
             </div>
 
             {/* Campos */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='space-y-2'>
                 <Label>Tipo de imagen</Label>
                 <Select
                   value={formData.tipo}
-                  onValueChange={(value) => setFormData({ ...formData, tipo: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, tipo: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {tiposImagen.map((tipo) => (
-                      <SelectItem key={tipo.value} value={tipo.value}>
+                      <SelectItem
+                        key={tipo.value}
+                        value={tipo.value}
+                      >
                         {tipo.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Fecha de captura</Label>
                 <Input
-                  type="date"
+                  type='date'
                   value={formData.fecha_captura}
-                  onChange={(e) => setFormData({ ...formData, fecha_captura: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fecha_captura: e.target.value })
+                  }
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Título (opcional)</Label>
               <Input
                 value={formData.titulo}
-                onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                placeholder="Ej: Radiografía panorámica inicial"
+                onChange={(e) =>
+                  setFormData({ ...formData, titulo: e.target.value })
+                }
+                placeholder='Ej: Radiografía panorámica inicial'
               />
             </div>
 
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Descripción (opcional)</Label>
               <Textarea
                 value={formData.descripcion}
-                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                placeholder="Notas adicionales sobre la imagen..."
+                onChange={(e) =>
+                  setFormData({ ...formData, descripcion: e.target.value })
+                }
+                placeholder='Notas adicionales sobre la imagen...'
                 rows={2}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button
+              variant='outline'
+              onClick={() => setDialogOpen(false)}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleUpload} disabled={uploading || !selectedFile}>
-              {uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Button
+              onClick={handleUpload}
+              disabled={uploading || !selectedFile}
+            >
+              {uploading && <Loader2 className='h-4 w-4 mr-2 animate-spin' />}
               Subir Imagen
             </Button>
           </DialogFooter>
@@ -428,25 +486,32 @@ export default function ImagenesCasoPage() {
       </Dialog>
 
       {/* Visor de imagen */}
-      <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
-        <DialogContent className="max-w-4xl">
+      <Dialog
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+      >
+        <DialogContent className='max-w-4xl'>
           {selectedImage && (
             <>
               <DialogHeader>
-                <DialogTitle>{selectedImage.titulo || "Imagen del caso"}</DialogTitle>
+                <DialogTitle>
+                  {selectedImage.titulo || "Imagen del caso"}
+                </DialogTitle>
               </DialogHeader>
-              <div className="relative aspect-video">
+              <div className='relative aspect-video'>
                 <Image
                   src={selectedImage.url}
                   alt={selectedImage.titulo || "Imagen"}
                   fill
-                  className="object-contain"
+                  className='object-contain'
                 />
               </div>
-              <div className="flex items-center justify-between">
+              <div className='flex items-center justify-between'>
                 {getTipoBadge(selectedImage.tipo)}
                 {selectedImage.descripcion && (
-                  <p className="text-sm text-muted-foreground">{selectedImage.descripcion}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {selectedImage.descripcion}
+                  </p>
                 )}
               </div>
             </>

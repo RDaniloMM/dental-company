@@ -463,24 +463,24 @@ export default function CondicionMenu({
   };
 
   return (
-    <div className="bg-background rounded-2xl w-full h-full flex flex-col">
-      <h2 className="text-lg font-semibold text-primary p-4 border-b sticky top-0 bg-background z-10">
+    <div className='bg-background rounded-2xl w-full h-full flex flex-col'>
+      <h2 className='text-lg font-semibold text-primary p-4 border-b sticky top-0 bg-background z-10'>
         Condición del diente {toothId}
       </h2>
       {/* Campo de búsqueda */}
-      <div className="p-4 sticky top-0 bg-background z-10 border-b">
+      <div className='p-4 sticky top-0 bg-background z-10 border-b'>
         <input
-          type="text"
-          placeholder="Buscar condición..."
+          type='text'
+          placeholder='Buscar condición...'
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none text-sm bg-background text-foreground"
+          className='w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none text-sm bg-background text-foreground'
         />
       </div>
       <hr />
       {!selectedCondition ? (
         // ---------- Lista de condiciones ----------
-        <ul className="flex-1 overflow-y-auto p-4 grid grid-cols-1 gap-2">
+        <ul className='flex-1 overflow-y-auto p-4 grid grid-cols-1 gap-2'>
           {condiciones
             .filter((c) =>
               c.toLowerCase().startsWith(searchTerm.toLowerCase().trim())
@@ -633,11 +633,11 @@ export default function CondicionMenu({
         </ul>
       ) : opcionesCondiciones[selectedCondition] ? (
         // ---------- Condiciones con opciones de color ----------
-        <div className="flex flex-col items-center gap-4 p-4">
-          <p className="text-sm text-muted-foreground">
+        <div className='flex flex-col items-center gap-4 p-4'>
+          <p className='text-sm text-muted-foreground'>
             Selecciona tipo de {selectedCondition.toLowerCase()}:
           </p>
-          <div className="flex flex-col gap-2">
+          <div className='flex flex-col gap-2'>
             {opcionesCondiciones[selectedCondition].map((opt) => {
               // Determinamos si la condición requiere zona + general
               const requiresZone = [
@@ -703,11 +703,14 @@ export default function CondicionMenu({
               };
 
               return (
-                <div key={opt} className="flex gap-2">
+                <div
+                  key={opt}
+                  className='flex gap-2'
+                >
                   {/* 🔴 Botón rojo — se oculta si la condición es soloAzul */}
                   {!soloAzul && (
                     <button
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                      className='bg-red-500 text-white px-4 py-2 rounded-lg'
                       onClick={() => handleUpdate("red")}
                     >
                       {opt}
@@ -717,7 +720,7 @@ export default function CondicionMenu({
                   {/* 🔵 Botón azul — aparece si la condición lo permite o si es soloAzul */}
                   {(allowBlue || soloAzul) && (
                     <button
-                      className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                      className='bg-blue-500 text-white px-4 py-2 rounded-lg'
                       onClick={() => handleUpdate("blue")}
                     >
                       {opt}
@@ -728,7 +731,7 @@ export default function CondicionMenu({
             })}
           </div>
           <button
-            className="bg-green-500 text-white px-4 py-2 rounded-lg mt-4"
+            className='bg-green-500 text-white px-4 py-2 rounded-lg mt-4'
             onClick={() => setSelectedCondition(null)}
           >
             Volver a condiciones
@@ -736,8 +739,8 @@ export default function CondicionMenu({
         </div>
       ) : (
         // ---------- Otras condiciones que solo necesitan dirección o color ----------
-        <div className="flex flex-col items-center justify-center flex-1 gap-4 p-4">
-          <p className="text-sm text-muted-foreground">
+        <div className='flex flex-col items-center justify-center flex-1 gap-4 p-4'>
+          <p className='text-sm text-muted-foreground'>
             {selectedCondition === "Diastema"
               ? "Selecciona la dirección del diastema"
               : selectedCondition === "Fusion"
@@ -756,9 +759,9 @@ export default function CondicionMenu({
           </p>
 
           {selectedCondition === "Diastema" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -779,7 +782,7 @@ export default function CondicionMenu({
                 Izquierda
               </button>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -802,9 +805,9 @@ export default function CondicionMenu({
             </div>
           ) : selectedCondition === "Fusion" ? (
             // Botones dirección Fusión
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -825,7 +828,7 @@ export default function CondicionMenu({
                 Izquierda
               </button>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -847,13 +850,13 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Espigo - muñón" ? (
-            <div className="flex flex-col gap-3">
+            <div className='flex flex-col gap-3'>
               {/* Botones azules */}
-              <div className="flex gap-4">
+              <div className='flex gap-4'>
                 {["izq", "cen", "der"].map((dir) => (
                   <button
                     key={`azul-${dir}`}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                    className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                     onClick={() => {
                       updateTooth(toothId, {
                         generales: [
@@ -882,11 +885,11 @@ export default function CondicionMenu({
               </div>
 
               {/* Botones rojos */}
-              <div className="flex gap-4">
+              <div className='flex gap-4'>
                 {["izq", "cen", "der"].map((dir) => (
                   <button
                     key={`rojo-${dir}`}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                    className='bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg'
                     onClick={() => {
                       updateTooth(toothId, {
                         generales: [
@@ -915,9 +918,9 @@ export default function CondicionMenu({
               </div>
             </div>
           ) : selectedCondition === "Pieza dentaria en clavija" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -939,9 +942,9 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Giroversión" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -962,7 +965,7 @@ export default function CondicionMenu({
                 Izquierda
               </button>
               <button
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -984,11 +987,11 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Pieza dentaria ausente" ? (
-            <div className="flex flex-col gap-2">
+            <div className='flex flex-col gap-2'>
               {opcionesCondiciones["Pieza dentaria ausente"]?.map((sigla) => (
                 <button
                   key={sigla}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  className='bg-blue-500 text-white px-4 py-2 rounded-lg'
                   onClick={() => {
                     updateTooth(toothId, {
                       generales: [
@@ -1014,13 +1017,13 @@ export default function CondicionMenu({
             </div>
           ) : selectedCondition ===
             "Tratamiento de conducto (TC) / Pulpectomía (PC)" ? (
-            <div className="flex flex-col gap-2">
+            <div className='flex flex-col gap-2'>
               {opcionesCondiciones[
                 "Tratamiento de conducto (TC) / Pulpectomía (PC)"
               ]?.map((sigla) => (
                 <button
                   key={sigla}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  className='bg-blue-500 text-white px-4 py-2 rounded-lg'
                   onClick={() => {
                     updateTooth(toothId, {
                       generales: [
@@ -1045,9 +1048,9 @@ export default function CondicionMenu({
               ))}
             </div>
           ) : selectedCondition === "Transposicion dentaria" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1068,7 +1071,7 @@ export default function CondicionMenu({
                 Izquierda
               </button>
               <button
-                className="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1090,9 +1093,9 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Pieza dentaria supernumeraria" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1113,7 +1116,7 @@ export default function CondicionMenu({
                 Izquierda
               </button>
               <button
-                className="bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-400 hover:bg-blue-600 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1135,9 +1138,9 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Fractura dental" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                className='bg-red-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => setSelectedColor("red")}
               >
                 Rojo
@@ -1150,9 +1153,9 @@ export default function CondicionMenu({
               </button> */}
             </div>
           ) : selectedCondition === "Restauración temporal" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                className='bg-red-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => setSelectedColor("red")}
               >
                 Rojo
@@ -1165,9 +1168,9 @@ export default function CondicionMenu({
               </button> */}
             </div>
           ) : selectedCondition === "Sellantes" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                className='bg-red-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   setSelectedColor("red");
                   if (toothId) {
@@ -1188,7 +1191,7 @@ export default function CondicionMenu({
               </button>
 
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   setSelectedColor("blue");
                   if (toothId) {
@@ -1209,9 +1212,9 @@ export default function CondicionMenu({
               </button>
             </div>
           ) : selectedCondition === "Superficie desgastada" ? (
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                className='bg-red-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1231,15 +1234,15 @@ export default function CondicionMenu({
             </div>
           ) : (
             // Botones color general
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                className='bg-red-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => handleSelect("red")}
               >
                 Rojo
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                className='bg-blue-500 text-white px-4 py-2 rounded-lg'
                 onClick={() => handleSelect("blue")}
               >
                 Azul
@@ -1248,7 +1251,7 @@ export default function CondicionMenu({
           )}
 
           <button
-            className="bg-green-500 text-white px-4 py-2 rounded-lg mt-4"
+            className='bg-green-500 text-white px-4 py-2 rounded-lg mt-4'
             onClick={() => setSelectedCondition(null)}
           >
             Volver a condiciones
@@ -1257,37 +1260,39 @@ export default function CondicionMenu({
       )}
 
       {showRangeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-xl shadow-lg w-full max-w-3xl flex flex-col gap-4">
-            <h3 className="text-lg font-semibold text-center">
+        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
+          <div className='bg-background p-6 rounded-xl shadow-lg w-full max-w-3xl flex flex-col gap-4'>
+            <h3 className='text-lg font-semibold text-center'>
               Selecciona el diente final
             </h3>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className='text-center text-sm text-muted-foreground'>
               Diente actual:{" "}
-              <span className="font-bold text-primary">{toothId}</span>
+              <span className='font-bold text-primary'>{toothId}</span>
             </p>
-            <div className="flex gap-2 overflow-x-auto py-1 px-1">
+            <div className='flex gap-2 overflow-x-auto py-1 px-1'>
               {dientesParaMostrar.map((d) => (
                 <button
                   key={d}
                   onClick={() => setRangeEnd(d)}
                   className={`px-3 py-2 border rounded transition-colors ${
-                    rangeEnd === d ? "bg-primary text-primary-foreground" : "bg-background"
+                    rangeEnd === d
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background"
                   } ${d === toothId ? "ring-2 ring-blue-400 font-bold" : ""}`}
                 >
                   {d}
                 </button>
               ))}
             </div>
-            <div className="flex gap-2">
+            <div className='flex gap-2'>
               <button
-                className="flex-1 bg-gray-400 text-white py-2 rounded"
+                className='flex-1 bg-gray-400 text-white py-2 rounded'
                 onClick={() => setShowRangeModal(false)}
               >
                 Cancelar
               </button>
               <button
-                className="flex-1 bg-blue-600 text-white py-2 rounded"
+                className='flex-1 bg-blue-600 text-white py-2 rounded'
                 onClick={() => saveRangeCondition(selectedColor!)}
               >
                 Confirmar
@@ -1298,17 +1303,17 @@ export default function CondicionMenu({
       )}
 
       {showDiastemaDirection && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4">
-            <h3 className="text-lg font-semibold text-primary">
+        <div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50'>
+          <div className='bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4'>
+            <h3 className='text-lg font-semibold text-primary'>
               Dirección del diastema
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className='text-sm text-muted-foreground'>
               Selecciona hacia dónde va el espacio
             </p>
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
+                className='bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1331,7 +1336,7 @@ export default function CondicionMenu({
               </button>
 
               <button
-                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
+                className='bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1355,7 +1360,7 @@ export default function CondicionMenu({
             </div>
 
             <button
-              className="mt-4 text-muted-foreground text-sm underline"
+              className='mt-4 text-muted-foreground text-sm underline'
               onClick={() => setShowDiastemaDirection(false)}
             >
               Cancelar
@@ -1367,18 +1372,18 @@ export default function CondicionMenu({
      MODAL: Dirección de FUSIÓN
 ============================================================ */}
       {showFusionDirection && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4">
-            <h3 className="text-lg font-semibold text-primary">
+        <div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50'>
+          <div className='bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4'>
+            <h3 className='text-lg font-semibold text-primary'>
               Dirección de la fusión
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className='text-sm text-muted-foreground'>
               Selecciona hacia qué lado ocurre la fusión
             </p>
 
-            <div className="flex gap-4">
+            <div className='flex gap-4'>
               <button
-                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
+                className='bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1401,7 +1406,7 @@ export default function CondicionMenu({
               </button>
 
               <button
-                className="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg"
+                className='bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg'
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1425,7 +1430,7 @@ export default function CondicionMenu({
             </div>
 
             <button
-              className="mt-4 text-muted-foreground text-sm underline"
+              className='mt-4 text-muted-foreground text-sm underline'
               onClick={() => setShowFusionDirection(false)}
             >
               Cancelar

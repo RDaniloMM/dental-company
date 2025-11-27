@@ -6,7 +6,9 @@ interface CasosPageProps {
   params: Promise<{ numero_historia: string }>;
 }
 
-export default async function CasosPage({ params: paramsPromise }: CasosPageProps) {
+export default async function CasosPage({
+  params: paramsPromise,
+}: CasosPageProps) {
   const params = await paramsPromise;
   const supabase = await createClient();
   const {
@@ -25,7 +27,7 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
 
   if (pacienteError || !paciente) {
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className='p-6 text-center text-red-500'>
         No se pudo encontrar al paciente o su historial.
       </div>
     );
@@ -45,11 +47,11 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
       .insert({ paciente_id: paciente.id })
       .select("id")
       .single();
-    
+
     if (createError) {
       console.error("Error creando historia clínica:", createError);
       return (
-        <div className="p-6 text-center text-red-500">
+        <div className='p-6 text-center text-red-500'>
           Error al crear la historia clínica del paciente.
         </div>
       );
@@ -58,7 +60,7 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
   } else if (historiaError) {
     console.error("Error fetching historia clínica:", historiaError);
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className='p-6 text-center text-red-500'>
         Error al cargar la historia clínica del paciente.
       </div>
     );
@@ -66,7 +68,7 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
 
   if (!historia) {
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className='p-6 text-center text-red-500'>
         No se pudo obtener la historia clínica del paciente.
       </div>
     );
@@ -83,7 +85,7 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
   if (casosError) {
     console.error("Error fetching casos clínicos:", casosError);
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className='p-6 text-center text-red-500'>
         Error al cargar los casos clínicos.
       </div>
     );
@@ -91,12 +93,15 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
 
   const casosConUltimaCita = casos.map((caso) => {
     const ultimaCita = caso.citas
-      ? caso.citas.reduce((maxDate: string | null, cita: { fecha_inicio: string }) => {
-          if (!maxDate) return cita.fecha_inicio;
-          return new Date(cita.fecha_inicio) > new Date(maxDate)
-            ? cita.fecha_inicio
-            : maxDate;
-        }, null)
+      ? caso.citas.reduce(
+          (maxDate: string | null, cita: { fecha_inicio: string }) => {
+            if (!maxDate) return cita.fecha_inicio;
+            return new Date(cita.fecha_inicio) > new Date(maxDate)
+              ? cita.fecha_inicio
+              : maxDate;
+          },
+          null
+        )
       : null;
     return {
       ...caso,
@@ -105,12 +110,14 @@ export default async function CasosPage({ params: paramsPromise }: CasosPageProp
   });
 
   return (
-    <div className="w-full max-w-none">
-      <div className="rounded-lg border border-border bg-card">
-        <div className="bg-blue-500 dark:bg-blue-800 p-4 rounded-t-lg text-center">
-          <h2 className="text-2xl font-bold text-white">Casos Clínicos del Paciente</h2>
+    <div className='w-full max-w-none'>
+      <div className='rounded-lg border border-border bg-card'>
+        <div className='bg-blue-500 dark:bg-blue-800 p-4 rounded-t-lg text-center'>
+          <h2 className='text-2xl font-bold text-white'>
+            Casos Clínicos del Paciente
+          </h2>
         </div>
-        <div className="p-4">
+        <div className='p-4'>
           <CasosList
             casos={casosConUltimaCita}
             historiaId={historia.id}

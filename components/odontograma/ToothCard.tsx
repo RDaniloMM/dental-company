@@ -45,7 +45,7 @@ export default function ToothCard({
 
   const labelDiv = (
     <div
-      className="tooth-label-container"
+      className='tooth-label-container'
       style={{
         width: "50px",
         height: `${maxHeight}px`,
@@ -79,7 +79,10 @@ export default function ToothCard({
         </span>
       ))}
       {showTooltip && (
-        <span className="text-muted-foreground" style={{ fontSize: "10px" }}>
+        <span
+          className='text-muted-foreground'
+          style={{ fontSize: "10px" }}
+        >
           +{hiddenLabels.length}
         </span>
       )}
@@ -87,7 +90,7 @@ export default function ToothCard({
       {/* Tooltip estilizado con hover interno */}
       {showTooltip && (
         <div
-          className="tooth-tooltip bg-popover border border-border text-popover-foreground"
+          className='tooth-tooltip bg-popover border border-border text-popover-foreground'
           style={{
             position: "absolute",
             top: "-5px",
@@ -140,7 +143,7 @@ export default function ToothCard({
     <motion.div
       key={id}
       id={`tooth-${id}`}
-      className="tooth-card"
+      className='tooth-card'
       style={{
         display: "flex",
         flexDirection: "column",
@@ -163,7 +166,7 @@ export default function ToothCard({
         <>
           {labelDiv}
           <button
-            className="text-foreground font-bold"
+            className='text-foreground font-bold'
             style={{
               background: "transparent",
               border: "none",
@@ -185,9 +188,9 @@ export default function ToothCard({
               .map((g, i) => (
                 <svg
                   key={`draw-${id}-${i}`}
-                  viewBox="0 0 220 250"
-                  width="100%"
-                  height="100%"
+                  viewBox='0 0 220 250'
+                  width='100%'
+                  height='100%'
                   style={{
                     position: "absolute",
                     top: 0,
@@ -199,9 +202,9 @@ export default function ToothCard({
                     d={g.drawPath!}
                     stroke={g.color || "blue"}
                     strokeWidth={3}
-                    fill="none"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
+                    fill='none'
+                    strokeLinecap='round'
+                    vectorEffect='non-scaling-stroke'
                   />
                 </svg>
               ))}
@@ -223,9 +226,9 @@ export default function ToothCard({
               .map((g, i) => (
                 <svg
                   key={`draw-${id}-${i}`}
-                  viewBox="0 0 220 250"
-                  width="100%"
-                  height="100%"
+                  viewBox='0 0 220 250'
+                  width='100%'
+                  height='100%'
                   style={{
                     position: "absolute",
                     top: 0,
@@ -238,16 +241,16 @@ export default function ToothCard({
                     d={g.drawPath!}
                     stroke={g.color || "blue"}
                     strokeWidth={3}
-                    fill="none"
-                    strokeLinecap="round"
-                    vectorEffect="non-scaling-stroke"
+                    fill='none'
+                    strokeLinecap='round'
+                    vectorEffect='non-scaling-stroke'
                   />
                 </svg>
               ))}
           </div>
 
           <button
-            className="text-foreground font-bold"
+            className='text-foreground font-bold'
             style={{
               background: "transparent",
               border: "none",
