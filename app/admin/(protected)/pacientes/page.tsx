@@ -119,15 +119,6 @@ export default function PacientesPage() {
     );
   });
 
-  // Generar número de historia
-  const generateNumeroHistoria = () => {
-    const year = new Date().getFullYear();
-    const random = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, "0");
-    return `HC-${year}-${random}`;
-  };
-
   // Crear nuevo paciente
   const handleCreatePaciente = async (redirectToFicha = false) => {
     if (
@@ -144,14 +135,12 @@ export default function PacientesPage() {
 
     setSaving(true);
     try {
-      const numero_historia = generateNumeroHistoria();
-
-      const { error } = await supabase.from("pacientes").insert([
-        {
-          ...formData,
-          numero_historia,
-        },
-      ]);
+      // El número de historia se genera automáticamente por trigger en la BD
+      const { data: newPaciente, error } = await supabase
+        .from("pacientes")
+        .insert([formData])
+        .select("numero_historia")
+        .single();
 
       if (error) throw error;
 
@@ -168,9 +157,9 @@ export default function PacientesPage() {
         direccion: "",
       });
 
-      if (redirectToFicha) {
+      if (redirectToFicha && newPaciente?.numero_historia) {
         // Redirigir al formulario completo de filiación
-        router.push(`/admin/ficha-odontologica/${numero_historia}/filiacion`);
+        router.push(`/admin/ficha-odontologica/${newPaciente.numero_historia}/filiacion`);
       } else {
         loadPacientes();
       }
