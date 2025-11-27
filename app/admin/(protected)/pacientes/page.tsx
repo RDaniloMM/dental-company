@@ -79,7 +79,7 @@ export default function PacientesPage() {
     apellidos: "",
     dni: "",
     fecha_nacimiento: "",
-    sexo: "M",
+    genero: "Masculino",
     telefono: "",
     email: "",
     direccion: "",
@@ -130,8 +130,15 @@ export default function PacientesPage() {
 
   // Crear nuevo paciente
   const handleCreatePaciente = async (redirectToFicha = false) => {
-    if (!formData.nombres || !formData.apellidos || !formData.dni) {
-      toast.error("Complete los campos obligatorios");
+    if (
+      !formData.nombres ||
+      !formData.apellidos ||
+      !formData.dni ||
+      !formData.fecha_nacimiento
+    ) {
+      toast.error(
+        "Complete los campos obligatorios (nombres, apellidos, DNI y fecha de nacimiento)"
+      );
       return;
     }
 
@@ -155,7 +162,7 @@ export default function PacientesPage() {
         apellidos: "",
         dni: "",
         fecha_nacimiento: "",
-        sexo: "M",
+        genero: "Masculino",
         telefono: "",
         email: "",
         direccion: "",
@@ -167,9 +174,13 @@ export default function PacientesPage() {
       } else {
         loadPacientes();
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creando paciente:", error);
-      toast.error("Error al registrar paciente");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as { message?: string })?.message || "Error desconocido";
+      toast.error(`Error al registrar paciente: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
@@ -273,19 +284,19 @@ export default function PacientesPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='sexo'>Sexo</Label>
+                <Label htmlFor='genero'>Género</Label>
                 <Select
-                  value={formData.sexo}
+                  value={formData.genero}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, sexo: value })
+                    setFormData({ ...formData, genero: value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='M'>Masculino</SelectItem>
-                    <SelectItem value='F'>Femenino</SelectItem>
+                    <SelectItem value='Masculino'>Masculino</SelectItem>
+                    <SelectItem value='Femenino'>Femenino</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
