@@ -65,7 +65,7 @@ export default function FiliacionForm({
     grado_instruccion: data.grado_instruccion || "",
     telefono: data.telefono || "",
     email: data.email || "",
-    pais: data.pais || "",
+    pais: data.pais || "Peruano",
     departamento: data.departamento || "",
     provincia: data.provincia || "",
     distrito: data.distrito || "",
@@ -84,6 +84,10 @@ export default function FiliacionForm({
   );
   const [age, setAge] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [showCustomNacionalidad, setShowCustomNacionalidad] = useState(() => {
+    const nacionalidadesPredefinidas = ["Peruano", "Chileno", "Argentino", "Boliviano", "Colombiano", "Ecuatoriano", "Venezolano", ""];
+    return !nacionalidadesPredefinidas.includes(patient.pais || "");
+  });
 
   useEffect(() => {
     if (formData.fecha_nacimiento) {
@@ -413,14 +417,60 @@ export default function FiliacionForm({
 
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>País</Label>
-                <Input
-                  name='pais'
-                  value={formData.pais}
-                  onChange={handleChange}
-                  autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
-                />
+                <Label className='text-gray-900 dark:text-gray-100'>
+                  Nacionalidad
+                </Label>
+                {!showCustomNacionalidad ? (
+                  <Select
+                    name='pais'
+                    onValueChange={(v) => {
+                      if (v === "Otro") {
+                        setShowCustomNacionalidad(true);
+                        handleSelectChange("pais", "");
+                      } else {
+                        handleSelectChange("pais", v);
+                      }
+                    }}
+                    value={formData.pais || "Peruano"}
+                  >
+                    <SelectTrigger className='h-7 px-2 py-1 text-sm'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='Peruano'>Peruano</SelectItem>
+                      <SelectItem value='Chileno'>Chileno</SelectItem>
+                      <SelectItem value='Argentino'>Argentino</SelectItem>
+                      <SelectItem value='Boliviano'>Boliviano</SelectItem>
+                      <SelectItem value='Colombiano'>Colombiano</SelectItem>
+                      <SelectItem value='Ecuatoriano'>Ecuatoriano</SelectItem>
+                      <SelectItem value='Venezolano'>Venezolano</SelectItem>
+                      <SelectItem value='Otro'>Otro...</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className='flex gap-1'>
+                    <Input
+                      name='pais'
+                      value={formData.pais}
+                      onChange={handleChange}
+                      placeholder='Escriba la nacionalidad'
+                      autoComplete='off'
+                      className='h-7 px-2 py-1 text-sm flex-1'
+                    />
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='sm'
+                      className='h-7 px-2'
+                      onClick={() => {
+                        setShowCustomNacionalidad(false);
+                        handleSelectChange("pais", "Peruano");
+                      }}
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className='space-y-2'>
                 <Label className='text-gray-900 dark:text-gray-100'>
