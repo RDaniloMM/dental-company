@@ -218,7 +218,10 @@ export const FloatingChatbot = () => {
 
             {/* Input area */}
             <div className='border-t border-gray-200 p-3 bg-gray-50'>
-              <PromptInput onSubmit={handleSubmit} className='!bg-white'>
+              <PromptInput
+                onSubmit={handleSubmit}
+                className='!bg-white'
+              >
                 <PromptInputBody>
                   <PromptInputTextarea
                     onChange={(e) => setInput(e.target.value)}
