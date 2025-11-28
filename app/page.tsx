@@ -148,6 +148,10 @@ interface CMSData {
     descripcion: string;
     icono: string;
     orden: number;
+    detalle_completo?: string;
+    beneficios?: string[];
+    duracion?: string;
+    recomendaciones?: string;
   }>;
   equipo: Array<{
     id: string;
@@ -296,6 +300,30 @@ const HeroSection = ({
 
   const images = carrusel.length > 0 ? carrusel : defaultData.carrusel;
 
+  const infoCards = [
+    {
+      icon: Clock,
+      title: "Horario",
+      lines: [
+        tema.horario_semana || "Lun - Vie: 9:00 AM - 7:00 PM",
+        tema.horario_sabado || "Sábados: 9:00 AM - 1:00 PM",
+      ],
+    },
+    {
+      icon: MapPin,
+      title: "Ubicación",
+      lines: [tema.direccion || "Av. General Suarez N° 312", "Tacna, Perú"],
+    },
+    {
+      icon: Phone,
+      title: "Contacto",
+      lines: [
+        tema.telefono || "+51 952 864 883",
+        tema.email || "d.c.com@hotmail.com",
+      ],
+    },
+  ];
+
   return (
     <section
       id='inicio'
@@ -325,42 +353,97 @@ const HeroSection = ({
       </div>
 
       {/* Overlay gradiente */}
-      <div className='absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/70 to-transparent' />
+      <div className='absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/75 to-blue-900/40' />
 
-      {/* Contenido */}
+      {/* Contenido principal */}
       <div className='relative container mx-auto px-4 sm:px-6 lg:px-8 pt-24'>
-        <div className='max-w-2xl'>
-          <div className='inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-blue-200 text-sm mb-6'>
-            <Star className='h-4 w-4 text-yellow-400 fill-yellow-400' />
-            Más de 10 años de experiencia
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center'>
+          {/* Lado izquierdo - Título y CTA */}
+          <div>
+            <div className='inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-blue-200 text-sm mb-6'>
+              <Star className='h-4 w-4 text-yellow-400 fill-yellow-400' />
+              Más de 10 años de experiencia
+            </div>
+            <h1 className='text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6'>
+              {tema.nombre_clinica || "Dental Company"}
+            </h1>
+            <p className='text-xl sm:text-2xl text-blue-100 mb-8 leading-relaxed'>
+              {tema.slogan || "Tu sonrisa es nuestra sonrisa"}
+            </p>
+            <div className='flex flex-col sm:flex-row gap-4'>
+              <Link
+                href='#contacto'
+                className='inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-all duration-300 shadow-2xl'
+              >
+                <Image
+                  src='/whatsapp.png'
+                  alt='WhatsApp'
+                  width={24}
+                  height={24}
+                />
+                Agenda tu Cita
+              </Link>
+              <Link
+                href='#servicios'
+                className='inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all duration-300'
+              >
+                Conoce más
+                <ChevronDown className='h-5 w-5' />
+              </Link>
+            </div>
           </div>
-          <h1 className='text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6'>
-            {tema.nombre_clinica || "Dental Company"}
-          </h1>
-          <p className='text-xl sm:text-2xl text-blue-100 mb-8 leading-relaxed'>
-            {tema.slogan || "Tu sonrisa es nuestra sonrisa"}
-          </p>
-          <div className='flex flex-col sm:flex-row gap-4'>
-            <Link
-              href='#contacto'
-              className='inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-all duration-300 shadow-2xl'
-            >
-              <Image
-                src='/whatsapp.png'
-                alt='WhatsApp'
-                width={24}
-                height={24}
-              />
-              Agenda tu Cita
-            </Link>
-            <Link
-              href='#servicios'
-              className='inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all duration-300'
-            >
-              Conoce más
-              <ChevronDown className='h-5 w-5' />
-            </Link>
+
+          {/* Lado derecho - Cards de información */}
+          <div className='hidden lg:flex flex-col gap-3 max-w-sm ml-auto'>
+            {infoCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={index}
+                  className='group bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl p-4 hover:bg-white/30 transition-all duration-300 hover:scale-[1.02] shadow-lg'
+                >
+                  <div className='flex items-center gap-4'>
+                    <div className='w-11 h-11 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md'>
+                      <Icon className='h-5 w-5 text-white' />
+                    </div>
+                    <div>
+                      <h3 className='text-base font-bold text-white leading-tight'>
+                        {card.title}
+                      </h3>
+                      {card.lines.map((line, i) => (
+                        <p
+                          key={i}
+                          className='text-white/90 text-sm leading-snug'
+                        >
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        </div>
+
+        {/* Cards móviles - versión compacta horizontal */}
+        <div className='lg:hidden mt-8 flex flex-wrap justify-center gap-3'>
+          {infoCards.map((card, index) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={index}
+                className='bg-white/20 backdrop-blur-lg border border-white/30 rounded-lg px-4 py-2.5 flex items-center gap-2.5 shadow-md'
+              >
+                <div className='w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center flex-shrink-0'>
+                  <Icon className='h-4 w-4 text-white' />
+                </div>
+                <span className='text-white text-sm font-medium'>
+                  {card.lines[0]}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -371,70 +454,6 @@ const HeroSection = ({
     </section>
   );
 };
-
-// --- Info Cards ---
-const InfoCards = ({ tema }: { tema: Record<string, string> }) => (
-  <section className='relative -mt-20 z-10 pb-12'>
-    <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-        {[
-          {
-            icon: Clock,
-            title: "Horario de Atención",
-            lines: [
-              tema.horario_semana || "Lun - Vie: 9:00 AM - 7:00 PM",
-              tema.horario_sabado || "Sábados: 9:00 AM - 1:00 PM",
-            ],
-            color: "from-blue-500 to-blue-600",
-          },
-          {
-            icon: MapPin,
-            title: "Ubicación",
-            lines: [
-              tema.direccion || "Av. General Suarez N° 312",
-              "Tacna, Perú",
-            ],
-            color: "from-emerald-500 to-emerald-600",
-          },
-          {
-            icon: Phone,
-            title: "Contáctanos",
-            lines: [
-              tema.telefono || "+51 952 864 883",
-              tema.email || "d.c.com@hotmail.com",
-            ],
-            color: "from-violet-500 to-violet-600",
-          },
-        ].map((card, index) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={index}
-              className='bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border border-gray-100'
-            >
-              <div
-                className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${card.color} mb-4`}
-              >
-                <Icon className='h-6 w-6 text-white' />
-              </div>
-              <h3 className='text-lg font-bold text-gray-900 mb-2'>
-                {card.title}
-              </h3>
-              {card.lines.map((line, i) => (
-                <p
-                  key={i}
-                  className='text-gray-600 text-sm'
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  </section>
-);
 
 // --- Servicios Section ---
 interface ServiceDetail {
@@ -750,12 +769,44 @@ const ServiciosSection = ({
     null
   );
 
-  const defaultServices = serviciosDetallados;
-
+  // Usar servicios del CMS si existen, sino usar los hardcodeados como fallback
   const displayServices =
     servicios.length > 0
       ? servicios
-      : defaultServices.map((s, i) => ({ ...s, id: String(i), orden: i }));
+      : serviciosDetallados.map((s, i) => ({ ...s, id: String(i), orden: i }));
+
+  // Función para obtener los detalles del servicio (del CMS o hardcodeado)
+  const getServiceDetails = (
+    service: CMSData["servicios"][0]
+  ): ServiceDetail => {
+    // Si el servicio del CMS tiene detalles, usarlos
+    if (service.detalle_completo) {
+      return {
+        nombre: service.nombre,
+        descripcion: service.descripcion,
+        icono: service.icono,
+        detalleCompleto: service.detalle_completo,
+        beneficios: service.beneficios || [],
+        duracion: service.duracion,
+        recomendaciones: service.recomendaciones,
+      };
+    }
+    // Sino, buscar en los datos hardcodeados
+    const hardcodedService = serviciosDetallados.find(
+      (s) => s.nombre === service.nombre
+    );
+    if (hardcodedService) {
+      return hardcodedService;
+    }
+    // Si no hay datos, retornar uno básico
+    return {
+      nombre: service.nombre,
+      descripcion: service.descripcion,
+      icono: service.icono,
+      detalleCompleto: service.descripcion,
+      beneficios: [],
+    };
+  };
 
   return (
     <section
@@ -791,16 +842,11 @@ const ServiciosSection = ({
         >
           {displayServices.map((service, index) => {
             const Icon = iconMap[service.icono] || Stethoscope;
-            // Buscar el servicio detallado correspondiente
-            const servicioDetallado = serviciosDetallados.find(
-              (s) => s.nombre === service.nombre
-            );
+            const servicioDetallado = getServiceDetails(service);
             return (
               <div
                 key={service.id || index}
-                onClick={() =>
-                  servicioDetallado && setSelectedService(servicioDetallado)
-                }
+                onClick={() => setSelectedService(servicioDetallado)}
                 className='group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-1 cursor-pointer'
               >
                 <div className='w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors duration-300'>
@@ -1258,15 +1304,15 @@ const Footer = ({ tema }: { tema: Record<string, string> }) => (
     <div className='container mx-auto px-4 sm:px-6 lg:px-8 py-16'>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12'>
         {/* Logo y descripción */}
-        <div className='lg:col-span-2'>
+        <div className='lg:col-span-2 text-center md:text-left'>
           <Image
             src='/logo.png'
             alt='Dental Company'
             width={150}
             height={50}
-            className='mb-6 brightness-0 invert'
+            className='mb-6 brightness-0 invert mx-auto md:mx-0'
           />
-          <p className='text-gray-400 leading-relaxed max-w-md'>
+          <p className='text-gray-400 leading-relaxed max-w-md mx-auto md:mx-0'>
             DENTAL COMPANY es un centro odontológico integral que combina
             excelencia clínica, tecnología avanzada y calidez humana para
             brindarte la mejor atención dental.
@@ -1274,7 +1320,7 @@ const Footer = ({ tema }: { tema: Record<string, string> }) => (
         </div>
 
         {/* Links rápidos */}
-        <div>
+        <div className='text-center md:text-left'>
           <h4 className='text-lg font-bold mb-6'>Enlaces</h4>
           <ul className='space-y-3'>
             {["Inicio", "Servicios", "Nosotros", "Contacto"].map((link) => (
@@ -1291,7 +1337,7 @@ const Footer = ({ tema }: { tema: Record<string, string> }) => (
         </div>
 
         {/* Mapa */}
-        <div>
+        <div className='text-center md:text-left'>
           <h4 className='text-lg font-bold mb-6'>Ubicación</h4>
           <div className='aspect-video rounded-xl overflow-hidden'>
             <iframe
@@ -1394,7 +1440,7 @@ export default function LandingPage() {
           carrusel={cmsData.carrusel}
           tema={cmsData.tema}
         />
-        <InfoCards tema={cmsData.tema} />
+
         <ServiciosSection servicios={cmsData.servicios} />
         <EquipoSection equipo={cmsData.equipo} />
         <ContactoSection tema={cmsData.tema} />

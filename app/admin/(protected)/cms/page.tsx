@@ -63,6 +63,10 @@ interface Servicio {
   icono: string;
   orden: number;
   visible: boolean;
+  detalle_completo?: string;
+  beneficios?: string[];
+  duracion?: string;
+  recomendaciones?: string;
 }
 
 interface Curriculum {
@@ -241,6 +245,14 @@ export default function CMSPage() {
   const [curriculumEspecialidades, setCurriculumEspecialidades] =
     useState<string>("");
   const [curriculumFilosofia, setCurriculumFilosofia] = useState<string>("");
+
+  // Estados para servicios detallados
+  const [servicioDetalleCompleto, setServicioDetalleCompleto] =
+    useState<string>("");
+  const [servicioBeneficios, setServicioBeneficios] = useState<string>("");
+  const [servicioDuracion, setServicioDuracion] = useState<string>("");
+  const [servicioRecomendaciones, setServicioRecomendaciones] =
+    useState<string>("");
 
   // Cargar datos (inicial)
   const fetchData = async () => {
@@ -764,7 +776,14 @@ export default function CMSPage() {
                 open={dialogOpen && dialogType === "servicio"}
                 onOpenChange={(open) => {
                   setDialogOpen(open);
-                  if (!open) setEditingServicio(null);
+                  if (!open) {
+                    setEditingServicio(null);
+                    // Limpiar campos de servicio detallado
+                    setServicioDetalleCompleto("");
+                    setServicioBeneficios("");
+                    setServicioDuracion("");
+                    setServicioRecomendaciones("");
+                  }
                 }}
               >
                 <DialogTrigger asChild>
@@ -772,6 +791,10 @@ export default function CMSPage() {
                     onClick={() => {
                       setDialogType("servicio");
                       setEditingServicio(null);
+                      setServicioDetalleCompleto("");
+                      setServicioBeneficios("");
+                      setServicioDuracion("");
+                      setServicioRecomendaciones("");
                       setDialogOpen(true);
                     }}
                   >
@@ -779,7 +802,7 @@ export default function CMSPage() {
                     Añadir Servicio
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
                   <DialogHeader>
                     <DialogTitle>
                       {editingServicio?.id
@@ -801,55 +824,140 @@ export default function CMSPage() {
                         icono: formData.get("icono") as string,
                         orden: Number(formData.get("orden")) || 0,
                         visible: true,
+                        detalle_completo: servicioDetalleCompleto || undefined,
+                        beneficios: servicioBeneficios
+                          ? servicioBeneficios
+                              .split("\n")
+                              .filter((line) => line.trim())
+                          : undefined,
+                        duracion: servicioDuracion || undefined,
+                        recomendaciones: servicioRecomendaciones || undefined,
                       });
                     }}
                     className='space-y-4'
                   >
-                    <div className='space-y-2'>
-                      <Label htmlFor='nombre'>Nombre</Label>
-                      <Input
-                        id='nombre'
-                        name='nombre'
-                        defaultValue={editingServicio?.nombre}
-                        required
-                      />
-                    </div>
-                    <div className='space-y-2'>
-                      <Label htmlFor='descripcion'>Descripción</Label>
-                      <Textarea
-                        id='descripcion'
-                        name='descripcion'
-                        defaultValue={editingServicio?.descripcion}
-                        required
-                      />
-                    </div>
-                    <div className='grid grid-cols-2 gap-4'>
-                      <div className='space-y-2'>
-                        <Label htmlFor='icono'>Icono</Label>
-                        <select
-                          id='icono'
-                          name='icono'
-                          defaultValue={editingServicio?.icono || "Stethoscope"}
-                          className='w-full border rounded-md p-2'
-                        >
-                          {iconOptions.map((icon) => (
-                            <option
-                              key={icon}
-                              value={icon}
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                      {/* Columna izquierda: Datos básicos */}
+                      <div className='space-y-4'>
+                        <h4 className='font-semibold text-sm text-muted-foreground border-b pb-2'>
+                          Información Básica
+                        </h4>
+                        <div className='space-y-2'>
+                          <Label htmlFor='nombre'>Nombre *</Label>
+                          <Input
+                            id='nombre'
+                            name='nombre'
+                            defaultValue={editingServicio?.nombre}
+                            required
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='descripcion'>
+                            Descripción corta *
+                          </Label>
+                          <Textarea
+                            id='descripcion'
+                            name='descripcion'
+                            defaultValue={editingServicio?.descripcion}
+                            required
+                            rows={3}
+                            placeholder='Breve descripción para mostrar en la tarjeta'
+                          />
+                        </div>
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div className='space-y-2'>
+                            <Label htmlFor='icono'>Icono</Label>
+                            <select
+                              id='icono'
+                              name='icono'
+                              defaultValue={
+                                editingServicio?.icono || "Stethoscope"
+                              }
+                              className='w-full border rounded-md p-2'
                             >
-                              {icon}
-                            </option>
-                          ))}
-                        </select>
+                              {iconOptions.map((icon) => (
+                                <option
+                                  key={icon}
+                                  value={icon}
+                                >
+                                  {icon}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className='space-y-2'>
+                            <Label htmlFor='orden'>Orden</Label>
+                            <Input
+                              id='orden'
+                              name='orden'
+                              type='number'
+                              defaultValue={editingServicio?.orden || 0}
+                            />
+                          </div>
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='duracion'>Duración estimada</Label>
+                          <Input
+                            id='duracion'
+                            value={servicioDuracion}
+                            onChange={(e) =>
+                              setServicioDuracion(e.target.value)
+                            }
+                            placeholder='Ej: 30-60 minutos por consulta'
+                          />
+                        </div>
                       </div>
-                      <div className='space-y-2'>
-                        <Label htmlFor='orden'>Orden</Label>
-                        <Input
-                          id='orden'
-                          name='orden'
-                          type='number'
-                          defaultValue={editingServicio?.orden || 0}
-                        />
+
+                      {/* Columna derecha: Detalles para el modal */}
+                      <div className='space-y-4'>
+                        <h4 className='font-semibold text-sm text-muted-foreground border-b pb-2'>
+                          Información Detallada (para el modal)
+                        </h4>
+                        <div className='space-y-2'>
+                          <Label htmlFor='detalle_completo'>
+                            ¿En qué consiste?
+                          </Label>
+                          <Textarea
+                            id='detalle_completo'
+                            value={servicioDetalleCompleto}
+                            onChange={(e) =>
+                              setServicioDetalleCompleto(e.target.value)
+                            }
+                            rows={4}
+                            placeholder='Descripción completa del servicio...'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='beneficios'>
+                            Beneficios
+                            <span className='text-xs text-muted-foreground ml-1'>
+                              (uno por línea)
+                            </span>
+                          </Label>
+                          <Textarea
+                            id='beneficios'
+                            value={servicioBeneficios}
+                            onChange={(e) =>
+                              setServicioBeneficios(e.target.value)
+                            }
+                            rows={4}
+                            placeholder='Prevención de enfermedades&#10;Detección temprana&#10;Limpieza profunda'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='recomendaciones'>
+                            Recomendaciones para el paciente
+                          </Label>
+                          <Textarea
+                            id='recomendaciones'
+                            value={servicioRecomendaciones}
+                            onChange={(e) =>
+                              setServicioRecomendaciones(e.target.value)
+                            }
+                            rows={3}
+                            placeholder='Consejos prácticos para el paciente...'
+                          />
+                        </div>
                       </div>
                     </div>
                     <DialogFooter>
@@ -876,6 +984,7 @@ export default function CMSPage() {
                     <TableHead>Nombre</TableHead>
                     <TableHead>Descripción</TableHead>
                     <TableHead>Icono</TableHead>
+                    <TableHead>Detalles</TableHead>
                     <TableHead>Visible</TableHead>
                     <TableHead className='text-right'>Acciones</TableHead>
                   </TableRow>
@@ -897,6 +1006,24 @@ export default function CMSPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant='outline'>{servicio.icono}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {servicio.detalle_completo ? (
+                          <Badge
+                            variant='outline'
+                            className='text-blue-600 border-blue-600'
+                          >
+                            <FileText className='h-3 w-3 mr-1' />
+                            Sí
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant='outline'
+                            className='text-gray-400 border-gray-400'
+                          >
+                            No
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {servicio.visible ? (
@@ -923,6 +1050,17 @@ export default function CMSPage() {
                           size='sm'
                           onClick={() => {
                             setEditingServicio(servicio);
+                            // Cargar datos detallados existentes
+                            setServicioDetalleCompleto(
+                              servicio.detalle_completo || ""
+                            );
+                            setServicioBeneficios(
+                              servicio.beneficios?.join("\n") || ""
+                            );
+                            setServicioDuracion(servicio.duracion || "");
+                            setServicioRecomendaciones(
+                              servicio.recomendaciones || ""
+                            );
                             setDialogType("servicio");
                             setDialogOpen(true);
                           }}
