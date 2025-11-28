@@ -350,7 +350,7 @@ export default function ChatbotFAQsPage() {
             Base de Conocimiento del Chatbot
           </h1>
           <p className='text-muted-foreground'>
-            Gestiona las preguntas frecuentes que el chatbot usa para responder
+            Gestiona las preguntas frecuentes y contextos que el chatbot usa para responder
           </p>
         </div>
         <div className='flex gap-2 items-center'>
@@ -389,150 +389,6 @@ export default function ChatbotFAQsPage() {
             )}
             {isSyncing ? "Sincronizando..." : "Sync IA"}
           </Button>
-          <Button
-            variant='outline'
-            onClick={fetchFAQs}
-          >
-            <RefreshCw className='h-4 w-4 mr-2' />
-            Actualizar
-          </Button>
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(open) => {
-              setDialogOpen(open);
-              if (!open) setEditingFAQ(null);
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => {
-                  setEditingFAQ(null);
-                  setDialogOpen(true);
-                }}
-              >
-                <Plus className='h-4 w-4 mr-2' />
-                Nueva FAQ
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='max-w-2xl'>
-              <DialogHeader>
-                <DialogTitle className='flex items-center gap-2'>
-                  <HelpCircle className='h-5 w-5' />
-                  {editingFAQ?.id ? "Editar FAQ" : "Nueva FAQ"}
-                </DialogTitle>
-                <DialogDescription>
-                  Esta información será usada por el chatbot para responder
-                  preguntas
-                </DialogDescription>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  saveFAQ({
-                    id: editingFAQ?.id,
-                    pregunta: formData.get("pregunta") as string,
-                    respuesta: formData.get("respuesta") as string,
-                    keywords: (formData.get("keywords") as string)
-                      .split(",")
-                      .map((k) => k.trim())
-                      .filter((k) => k.length > 0),
-                    categoria: formData.get("categoria") as string,
-                    prioridad: Number(formData.get("prioridad")) || 0,
-                    activo: true,
-                  });
-                }}
-                className='space-y-4'
-              >
-                <div className='space-y-2'>
-                  <Label htmlFor='pregunta'>Pregunta</Label>
-                  <Input
-                    id='pregunta'
-                    name='pregunta'
-                    defaultValue={editingFAQ?.pregunta}
-                    required
-                    placeholder='¿Cuál es el horario de atención?'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='respuesta'>Respuesta</Label>
-                  <Textarea
-                    id='respuesta'
-                    name='respuesta'
-                    defaultValue={editingFAQ?.respuesta}
-                    required
-                    rows={4}
-                    placeholder='Nuestro horario de atención es...'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label
-                    htmlFor='keywords'
-                    className='flex items-center gap-2'
-                  >
-                    <Tag className='h-4 w-4' />
-                    Palabras clave (separadas por coma)
-                  </Label>
-                  <Input
-                    id='keywords'
-                    name='keywords'
-                    defaultValue={editingFAQ?.keywords?.join(", ")}
-                    placeholder='horario, atención, abierto, cerrado'
-                  />
-                  <p className='text-xs text-muted-foreground'>
-                    Estas palabras ayudan al chatbot a encontrar esta FAQ cuando
-                    el usuario pregunta
-                  </p>
-                </div>
-                <div className='grid grid-cols-2 gap-4'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='categoria'>Categoría</Label>
-                    <select
-                      id='categoria'
-                      name='categoria'
-                      defaultValue={editingFAQ?.categoria || "general"}
-                      className='w-full border rounded-md p-2'
-                    >
-                      {categorias.map((cat) => (
-                        <option
-                          key={cat}
-                          value={cat}
-                        >
-                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='prioridad'>Prioridad</Label>
-                    <Input
-                      id='prioridad'
-                      name='prioridad'
-                      type='number'
-                      defaultValue={editingFAQ?.prioridad || 0}
-                      min={0}
-                      max={100}
-                    />
-                    <p className='text-xs text-muted-foreground'>
-                      Mayor = más relevante
-                    </p>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    type='submit'
-                    disabled={isSaving}
-                  >
-                    {isSaving && (
-                      <Loader2 className='h-4 w-4 mr-2 animate-spin' />
-                    )}
-                    <Save className='h-4 w-4 mr-2' />
-                    Guardar
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
 
@@ -597,14 +453,164 @@ export default function ChatbotFAQsPage() {
           {/* Filtros */}
           <Card>
             <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <BookOpen className='h-5 w-5' />
-                Preguntas Frecuentes
-              </CardTitle>
-              <CardDescription>
-                El chatbot usa estas FAQs para responder consultas de los
-                usuarios
-              </CardDescription>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle className='flex items-center gap-2'>
+                    <BookOpen className='h-5 w-5' />
+                    Preguntas Frecuentes
+                  </CardTitle>
+                  <CardDescription>
+                    El chatbot usa estas FAQs para responder consultas de los
+                    usuarios
+                  </CardDescription>
+                </div>
+                <div className='flex gap-2'>
+                  <Button
+                    variant='outline'
+                    onClick={fetchFAQs}
+                  >
+                    <RefreshCw className='h-4 w-4 mr-2' />
+                    Actualizar
+                  </Button>
+                  <Dialog
+                    open={dialogOpen}
+                    onOpenChange={(open) => {
+                      setDialogOpen(open);
+                      if (!open) setEditingFAQ(null);
+                    }}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        onClick={() => {
+                          setEditingFAQ(null);
+                          setDialogOpen(true);
+                        }}
+                      >
+                        <Plus className='h-4 w-4 mr-2' />
+                        Nueva FAQ
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className='max-w-2xl'>
+                      <DialogHeader>
+                        <DialogTitle className='flex items-center gap-2'>
+                          <HelpCircle className='h-5 w-5' />
+                          {editingFAQ?.id ? "Editar FAQ" : "Nueva FAQ"}
+                        </DialogTitle>
+                        <DialogDescription>
+                          Esta información será usada por el chatbot para responder
+                          preguntas
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          saveFAQ({
+                            id: editingFAQ?.id,
+                            pregunta: formData.get("pregunta") as string,
+                            respuesta: formData.get("respuesta") as string,
+                            keywords: (formData.get("keywords") as string)
+                              .split(",")
+                              .map((k) => k.trim())
+                              .filter((k) => k.length > 0),
+                            categoria: formData.get("categoria") as string,
+                            prioridad: Number(formData.get("prioridad")) || 0,
+                            activo: true,
+                          });
+                        }}
+                        className='space-y-4'
+                      >
+                        <div className='space-y-2'>
+                          <Label htmlFor='pregunta'>Pregunta</Label>
+                          <Input
+                            id='pregunta'
+                            name='pregunta'
+                            defaultValue={editingFAQ?.pregunta}
+                            required
+                            placeholder='¿Cuál es el horario de atención?'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='respuesta'>Respuesta</Label>
+                          <Textarea
+                            id='respuesta'
+                            name='respuesta'
+                            defaultValue={editingFAQ?.respuesta}
+                            required
+                            rows={4}
+                            placeholder='Nuestro horario de atención es...'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label
+                            htmlFor='keywords'
+                            className='flex items-center gap-2'
+                          >
+                            <Tag className='h-4 w-4' />
+                            Palabras clave (separadas por coma)
+                          </Label>
+                          <Input
+                            id='keywords'
+                            name='keywords'
+                            defaultValue={editingFAQ?.keywords?.join(", ")}
+                            placeholder='horario, atención, abierto, cerrado'
+                          />
+                          <p className='text-xs text-muted-foreground'>
+                            Estas palabras ayudan al chatbot a encontrar esta FAQ cuando
+                            el usuario pregunta
+                          </p>
+                        </div>
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div className='space-y-2'>
+                            <Label htmlFor='categoria'>Categoría</Label>
+                            <select
+                              id='categoria'
+                              name='categoria'
+                              defaultValue={editingFAQ?.categoria || "general"}
+                              className='w-full border rounded-md p-2'
+                            >
+                              {categorias.map((cat) => (
+                                <option
+                                  key={cat}
+                                  value={cat}
+                                >
+                                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className='space-y-2'>
+                            <Label htmlFor='prioridad'>Prioridad</Label>
+                            <Input
+                              id='prioridad'
+                              name='prioridad'
+                              type='number'
+                              defaultValue={editingFAQ?.prioridad || 0}
+                              min={0}
+                              max={100}
+                            />
+                            <p className='text-xs text-muted-foreground'>
+                              Mayor = más relevante
+                            </p>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type='submit'
+                            disabled={isSaving}
+                          >
+                            {isSaving && (
+                              <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                            )}
+                            <Save className='h-4 w-4 mr-2' />
+                            Guardar
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className='flex gap-4 mb-6'>
