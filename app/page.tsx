@@ -353,13 +353,13 @@ const HeroSection = ({
       </div>
 
       {/* Overlay gradiente */}
-      <div className='absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/75 to-blue-900/40' />
+      <div className='absolute inset-0 bg-gradient-to-b from-blue-900/95 via-blue-800/70 via-60% to-transparent sm:bg-gradient-to-r sm:from-blue-900/90 sm:via-blue-800/75 sm:to-blue-900/40' />
 
       {/* Contenido principal */}
       <div className='relative container mx-auto px-4 sm:px-6 lg:px-8 pt-24'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center'>
           {/* Lado izquierdo - Título y CTA */}
-          <div>
+          <div className='text-center lg:text-left'>
             <div className='inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-blue-200 text-sm mb-6'>
               <Star className='h-4 w-4 text-yellow-400 fill-yellow-400' />
               Más de 10 años de experiencia
@@ -370,7 +370,7 @@ const HeroSection = ({
             <p className='text-xl sm:text-2xl text-blue-100 mb-8 leading-relaxed'>
               {tema.slogan || "Tu sonrisa es nuestra sonrisa"}
             </p>
-            <div className='flex flex-col sm:flex-row gap-4'>
+            <div className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'>
               <Link
                 href='#contacto'
                 className='inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-all duration-300 shadow-2xl'
