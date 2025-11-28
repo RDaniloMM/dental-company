@@ -136,13 +136,17 @@ export function SignUpForm({
       if (error) throw error;
 
       if (data.user) {
+        // Normalizar rol (el código puede devolver "Administrador" pero la tabla usa "Admin")
+        const normalizedRole =
+          assignedRole === "Administrador" ? "Admin" : assignedRole;
+
         // Crear registro de personal
         const { error: personalError } = await supabase
           .from("personal")
           .insert({
             id: data.user.id,
             nombre_completo: username,
-            rol: assignedRole,
+            rol: normalizedRole,
             email: email,
             activo: true,
           });
@@ -258,7 +262,11 @@ export function SignUpForm({
                       <CheckCircle className='h-4 w-4 text-green-600' />
                       <p className='text-xs text-green-700'>
                         Código válido • Rol asignado:{" "}
-                        <strong>{assignedRole}</strong>
+                        <strong>
+                          {assignedRole === "Admin"
+                            ? "Administrador"
+                            : assignedRole}
+                        </strong>
                       </p>
                     </div>
                   )}

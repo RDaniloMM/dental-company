@@ -3,7 +3,6 @@
 import * as React from "react";
 import {
   Home,
-  Users,
   Settings,
   GalleryVerticalEnd,
   LayoutDashboard,
@@ -11,6 +10,8 @@ import {
   CalendarDays,
   Stethoscope,
   BarChart3,
+  FolderOpen,
+  UserCog,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -34,20 +35,18 @@ const teams = [
   },
 ];
 
-const navMain = [
+// Navegación base (para todos los usuarios)
+const navBase = [
   {
     title: "Inicio",
     url: "/admin/dashboard",
     icon: Home,
   },
   {
-    title: "Pacientes",
+    title: "Historias Clínicas",
     url: "/admin/pacientes",
-    icon: Users,
-    items: [
-      { title: "Lista de Pacientes", url: "/admin/pacientes" },
-      { title: "Buscar Paciente", url: "/admin/dashboard" },
-    ],
+    icon: FolderOpen,
+    items: [{ title: "Lista de Pacientes", url: "/admin/pacientes" }],
   },
   {
     title: "Citas",
@@ -68,6 +67,21 @@ const navMain = [
     items: [{ title: "Reportes de Pacientes", url: "/admin/reportes" }],
   },
   {
+    title: "Mi Cuenta",
+    url: "/admin/ajustes",
+    icon: Settings,
+    items: [{ title: "Ajustes", url: "/admin/ajustes" }],
+  },
+];
+
+// Navegación solo para administradores
+const navAdmin = [
+  {
+    title: "Personal de la Clínica",
+    url: "/admin/personal",
+    icon: UserCog,
+  },
+  {
     title: "Gestor CMS",
     url: "/admin/cms",
     icon: LayoutDashboard,
@@ -79,12 +93,6 @@ const navMain = [
     icon: Bot,
     items: [{ title: "FAQs y Contexto", url: "/admin/chatbot" }],
   },
-  {
-    title: "Configuración",
-    url: "/admin/ajustes",
-    icon: Settings,
-    items: [{ title: "Ajustes", url: "/admin/ajustes" }],
-  },
 ];
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -94,12 +102,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     email: "",
     avatar: "",
   });
+  const [userRole, setUserRole] = React.useState<string | null>(null);
   const { toggleSidebar, isMobile } = useSidebar();
 
   React.useEffect(() => {
     setMounted(true);
 
-    // Obtener usuario real de Supabase
+    // Obtener usuario real de Supabase y su rol
     const fetchUser = async () => {
       const supabase = createClient();
       const {
@@ -115,11 +124,28 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           email: authUser.email || "",
           avatar: authUser.user_metadata?.avatar_url || "",
         });
+
+        // Obtener rol del usuario desde la tabla personal
+        const { data: personalData } = await supabase
+          .from("personal")
+          .select("rol")
+          .eq("id", authUser.id)
+          .single();
+
+        if (personalData) {
+          setUserRole(personalData.rol);
+        }
       }
     };
 
     fetchUser();
   }, []);
+
+  // Construir navegación basada en el rol
+  const navMain = React.useMemo(() => {
+    const isAdmin = userRole === "Admin" || userRole === "Administrador";
+    return isAdmin ? [...navBase, ...navAdmin] : navBase;
+  }, [userRole]);
 
   if (!mounted) {
     return null;

@@ -6,10 +6,12 @@ CREATE TYPE public.estado_civil AS ENUM ('Soltero', 'Casado', 'Divorciado', 'Viu
 
 CREATE TABLE public.personal (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  nombres TEXT NOT NULL,
-  apellidos TEXT NOT NULL,
+  nombre_completo TEXT NOT NULL,
   rol public.rol NOT NULL,
   especialidad TEXT,
+  telefono TEXT,
+  email TEXT UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   activo BOOLEAN DEFAULT TRUE
 );
 
