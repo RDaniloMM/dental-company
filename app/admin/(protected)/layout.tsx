@@ -10,7 +10,6 @@ import ToasterClient from "@/components/ui/toasteClient";
 import PatientSearch from "@/components/patient-search";
 import { createClient } from "@/lib/supabase/server";
 
-
 export default async function ProtectedLayout({
   children,
 }: {
@@ -29,22 +28,30 @@ export default async function ProtectedLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
+        <header className='flex h-14 shrink-0 items-center gap-2 border-b px-4'>
+          <SidebarTrigger className='-ml-1' />
+          <Separator
+            orientation='vertical'
+            className='mr-2 h-4'
+          />
 
-          <div className="flex flex-1 h-auto rounded-lg">
-            <PatientSearch patients={patients || []} />
+          <div className='flex flex-1 justify-center'>
+            <div className='w-full md:max-w-xl'>
+              <PatientSearch patients={patients || []} />
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 ml-auto order-b px-2">
-            <Separator orientation="vertical" className="mr-2 h-4" />
+          <div className='flex items-center gap-4 ml-auto order-b px-2'>
+            <Separator
+              orientation='vertical'
+              className='mr-2 h-4'
+            />
             <ThemeSwitcher />
           </div>
         </header>
-        <main className="min-h-[88vh] flex flex-col items-center">
-          <div className="flex-1 w-full flex flex-col gap-5">
-            <div className="flex-1 flex flex-col gap-20 p-4 w-full">
+        <main className='min-h-[88vh] flex flex-col items-center'>
+          <div className='flex-1 w-full flex flex-col gap-5'>
+            <div className='flex-1 flex flex-col gap-20 p-4 w-full'>
               {children}
             </div>
           </div>

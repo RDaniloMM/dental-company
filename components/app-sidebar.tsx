@@ -46,31 +46,26 @@ const navBase = [
     title: "Historias Clínicas",
     url: "/admin/pacientes",
     icon: FolderOpen,
-    items: [{ title: "Lista de Pacientes", url: "/admin/pacientes" }],
   },
   {
     title: "Citas",
     url: "/admin/citas",
     icon: CalendarDays,
-    items: [{ title: "Calendario", url: "/admin/citas" }],
   },
   {
     title: "Tratamientos",
     url: "/admin/tratamientos",
     icon: Stethoscope,
-    items: [{ title: "Procedimientos", url: "/admin/tratamientos" }],
   },
   {
     title: "Reportes",
     url: "/admin/reportes",
     icon: BarChart3,
-    items: [{ title: "Reportes de Pacientes", url: "/admin/reportes" }],
   },
   {
     title: "Mi Cuenta",
     url: "/admin/ajustes",
     icon: Settings,
-    items: [{ title: "Ajustes", url: "/admin/ajustes" }],
   },
 ];
 
@@ -85,13 +80,11 @@ const navAdmin = [
     title: "Gestor CMS",
     url: "/admin/cms",
     icon: LayoutDashboard,
-    items: [{ title: "Contenido Web", url: "/admin/cms" }],
   },
   {
     title: "Chatbot",
     url: "/admin/chatbot",
     icon: Bot,
-    items: [{ title: "FAQs y Contexto", url: "/admin/chatbot" }],
   },
 ];
 

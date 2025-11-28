@@ -435,11 +435,13 @@ export default function TratamientosPage() {
   };
 
   return (
-    <div className='container mx-auto py-6 space-y-6'>
-      <div className='flex items-center justify-between'>
+    <div className='container mx-auto py-4 sm:py-6 px-4 sm:px-6 space-y-4 sm:space-y-6'>
+      <div className='flex flex-col gap-4'>
         <div>
-          <h1 className='text-3xl font-bold'>Tratamientos y Procedimientos</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-xl sm:text-3xl font-bold'>
+            Tratamientos y Procedimientos
+          </h1>
+          <p className='text-sm text-muted-foreground'>
             Gestiona los procedimientos y sus precios
           </p>
         </div>
@@ -448,7 +450,10 @@ export default function TratamientosPage() {
           onOpenChange={setDialogOpen}
         >
           <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()}>
+            <Button
+              onClick={() => handleOpenDialog()}
+              className='w-full sm:w-auto'
+            >
               <Plus className='h-4 w-4 mr-2' />
               Nuevo Procedimiento
             </Button>
@@ -639,47 +644,53 @@ export default function TratamientosPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
+            <CardTitle className='text-xs sm:text-sm font-medium'>
               Total Procedimientos
             </CardTitle>
-            <Stethoscope className='h-4 w-4 text-muted-foreground' />
+            <Stethoscope className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.total}</div>
+            <div className='text-xl sm:text-2xl font-bold'>{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Activos</CardTitle>
-            <Package className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Activos
+            </CardTitle>
+            <Package className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-green-600'>
+            <div className='text-xl sm:text-2xl font-bold text-green-600'>
               {stats.activos}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Grupos</CardTitle>
-            <FolderTree className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Grupos
+            </CardTitle>
+            <FolderTree className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-blue-600'>
+            <div className='text-xl sm:text-2xl font-bold text-blue-600'>
               {stats.grupos}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Con Precio</CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Con Precio
+            </CardTitle>
+            <DollarSign className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-purple-600'>
+            <div className='text-xl sm:text-2xl font-bold text-purple-600'>
               {stats.conPrecio}
             </div>
           </CardContent>

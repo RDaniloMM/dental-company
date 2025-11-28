@@ -233,12 +233,14 @@ export default function PacientesPage() {
   };
 
   return (
-    <div className='space-y-6 p-6'>
+    <div className='space-y-4 sm:space-y-6 p-4 sm:p-6'>
       {/* Header */}
-      <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <div>
-          <h1 className='text-2xl font-bold tracking-tight'>Pacientes</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-xl sm:text-2xl font-bold tracking-tight'>
+            Pacientes
+          </h1>
+          <p className='text-sm text-muted-foreground'>
             Gestiona los pacientes de la clínica
           </p>
         </div>
@@ -248,7 +250,7 @@ export default function PacientesPage() {
           onOpenChange={setDialogOpen}
         >
           <DialogTrigger asChild>
-            <Button>
+            <Button className='w-full sm:w-auto'>
               <Plus className='h-4 w-4 mr-2' />
               Nuevo Paciente
             </Button>
@@ -393,7 +395,7 @@ export default function PacientesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4'>
         <Card>
           <CardHeader className='pb-2'>
             <CardDescription>Total Pacientes</CardDescription>

@@ -381,80 +381,81 @@ export default function PersonalPage() {
   };
 
   return (
-    <div className='container mx-auto p-6 space-y-6'>
+    <div className='container mx-auto p-4 md:p-6 space-y-4 md:space-y-6'>
       {/* Header */}
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
         <div>
-          <h1 className='text-3xl font-bold flex items-center gap-2'>
-            <UserCog className='h-8 w-8' />
-            Personal de la Clínica
+          <h1 className='text-2xl md:text-3xl font-bold flex items-center gap-2'>
+            <UserCog className='h-6 w-6 md:h-8 md:w-8' />
+            Personal
           </h1>
-          <p className='text-muted-foreground'>
-            Gestiona los usuarios del sistema: odontólogos y administradores
+          <p className='text-sm text-muted-foreground'>
+            Gestiona odontólogos y administradores
           </p>
         </div>
         <Button
+          size='sm'
           onClick={() => {
             fetchPersonal();
             fetchCodigos();
           }}
         >
           <RefreshCw className='h-4 w-4 mr-2' />
-          Actualizar
+          <span className='hidden sm:inline'>Actualizar</span>
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
         <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Total Personal
+          <CardHeader className='pb-2 px-4 pt-4'>
+            <CardTitle className='text-xs font-medium text-muted-foreground'>
+              Total
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 pb-4'>
             <div className='flex items-center gap-2'>
-              <Users className='h-5 w-5 text-blue-500' />
-              <span className='text-2xl font-bold'>{stats.total}</span>
+              <Users className='h-4 w-4 text-blue-500' />
+              <span className='text-xl font-bold'>{stats.total}</span>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
+          <CardHeader className='pb-2 px-4 pt-4'>
+            <CardTitle className='text-xs font-medium text-muted-foreground'>
               Odontólogos
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 pb-4'>
             <div className='flex items-center gap-2'>
-              <Stethoscope className='h-5 w-5 text-green-500' />
-              <span className='text-2xl font-bold'>{stats.odontologos}</span>
+              <Stethoscope className='h-4 w-4 text-green-500' />
+              <span className='text-xl font-bold'>{stats.odontologos}</span>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Administradores
+          <CardHeader className='pb-2 px-4 pt-4'>
+            <CardTitle className='text-xs font-medium text-muted-foreground'>
+              Admins
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 pb-4'>
             <div className='flex items-center gap-2'>
-              <Shield className='h-5 w-5 text-purple-500' />
-              <span className='text-2xl font-bold'>{stats.admins}</span>
+              <Shield className='h-4 w-4 text-purple-500' />
+              <span className='text-xl font-bold'>{stats.admins}</span>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>
-              Códigos Activos
+          <CardHeader className='pb-2 px-4 pt-4'>
+            <CardTitle className='text-xs font-medium text-muted-foreground'>
+              Códigos
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 pb-4'>
             <div className='flex items-center gap-2'>
-              <Plus className='h-5 w-5 text-orange-500' />
-              <span className='text-2xl font-bold'>{stats.codigosActivos}</span>
+              <Plus className='h-4 w-4 text-orange-500' />
+              <span className='text-xl font-bold'>{stats.codigosActivos}</span>
             </div>
           </CardContent>
         </Card>
@@ -486,20 +487,20 @@ export default function PersonalPage() {
         <TabsContent value='personal'>
           <Card>
             <CardHeader>
-              <div className='flex items-center justify-between'>
+              <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                 <div>
                   <CardTitle>Listado de Personal</CardTitle>
                   <CardDescription>
                     Odontólogos y administradores con acceso al sistema
                   </CardDescription>
                 </div>
-                <div className='relative'>
+                <div className='relative w-full sm:w-auto'>
                   <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                   <Input
-                    placeholder='Buscar por nombre, rol o especialidad...'
+                    placeholder='Buscar...'
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className='pl-9 w-80'
+                    className='pl-9 w-full sm:w-64'
                   />
                 </div>
               </div>
@@ -516,110 +517,127 @@ export default function PersonalPage() {
                     : "No hay personal registrado"}
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre Completo</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Teléfono</TableHead>
-                      <TableHead>Rol</TableHead>
-                      <TableHead>Especialidad</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className='text-right'>Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPersonal.map((persona) => (
-                      <TableRow key={persona.id}>
-                        <TableCell className='font-medium'>
-                          {persona.nombre_completo}
-                        </TableCell>
-                        <TableCell className='text-muted-foreground'>
-                          {persona.email || "-"}
-                        </TableCell>
-                        <TableCell className='text-muted-foreground'>
-                          {persona.telefono || "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              persona.rol === "Admin" ? "default" : "outline"
-                            }
-                          >
-                            {persona.rol === "Admin" ? (
-                              <Shield className='h-3 w-3 mr-1' />
-                            ) : (
-                              <Stethoscope className='h-3 w-3 mr-1' />
-                            )}
-                            {persona.rol === "Admin"
-                              ? "Administrador"
-                              : "Odontólogo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {persona.especialidad || (
-                            <span className='text-muted-foreground'>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={persona.activo ? "default" : "secondary"}
-                          >
-                            {persona.activo ? "Activo" : "Inactivo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className='text-right'>
-                          <div className='flex items-center justify-end gap-1'>
-                            <Button
-                              variant='ghost'
-                              size='icon'
-                              className='h-8 w-8'
-                              onClick={() => abrirEdicion(persona)}
-                            >
-                              <Edit className='h-4 w-4' />
-                            </Button>
-                            {persona.id !== currentUserId && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant='ghost'
-                                    size='icon'
-                                    className='h-8 w-8 text-destructive hover:text-destructive'
-                                  >
-                                    <Trash2 className='h-4 w-4' />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      ¿Eliminar a {persona.nombre_completo}?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Esta acción eliminará permanentemente a
-                                      este usuario del sistema. No podrá volver
-                                      a acceder y deberá registrarse de nuevo.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancelar
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => eliminarPersona(persona)}
-                                      className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                                    >
-                                      Eliminar
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                          </div>
-                        </TableCell>
+                <div className='overflow-x-auto -mx-6 px-6'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead className='hidden md:table-cell'>
+                          Email
+                        </TableHead>
+                        <TableHead className='hidden lg:table-cell'>
+                          Teléfono
+                        </TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead className='hidden sm:table-cell'>
+                          Estado
+                        </TableHead>
+                        <TableHead className='text-right'>Acciones</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPersonal.map((persona) => (
+                        <TableRow key={persona.id}>
+                          <TableCell>
+                            <div className='font-medium'>
+                              {persona.nombre_completo}
+                            </div>
+                            <div className='text-xs text-muted-foreground md:hidden'>
+                              {persona.email || "-"}
+                            </div>
+                            {persona.especialidad && (
+                              <div className='text-xs text-muted-foreground'>
+                                {persona.especialidad}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className='hidden md:table-cell text-muted-foreground'>
+                            {persona.email || "-"}
+                          </TableCell>
+                          <TableCell className='hidden lg:table-cell text-muted-foreground'>
+                            {persona.telefono || "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                persona.rol === "Admin" ? "default" : "outline"
+                              }
+                              className='text-xs'
+                            >
+                              {persona.rol === "Admin" ? (
+                                <Shield className='h-3 w-3 mr-1' />
+                              ) : (
+                                <Stethoscope className='h-3 w-3 mr-1' />
+                              )}
+                              <span className='hidden sm:inline'>
+                                {persona.rol === "Admin"
+                                  ? "Admin"
+                                  : "Odontólogo"}
+                              </span>
+                            </Badge>
+                          </TableCell>
+                          <TableCell className='hidden sm:table-cell'>
+                            <Badge
+                              variant={persona.activo ? "default" : "secondary"}
+                              className='text-xs'
+                            >
+                              {persona.activo ? "Activo" : "Inactivo"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className='text-right'>
+                            <div className='flex items-center justify-end gap-1'>
+                              <Button
+                                variant='ghost'
+                                size='icon'
+                                className='h-8 w-8'
+                                onClick={() => abrirEdicion(persona)}
+                              >
+                                <Edit className='h-4 w-4' />
+                              </Button>
+                              {persona.id !== currentUserId && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant='ghost'
+                                      size='icon'
+                                      className='h-8 w-8 text-destructive hover:text-destructive'
+                                    >
+                                      <Trash2 className='h-4 w-4' />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        ¿Eliminar a {persona.nombre_completo}?
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Esta acción eliminará permanentemente a
+                                        este usuario del sistema. No podrá
+                                        volver a acceder y deberá registrarse de
+                                        nuevo.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancelar
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => eliminarPersona(persona)}
+                                        className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                      >
+                                        Eliminar
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -629,11 +647,11 @@ export default function PersonalPage() {
         <TabsContent value='invitaciones'>
           <Card>
             <CardHeader>
-              <div className='flex items-center justify-between'>
+              <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                 <div>
                   <CardTitle>Códigos de Invitación</CardTitle>
-                  <CardDescription>
-                    Códigos para registrar nuevos usuarios en el sistema
+                  <CardDescription className='hidden sm:block'>
+                    Códigos para registrar nuevos usuarios
                   </CardDescription>
                 </div>
                 <Dialog
@@ -641,9 +659,9 @@ export default function PersonalPage() {
                   onOpenChange={setCodigoDialogOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button size='sm'>
                       <Plus className='h-4 w-4 mr-2' />
-                      Nuevo Código
+                      Nuevo
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -710,107 +728,115 @@ export default function PersonalPage() {
                   No hay códigos de invitación
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Código</TableHead>
-                      <TableHead>Rol</TableHead>
-                      <TableHead>Usos</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Creado</TableHead>
-                      <TableHead className='text-right'>Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {codigos.map((codigo) => (
-                      <TableRow key={codigo.id}>
-                        <TableCell>
-                          <div className='flex items-center gap-2'>
-                            <code className='bg-muted px-2 py-1 rounded font-mono text-sm'>
-                              {codigo.codigo}
-                            </code>
-                            <Button
-                              variant='ghost'
-                              size='icon'
-                              className='h-6 w-6'
-                              onClick={() => copiarCodigo(codigo.codigo)}
-                            >
-                              {copiedCode === codigo.codigo ? (
-                                <Check className='h-3 w-3 text-green-500' />
-                              ) : (
-                                <Copy className='h-3 w-3' />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              codigo.rol_asignado === "Administrador"
-                                ? "default"
-                                : "outline"
-                            }
-                          >
-                            {codigo.rol_asignado === "Administrador" ? (
-                              <Shield className='h-3 w-3 mr-1' />
-                            ) : (
-                              <Stethoscope className='h-3 w-3 mr-1' />
-                            )}
-                            {codigo.rol_asignado}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {codigo.usos_actuales} / {codigo.usos_maximos}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={codigo.activo ? "default" : "secondary"}
-                          >
-                            {codigo.activo ? "Activo" : "Inactivo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(codigo.created_at).toLocaleDateString(
-                            "es-PE"
-                          )}
-                        </TableCell>
-                        <TableCell className='text-right'>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
+                <div className='overflow-x-auto -mx-6 px-6'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Código</TableHead>
+                        <TableHead className='hidden sm:table-cell'>
+                          Rol
+                        </TableHead>
+                        <TableHead>Usos</TableHead>
+                        <TableHead className='hidden md:table-cell'>
+                          Estado
+                        </TableHead>
+                        <TableHead className='text-right'>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {codigos.map((codigo) => (
+                        <TableRow key={codigo.id}>
+                          <TableCell>
+                            <div className='flex items-center gap-1'>
+                              <code className='bg-muted px-1.5 py-0.5 rounded font-mono text-xs'>
+                                {codigo.codigo}
+                              </code>
                               <Button
                                 variant='ghost'
                                 size='icon'
-                                className='h-8 w-8'
+                                className='h-6 w-6'
+                                onClick={() => copiarCodigo(codigo.codigo)}
                               >
-                                <Trash2 className='h-4 w-4 text-destructive' />
+                                {copiedCode === codigo.codigo ? (
+                                  <Check className='h-3 w-3 text-green-500' />
+                                ) : (
+                                  <Copy className='h-3 w-3' />
+                                )}
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  ¿Eliminar código?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. El código ya
-                                  no podrá ser usado.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => eliminarCodigo(codigo.id)}
-                                  className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                            </div>
+                            <div className='text-xs text-muted-foreground sm:hidden mt-1'>
+                              {codigo.rol_asignado}
+                            </div>
+                          </TableCell>
+                          <TableCell className='hidden sm:table-cell'>
+                            <Badge
+                              variant={
+                                codigo.rol_asignado === "Administrador"
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className='text-xs'
+                            >
+                              {codigo.rol_asignado === "Administrador" ? (
+                                <Shield className='h-3 w-3 mr-1' />
+                              ) : (
+                                <Stethoscope className='h-3 w-3 mr-1' />
+                              )}
+                              <span className='hidden md:inline'>
+                                {codigo.rol_asignado}
+                              </span>
+                            </Badge>
+                          </TableCell>
+                          <TableCell className='text-sm'>
+                            {codigo.usos_actuales}/{codigo.usos_maximos}
+                          </TableCell>
+                          <TableCell className='hidden md:table-cell'>
+                            <Badge
+                              variant={codigo.activo ? "default" : "secondary"}
+                              className='text-xs'
+                            >
+                              {codigo.activo ? "Activo" : "Inactivo"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className='text-right'>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant='ghost'
+                                  size='icon'
+                                  className='h-8 w-8'
                                 >
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                                  <Trash2 className='h-4 w-4 text-destructive' />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    ¿Eliminar código?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta acción no se puede deshacer.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => eliminarCodigo(codigo.id)}
+                                    className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                  >
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>

@@ -168,67 +168,77 @@ export default function CitasPage() {
   );
 
   return (
-    <div className='container mx-auto py-6 space-y-6'>
-      <div className='flex items-center justify-between'>
+    <div className='container mx-auto py-2 sm:py-6 px-0 sm:px-6 space-y-2 sm:space-y-6'>
+      <div className='flex flex-col gap-2 px-2 sm:px-0'>
         <div>
-          <h1 className='text-3xl font-bold'>Gestión de Citas</h1>
-          <p className='text-muted-foreground'>
+          <h1 className='text-xl sm:text-3xl font-bold'>Gestión de Citas</h1>
+          <p className='text-sm text-muted-foreground'>
             Administra las citas de la clínica
           </p>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className='grid grid-cols-2 md:grid-cols-5 gap-4'>
+      {/* Stats Cards - ocultas en móvil para dar más espacio al calendario */}
+      <div className='hidden sm:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Citas</CardTitle>
-            <Calendar className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Total Citas
+            </CardTitle>
+            <Calendar className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.total}</div>
+            <div className='text-xl sm:text-2xl font-bold'>{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Programadas</CardTitle>
-            <Clock className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Programadas
+            </CardTitle>
+            <Clock className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-blue-600'>
+            <div className='text-xl sm:text-2xl font-bold text-blue-600'>
               {stats.programadas}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Confirmadas</CardTitle>
-            <Users className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Confirmadas
+            </CardTitle>
+            <Users className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-green-600'>
+            <div className='text-xl sm:text-2xl font-bold text-green-600'>
               {stats.confirmadas}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Completadas</CardTitle>
-            <DollarSign className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Completadas
+            </CardTitle>
+            <DollarSign className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-purple-600'>
+            <div className='text-xl sm:text-2xl font-bold text-purple-600'>
               {stats.completadas}
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='col-span-2 sm:col-span-1'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Canceladas</CardTitle>
-            <CalendarDays className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-xs sm:text-sm font-medium'>
+              Canceladas
+            </CardTitle>
+            <CalendarDays className='h-4 w-4 text-muted-foreground hidden sm:block' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-red-600'>
+            <div className='text-xl sm:text-2xl font-bold text-red-600'>
               {stats.canceladas}
             </div>
           </CardContent>
@@ -258,16 +268,16 @@ export default function CitasPage() {
 
         <TabsContent
           value='calendario'
-          className='space-y-4'
+          className='space-y-0 sm:space-y-4'
         >
-          <Card>
-            <CardHeader>
+          <Card className='border-0 sm:border rounded-none sm:rounded-lg shadow-none sm:shadow'>
+            <CardHeader className='hidden sm:block'>
               <CardTitle>Calendario de Citas</CardTitle>
               <CardDescription>
                 Vista del calendario con Google Calendar integrado
               </CardDescription>
             </CardHeader>
-            <CardContent className='min-h-[600px]'>
+            <CardContent className='h-[80vh] sm:h-[75vh] lg:h-[80vh] min-h-[500px] p-0 sm:p-6'>
               <CalendarioHome />
             </CardContent>
           </Card>
