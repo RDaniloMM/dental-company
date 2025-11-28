@@ -50,7 +50,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileSearch,
 };
 
-/* // Datos del curriculum de odontólogos
+ // Datos del curriculum de odontólogos
 const curriculumData: Record<
   string,
   {
@@ -125,7 +125,7 @@ const curriculumData: Record<
       "Creo firmemente que la salud bucal es un derecho fundamental, no un privilegio. Mi trabajo se centra en reducir las brechas de acceso y desarrollar políticas públicas que garanticen atención odontológica de calidad para todos los segmentos de la población, especialmente los más vulnerables.",
   },
 };
- */
+
 // Tipos
 interface Curriculum {
   formacion: string[];
@@ -811,33 +811,33 @@ const ServiciosSection = ({
   return (
     <section
       id='servicios'
-      className='py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white'
+      className='py-8 sm:py-10 lg:py-12 bg-gradient-to-b from-gray-50 to-white'
     >
       <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='text-center max-w-3xl mx-auto mb-10 sm:mb-12 lg:mb-16'>
-          <span className='text-blue-600 font-semibold text-sm uppercase tracking-wider'>
+        <div className='text-center max-w-3xl mx-auto mb-6 sm:mb-8'>
+          <span className='text-blue-600 font-semibold text-xs uppercase tracking-wider'>
             Nuestros Servicios
           </span>
-          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mt-4 mb-6'>
+          <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mt-2 mb-3'>
             Cuidamos tu Sonrisa
           </h2>
-          <p className='text-gray-600 text-lg leading-relaxed'>
+          <p className='text-gray-600 text-sm sm:text-base leading-relaxed'>
             Ofrecemos una amplia gama de tratamientos dentales con la más alta
             calidad y tecnología de vanguardia.
           </p>
         </div>
 
         <div
-          className={`grid gap-6 ${
+          className={`grid gap-3 sm:gap-4 ${
             displayServices.length === 1
               ? "grid-cols-1 max-w-sm mx-auto"
               : displayServices.length === 2
-              ? "grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto"
+              ? "grid-cols-2 max-w-xl mx-auto"
               : displayServices.length === 3
-              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto"
+              ? "grid-cols-3 max-w-3xl mx-auto"
               : displayServices.length === 4
-              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+              ? "grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto"
+              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
           }`}
         >
           {displayServices.map((service, index) => {
@@ -847,21 +847,17 @@ const ServiciosSection = ({
               <div
                 key={service.id || index}
                 onClick={() => setSelectedService(servicioDetallado)}
-                className='group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-1 cursor-pointer'
+                className='group bg-white rounded-xl p-3 sm:p-4 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-0.5 cursor-pointer'
               >
-                <div className='w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors duration-300'>
-                  <Icon className='h-6 w-6 text-blue-600 group-hover:text-white transition-colors duration-300' />
+                <div className='w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-600 transition-colors duration-300'>
+                  <Icon className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600 group-hover:text-white transition-colors duration-300' />
                 </div>
-                <h3 className='text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors'>
+                <h3 className='text-sm sm:text-base font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1'>
                   {service.nombre}
                 </h3>
-                <p className='text-gray-600 text-sm leading-relaxed mb-3'>
+                <p className='text-gray-600 text-xs leading-relaxed line-clamp-2 hidden sm:block'>
                   {service.descripcion}
                 </p>
-                <span className='inline-flex items-center gap-1 text-blue-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity'>
-                  Ver más información
-                  <ChevronDown className='h-4 w-4 rotate-[-90deg]' />
-                </span>
               </div>
             );
           })}
