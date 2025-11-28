@@ -70,7 +70,7 @@ export async function searchFAQsFromDB(
 
     // Buscar FAQs similares usando la función de Supabase
     const { data, error } = await supabase.rpc("search_faqs_by_embedding", {
-      query_embedding: JSON.stringify(queryEmbedding),
+      query_embedding: `[${queryEmbedding.join(",")}]`,
       match_threshold: 0.45, // Umbral de similitud (0.45 = 45% similar)
       match_count: topK,
     });
@@ -209,7 +209,7 @@ export async function searchContextoFromDB(
 
     // Buscar contexto similar
     const { data, error } = await supabase.rpc("search_contexto_by_embedding", {
-      query_embedding: JSON.stringify(queryEmbedding),
+      query_embedding: `[${queryEmbedding.join(",")}]`,
       match_threshold: 0.4,
       match_count: topK,
     });
@@ -393,11 +393,11 @@ export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
     // Generar embedding
     const embedding = await generateEmbedding(textForEmbedding);
 
-    // Actualizar en la BD
+    // Actualizar en la BD - pgvector acepta array directamente o string formato [1,2,3]
     const { error: updateError } = await supabase
       .from("chatbot_faqs")
       .update({
-        embedding: JSON.stringify(embedding),
+        embedding: `[${embedding.join(",")}]`,
         embedding_updated_at: new Date().toISOString(),
       })
       .eq("id", faqId);
@@ -467,7 +467,7 @@ export async function syncAllFAQEmbeddings(): Promise<{
           const { error: updateError } = await supabase
             .from("chatbot_faqs")
             .update({
-              embedding: JSON.stringify(embeddings[j]),
+              embedding: `[${embeddings[j].join(",")}]`,
               embedding_updated_at: new Date().toISOString(),
             })
             .eq("id", batch[j].id);
@@ -527,11 +527,11 @@ export async function updateContextoEmbedding(
     // Generar embedding
     const embedding = await generateEmbedding(textForEmbedding);
 
-    // Actualizar en la BD
+    // Actualizar en la BD - pgvector acepta array directamente o string formato [1,2,3]
     const { error: updateError } = await supabase
       .from("chatbot_contexto")
       .update({
-        embedding: JSON.stringify(embedding),
+        embedding: `[${embedding.join(",")}]`,
         embedding_updated_at: new Date().toISOString(),
       })
       .eq("id", contextoId);

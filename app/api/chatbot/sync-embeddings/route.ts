@@ -121,11 +121,53 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const autoSync = searchParams.get("autoSync") === "true";
 
-    // Contar FAQs con y sin embeddings
-    const { data: faqs } = await supabase
+    // Primero verificar si las columnas existen
+    const { error: testError } = await supabase
+      .from("chatbot_faqs")
+      .select("id")
+      .limit(1);
+
+    if (testError) {
+      console.error("Error accediendo a chatbot_faqs:", testError);
+      return NextResponse.json({
+        error: "Error accediendo a la base de datos",
+        details: testError.message,
+        migrationNeeded: true,
+      }, { status: 500 });
+    }
+
+    // Contar FAQs - intentar obtener embedding info
+    const { data: faqs, error: faqError } = await supabase
       .from("chatbot_faqs")
       .select("id, embedding, embedding_updated_at, updated_at")
       .eq("activo", true);
+
+    // Si hay error porque las columnas no existen
+    if (faqError) {
+      console.error("Error obteniendo FAQs con embeddings:", faqError);
+      
+      // Intentar sin las columnas de embedding
+      const { data: faqsBasic } = await supabase
+        .from("chatbot_faqs")
+        .select("id")
+        .eq("activo", true);
+
+      return NextResponse.json({
+        faqs: {
+          total: faqsBasic?.length || 0,
+          withEmbedding: 0,
+          needsUpdate: faqsBasic?.length || 0,
+        },
+        contextos: {
+          total: 0,
+          withEmbedding: 0,
+          needsUpdate: 0,
+        },
+        allSynced: false,
+        migrationNeeded: true,
+        migrationError: "Las columnas 'embedding' y 'embedding_updated_at' no existen. Ejecuta la migración SQL primero.",
+      });
+    }
 
     const { data: contextos } = await supabase
       .from("chatbot_contexto")
@@ -196,7 +238,10 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error("Error obteniendo estado de embeddings:", error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { 
+        error: "Error interno del servidor",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
