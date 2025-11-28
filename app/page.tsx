@@ -1075,7 +1075,7 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
             <span className='text-blue-600 font-semibold text-sm uppercase tracking-wider'>
               Nuestro Equipo
             </span>
-            <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mt-4 mb-6'>
+            <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mt-4 mb-6'>
               Conoce a Nuestros Especialistas
             </h2>
             <p className='text-gray-600 text-lg leading-relaxed'>
@@ -1183,7 +1183,7 @@ const ContactoSection = ({ tema }: { tema: Record<string, string> }) => {
             <span className='text-blue-200 font-semibold text-sm uppercase tracking-wider'>
               Contáctanos
             </span>
-            <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold mt-4 mb-6'>
+            <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold mt-4 mb-6'>
               ¿Listo para tu nueva sonrisa?
             </h2>
             <p className='text-blue-100 text-lg mb-8 leading-relaxed'>
