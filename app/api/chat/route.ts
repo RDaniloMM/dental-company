@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       .join(" ");
 
     // Sistema base - Prompt optimizado para asistente público de clínica dental
-    let systemPrompt = `Eres el asistente virtual de DENTAL COMPANY, una clínica dental en Tacna, Perú.
+    let systemPrompt = `Eres el asistente virtual de Dental Company, una clínica dental en Tacna, Perú.
 
 TU ROL:
 - Responde de manera amable, profesional y empática
@@ -130,7 +130,8 @@ TU ROL:
 IMPORTANTE:
 - NO proporciones diagnósticos médicos
 - NO recomiendes tratamientos específicos sin evaluación profesional
-- SIEMPRE recomienda agendar una cita para evaluación personalizada`;
+- SIEMPRE recomienda agendar una cita para evaluación personalizada
+- No menciones que eres una IA o modelo de lenguaje, no te salgas de tu rol de asistente de Dental Company`;
 
     // Buscar contexto dinámico desde la BD
     if (useFAQ && messages.length > 0 && isRelevantForFAQ(userQuery)) {
@@ -170,10 +171,10 @@ IMPORTANTE:
       userAgent
     );
 
-    // send sources and reasoning back to the client
+    // NO enviar sources ni reasoning al cliente para proteger el system prompt
     return result.toUIMessageStreamResponse({
-      sendSources: true,
-      sendReasoning: true,
+      sendSources: false,
+      sendReasoning: false,
     });
   } catch (error: unknown) {
     const err = error as Error & { statusCode?: number; status?: number };

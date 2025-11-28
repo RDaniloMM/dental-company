@@ -50,7 +50,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileSearch,
 };
 
-// Datos del curriculum de odontólogos
+/* // Datos del curriculum de odontólogos
 const curriculumData: Record<
   string,
   {
@@ -125,7 +125,7 @@ const curriculumData: Record<
       "Creo firmemente que la salud bucal es un derecho fundamental, no un privilegio. Mi trabajo se centra en reducir las brechas de acceso y desarrollar políticas públicas que garanticen atención odontológica de calidad para todos los segmentos de la población, especialmente los más vulnerables.",
   },
 };
-
+ */
 // Tipos
 interface Curriculum {
   formacion: string[];

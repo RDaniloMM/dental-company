@@ -21,11 +21,6 @@ import { useChat } from "@ai-sdk/react";
 import { Response } from "@/components/ai-elements/response";
 import { CopyIcon, X, BookOpenIcon } from "lucide-react";
 import Image from "next/image";
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningTrigger,
-} from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
 
 const models = [
@@ -209,21 +204,6 @@ export const FloatingChatbot = () => {
                                   </Actions>
                                 )}
                             </Fragment>
-                          );
-                        case "reasoning":
-                          return (
-                            <Reasoning
-                              key={`${message.id}-${i}`}
-                              className='w-full'
-                              isStreaming={
-                                status === "streaming" &&
-                                i === message.parts.length - 1 &&
-                                message.id === messages.at(-1)?.id
-                              }
-                            >
-                              <ReasoningTrigger />
-                              <ReasoningContent>{part.text}</ReasoningContent>
-                            </Reasoning>
                           );
                         default:
                           return null;
