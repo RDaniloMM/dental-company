@@ -12,7 +12,7 @@ export const maxDuration = 60; // Puede tomar tiempo sincronizar todos
 /**
  * POST /api/chatbot/sync-embeddings
  * Sincroniza los embeddings de FAQs y contexto
- * 
+ *
  * Body opcional:
  * - type: "faq" | "contexto" | "all" (default: "all")
  * - id: string (opcional, para sincronizar un solo registro)
@@ -27,10 +27,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const body = await req.json().catch(() => ({}));
@@ -118,10 +115,7 @@ export async function GET(req: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -158,18 +152,22 @@ export async function GET(req: Request) {
         }).length || 0,
     };
 
-    const allSynced = faqStats.needsUpdate === 0 && contextoStats.needsUpdate === 0;
+    const allSynced =
+      faqStats.needsUpdate === 0 && contextoStats.needsUpdate === 0;
 
     // Auto-sincronizar si se solicita y hay pendientes
     let syncResult = null;
     if (autoSync && !allSynced) {
       const faqResult = await syncAllFAQEmbeddings();
-      
+
       let ctxUpdated = 0;
       let ctxFailed = 0;
       if (contextos) {
         for (const ctx of contextos) {
-          if (!ctx.embedding || new Date(ctx.updated_at) > new Date(ctx.embedding_updated_at || 0)) {
+          if (
+            !ctx.embedding ||
+            new Date(ctx.updated_at) > new Date(ctx.embedding_updated_at || 0)
+          ) {
             const success = await updateContextoEmbedding(ctx.id);
             if (success) ctxUpdated++;
             else ctxFailed++;
@@ -188,7 +186,11 @@ export async function GET(req: Request) {
     return NextResponse.json({
       faqs: faqStats,
       contextos: contextoStats,
-      allSynced: allSynced || (syncResult && syncResult.faqsFailed === 0 && syncResult.contextosFailed === 0),
+      allSynced:
+        allSynced ||
+        (syncResult &&
+          syncResult.faqsFailed === 0 &&
+          syncResult.contextosFailed === 0),
       syncResult,
     });
   } catch (error) {

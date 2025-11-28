@@ -69,10 +69,15 @@ export async function POST(req: Request) {
     // Generar embedding automáticamente
     let embedding: number[] | null = null;
     try {
-      const textForEmbedding = [pregunta, respuesta, ...keywordsArray].join(" ");
+      const textForEmbedding = [pregunta, respuesta, ...keywordsArray].join(
+        " "
+      );
       embedding = await generateEmbedding(textForEmbedding);
     } catch (embeddingError) {
-      console.error("Error generando embedding (continuando sin él):", embeddingError);
+      console.error(
+        "Error generando embedding (continuando sin él):",
+        embeddingError
+      );
       // Continuar sin embedding - el sistema usará fallback de keywords
     }
 
@@ -106,9 +111,9 @@ export async function POST(req: Request) {
       if (error) throw error;
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      embeddingGenerated: !!embedding 
+      embeddingGenerated: !!embedding,
     });
   } catch (error) {
     console.error("Error guardando FAQ:", error);

@@ -47,7 +47,10 @@ export async function POST(req: Request) {
       const textForEmbedding = `${titulo} ${contenido}`;
       embedding = await generateEmbedding(textForEmbedding);
     } catch (embeddingError) {
-      console.error("Error generando embedding (continuando sin él):", embeddingError);
+      console.error(
+        "Error generando embedding (continuando sin él):",
+        embeddingError
+      );
       // Continuar sin embedding - el sistema usará fallback
     }
 
@@ -79,9 +82,9 @@ export async function POST(req: Request) {
       if (error) throw error;
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      embeddingGenerated: !!embedding
+      embeddingGenerated: !!embedding,
     });
   } catch (error) {
     console.error("Error guardando contexto:", error);

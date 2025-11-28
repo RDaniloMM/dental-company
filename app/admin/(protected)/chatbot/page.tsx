@@ -92,9 +92,11 @@ export default function ChatbotFAQsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategoria, setFilterCategoria] = useState<string>("");
-  
+
   // Estados para embeddings
-  const [embeddingStats, setEmbeddingStats] = useState<EmbeddingStats | null>(null);
+  const [embeddingStats, setEmbeddingStats] = useState<EmbeddingStats | null>(
+    null
+  );
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Cargar estado de embeddings
@@ -122,7 +124,9 @@ export default function ChatbotFAQsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        toast.success(`Embeddings sincronizados: ${data.faqsUpdated} FAQs, ${data.contextosUpdated} contextos`);
+        toast.success(
+          `Embeddings sincronizados: ${data.faqsUpdated} FAQs, ${data.contextosUpdated} contextos`
+        );
         fetchEmbeddingStats();
       } else {
         const error = await res.json();
@@ -245,23 +249,31 @@ export default function ChatbotFAQsPage() {
         <div className='flex gap-2 items-center'>
           {/* Indicador de estado de embeddings */}
           {embeddingStats && !embeddingStats.allSynced && (
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              {embeddingStats.faqs.needsUpdate + embeddingStats.contextos.needsUpdate} sin sincronizar
+            <Badge
+              variant='outline'
+              className='bg-yellow-50 text-yellow-700 border-yellow-300'
+            >
+              <AlertCircle className='h-3 w-3 mr-1' />
+              {embeddingStats.faqs.needsUpdate +
+                embeddingStats.contextos.needsUpdate}{" "}
+              sin sincronizar
             </Badge>
           )}
           {embeddingStats?.allSynced && (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
+            <Badge
+              variant='outline'
+              className='bg-green-50 text-green-700 border-green-300'
+            >
+              <CheckCircle2 className='h-3 w-3 mr-1' />
               IA sincronizada
             </Badge>
           )}
-          
+
           <Button
             variant='outline'
             onClick={syncEmbeddings}
             disabled={isSyncing || embeddingStats?.allSynced}
-            title="Sincroniza los embeddings para búsqueda semántica"
+            title='Sincroniza los embeddings para búsqueda semántica'
           >
             {isSyncing ? (
               <Loader2 className='h-4 w-4 mr-2 animate-spin' />

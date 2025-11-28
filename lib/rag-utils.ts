@@ -42,9 +42,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 /**
  * Genera embeddings para múltiples textos en batch
  */
-export async function generateEmbeddings(
-  texts: string[]
-): Promise<number[][]> {
+export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   try {
     const { embeddings } = await embedMany({
       model: embeddingModel,
@@ -88,23 +86,25 @@ export async function searchFAQsFromDB(
       return searchFAQsByKeywords(query, topK);
     }
 
-    return data.map((item: {
-      id: string;
-      pregunta: string;
-      respuesta: string;
-      keywords: string[];
-      categoria: string;
-      prioridad: number;
-      similarity: number;
-    }) => ({
-      id: item.id,
-      pregunta: item.pregunta,
-      respuesta: item.respuesta,
-      keywords: item.keywords || [],
-      categoria: item.categoria,
-      prioridad: item.prioridad,
-      similarity: item.similarity,
-    }));
+    return data.map(
+      (item: {
+        id: string;
+        pregunta: string;
+        respuesta: string;
+        keywords: string[];
+        categoria: string;
+        prioridad: number;
+        similarity: number;
+      }) => ({
+        id: item.id,
+        pregunta: item.pregunta,
+        respuesta: item.respuesta,
+        keywords: item.keywords || [],
+        categoria: item.categoria,
+        prioridad: item.prioridad,
+        similarity: item.similarity,
+      })
+    );
   } catch (error) {
     console.error("Error en searchFAQsFromDB:", error);
     // Fallback a búsqueda por keywords
@@ -305,7 +305,9 @@ export function generateRAGContext(
       const similarityNote = ctx.similarity
         ? ` (relevancia: ${Math.round(ctx.similarity * 100)}%)`
         : "";
-      context += `\n[${ctx.tipo.toUpperCase()}] ${ctx.titulo}${similarityNote}:\n${ctx.contenido}\n`;
+      context += `\n[${ctx.tipo.toUpperCase()}] ${
+        ctx.titulo
+      }${similarityNote}:\n${ctx.contenido}\n`;
     });
     context += "\n";
   }
@@ -425,7 +427,9 @@ export async function syncAllFAQEmbeddings(): Promise<{
     // Obtener FAQs sin embedding o con embedding desactualizado
     const { data: faqs, error } = await supabase
       .from("chatbot_faqs")
-      .select("id, pregunta, respuesta, keywords, updated_at, embedding_updated_at")
+      .select(
+        "id, pregunta, respuesta, keywords, updated_at, embedding_updated_at"
+      )
       .eq("activo", true);
 
     if (error || !faqs) {
@@ -469,7 +473,10 @@ export async function syncAllFAQEmbeddings(): Promise<{
             .eq("id", batch[j].id);
 
           if (updateError) {
-            console.error(`Error actualizando FAQ ${batch[j].id}:`, updateError);
+            console.error(
+              `Error actualizando FAQ ${batch[j].id}:`,
+              updateError
+            );
             failed++;
           } else {
             updated++;
@@ -496,7 +503,9 @@ export async function syncAllFAQEmbeddings(): Promise<{
 /**
  * Actualiza el embedding de un contexto específico
  */
-export async function updateContextoEmbedding(contextoId: string): Promise<boolean> {
+export async function updateContextoEmbedding(
+  contextoId: string
+): Promise<boolean> {
   try {
     const supabase = await createClient();
 
