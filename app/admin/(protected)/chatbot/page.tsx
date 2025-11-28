@@ -554,7 +554,9 @@ export default function ChatbotFAQsPage() {
         </Card>
         <Card>
           <CardContent className='pt-6'>
-            <div className='text-2xl font-bold text-blue-600'>{contextos.length}</div>
+            <div className='text-2xl font-bold text-blue-600'>
+              {contextos.length}
+            </div>
             <p className='text-xs text-muted-foreground'>Total Contextos</p>
           </CardContent>
         </Card>
@@ -569,188 +571,215 @@ export default function ChatbotFAQsPage() {
       </div>
 
       {/* Tabs para FAQs y Contextos */}
-      <Tabs defaultValue="faqs" className="space-y-4">
+      <Tabs
+        defaultValue='faqs'
+        className='space-y-4'
+      >
         <TabsList>
-          <TabsTrigger value="faqs" className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
+          <TabsTrigger
+            value='faqs'
+            className='flex items-center gap-2'
+          >
+            <HelpCircle className='h-4 w-4' />
             FAQs ({faqs.length})
           </TabsTrigger>
-          <TabsTrigger value="contextos" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
+          <TabsTrigger
+            value='contextos'
+            className='flex items-center gap-2'
+          >
+            <FileText className='h-4 w-4' />
             Contextos ({contextos.length})
           </TabsTrigger>
         </TabsList>
 
         {/* ============ TAB FAQs ============ */}
-        <TabsContent value="faqs">
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            <BookOpen className='h-5 w-5' />
-            Preguntas Frecuentes
-          </CardTitle>
-          <CardDescription>
-            El chatbot usa estas FAQs para responder consultas de los usuarios
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='flex gap-4 mb-6'>
-            <div className='relative flex-1'>
-              <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-              <Input
-                placeholder='Buscar en preguntas, respuestas o keywords...'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10'
-              />
-            </div>
-            <select
-              value={filterCategoria}
-              onChange={(e) => setFilterCategoria(e.target.value)}
-              className='border rounded-md px-3'
-            >
-              <option value=''>Todas las categorías</option>
-              {categorias.map((cat) => (
-                <option
-                  key={cat}
-                  value={cat}
+        <TabsContent value='faqs'>
+          {/* Filtros */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <BookOpen className='h-5 w-5' />
+                Preguntas Frecuentes
+              </CardTitle>
+              <CardDescription>
+                El chatbot usa estas FAQs para responder consultas de los
+                usuarios
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex gap-4 mb-6'>
+                <div className='relative flex-1'>
+                  <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                  <Input
+                    placeholder='Buscar en preguntas, respuestas o keywords...'
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className='pl-10'
+                  />
+                </div>
+                <select
+                  value={filterCategoria}
+                  onChange={(e) => setFilterCategoria(e.target.value)}
+                  className='border rounded-md px-3'
                 >
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Estado</TableHead>
-                <TableHead>Pregunta</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Keywords</TableHead>
-                <TableHead>Prioridad</TableHead>
-                <TableHead className='text-right'>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredFAQs.map((faq) => (
-                <TableRow key={faq.id}>
-                  <TableCell>
-                    <Switch
-                      checked={faq.activo}
-                      onCheckedChange={() => toggleActivo(faq)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className='font-medium'>{faq.pregunta}</p>
-                      <p className='text-sm text-muted-foreground truncate max-w-[300px]'>
-                        {faq.respuesta}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant='outline'>{faq.categoria}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className='flex flex-wrap gap-1'>
-                      {faq.keywords?.slice(0, 3).map((keyword, i) => (
-                        <Badge
-                          key={i}
-                          variant='secondary'
-                          className='text-xs'
-                        >
-                          {keyword}
-                        </Badge>
-                      ))}
-                      {faq.keywords?.length > 3 && (
-                        <Badge
-                          variant='secondary'
-                          className='text-xs'
-                        >
-                          +{faq.keywords.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={faq.prioridad >= 5 ? "default" : "outline"}>
-                      {faq.prioridad}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className='text-right space-x-2'>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      onClick={() => {
-                        setEditingFAQ(faq);
-                        setDialogOpen(true);
-                      }}
+                  <option value=''>Todas las categorías</option>
+                  {categorias.map((cat) => (
+                    <option
+                      key={cat}
+                      value={cat}
                     >
-                      <Pencil className='h-4 w-4' />
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      onClick={() => deleteFAQ(faq.id)}
-                    >
-                      <Trash2 className='h-4 w-4 text-red-500' />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {filteredFAQs.length === 0 && (
-            <div className='text-center py-8 text-muted-foreground'>
-              {searchTerm || filterCategoria
-                ? "No se encontraron FAQs con esos filtros"
-                : "No hay FAQs creadas. ¡Añade la primera!"}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Pregunta</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Keywords</TableHead>
+                    <TableHead>Prioridad</TableHead>
+                    <TableHead className='text-right'>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredFAQs.map((faq) => (
+                    <TableRow key={faq.id}>
+                      <TableCell>
+                        <Switch
+                          checked={faq.activo}
+                          onCheckedChange={() => toggleActivo(faq)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className='font-medium'>{faq.pregunta}</p>
+                          <p className='text-sm text-muted-foreground truncate max-w-[300px]'>
+                            {faq.respuesta}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant='outline'>{faq.categoria}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className='flex flex-wrap gap-1'>
+                          {faq.keywords?.slice(0, 3).map((keyword, i) => (
+                            <Badge
+                              key={i}
+                              variant='secondary'
+                              className='text-xs'
+                            >
+                              {keyword}
+                            </Badge>
+                          ))}
+                          {faq.keywords?.length > 3 && (
+                            <Badge
+                              variant='secondary'
+                              className='text-xs'
+                            >
+                              +{faq.keywords.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={faq.prioridad >= 5 ? "default" : "outline"}
+                        >
+                          {faq.prioridad}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className='text-right space-x-2'>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => {
+                            setEditingFAQ(faq);
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <Pencil className='h-4 w-4' />
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => deleteFAQ(faq.id)}
+                        >
+                          <Trash2 className='h-4 w-4 text-red-500' />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {filteredFAQs.length === 0 && (
+                <div className='text-center py-8 text-muted-foreground'>
+                  {searchTerm || filterCategoria
+                    ? "No se encontraron FAQs con esos filtros"
+                    : "No hay FAQs creadas. ¡Añade la primera!"}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ============ TAB CONTEXTOS ============ */}
-        <TabsContent value="contextos">
+        <TabsContent value='contextos'>
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className='flex items-center justify-between'>
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
+                  <CardTitle className='flex items-center gap-2'>
+                    <FileText className='h-5 w-5' />
                     Contextos Adicionales
                   </CardTitle>
                   <CardDescription>
-                    Información general que el chatbot puede usar para cualquier respuesta
+                    Información general que el chatbot puede usar para cualquier
+                    respuesta
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={fetchContextos}>
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                <div className='flex gap-2'>
+                  <Button
+                    variant='outline'
+                    onClick={fetchContextos}
+                  >
+                    <RefreshCw className='h-4 w-4 mr-2' />
                     Actualizar
                   </Button>
-                  <Dialog open={contextoDialogOpen} onOpenChange={(open) => {
-                    setContextoDialogOpen(open);
-                    if (!open) setEditingContexto(null);
-                  }}>
+                  <Dialog
+                    open={contextoDialogOpen}
+                    onOpenChange={(open) => {
+                      setContextoDialogOpen(open);
+                      if (!open) setEditingContexto(null);
+                    }}
+                  >
                     <DialogTrigger asChild>
-                      <Button onClick={() => { setEditingContexto(null); setContextoDialogOpen(true); }}>
-                        <Plus className="h-4 w-4 mr-2" />
+                      <Button
+                        onClick={() => {
+                          setEditingContexto(null);
+                          setContextoDialogOpen(true);
+                        }}
+                      >
+                        <Plus className='h-4 w-4 mr-2' />
                         Nuevo Contexto
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className='max-w-2xl'>
                       <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <FileText className="h-5 w-5" />
-                          {editingContexto?.id ? "Editar Contexto" : "Nuevo Contexto"}
+                        <DialogTitle className='flex items-center gap-2'>
+                          <FileText className='h-5 w-5' />
+                          {editingContexto?.id
+                            ? "Editar Contexto"
+                            : "Nuevo Contexto"}
                         </DialogTitle>
                         <DialogDescription>
-                          Agrega información que el chatbot pueda usar para contextualizar sus respuestas
+                          Agrega información que el chatbot pueda usar para
+                          contextualizar sus respuestas
                         </DialogDescription>
                       </DialogHeader>
                       <form
@@ -765,51 +794,60 @@ export default function ChatbotFAQsPage() {
                             activo: true,
                           });
                         }}
-                        className="space-y-4"
+                        className='space-y-4'
                       >
-                        <div className="space-y-2">
-                          <Label htmlFor="titulo">Título</Label>
+                        <div className='space-y-2'>
+                          <Label htmlFor='titulo'>Título</Label>
                           <Input
-                            id="titulo"
-                            name="titulo"
+                            id='titulo'
+                            name='titulo'
                             defaultValue={editingContexto?.titulo}
                             required
-                            placeholder="Ej: Sobre nuestra clínica"
+                            placeholder='Ej: Sobre nuestra clínica'
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="tipo">Tipo de Contexto</Label>
+                        <div className='space-y-2'>
+                          <Label htmlFor='tipo'>Tipo de Contexto</Label>
                           <select
-                            id="tipo"
-                            name="tipo"
+                            id='tipo'
+                            name='tipo'
                             defaultValue={editingContexto?.tipo || "info"}
-                            className="w-full border rounded-md p-2"
+                            className='w-full border rounded-md p-2'
                           >
                             {tiposContexto.map((tipo) => (
-                              <option key={tipo.value} value={tipo.value}>
+                              <option
+                                key={tipo.value}
+                                value={tipo.value}
+                              >
                                 {tipo.label}
                               </option>
                             ))}
                           </select>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="contenido">Contenido</Label>
+                        <div className='space-y-2'>
+                          <Label htmlFor='contenido'>Contenido</Label>
                           <Textarea
-                            id="contenido"
-                            name="contenido"
+                            id='contenido'
+                            name='contenido'
                             defaultValue={editingContexto?.contenido}
                             required
                             rows={8}
-                            placeholder="Escribe aquí toda la información relevante que el chatbot debe conocer..."
+                            placeholder='Escribe aquí toda la información relevante que el chatbot debe conocer...'
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Puedes escribir información extensa. El chatbot la usará para responder preguntas relacionadas.
+                          <p className='text-xs text-muted-foreground'>
+                            Puedes escribir información extensa. El chatbot la
+                            usará para responder preguntas relacionadas.
                           </p>
                         </div>
                         <DialogFooter>
-                          <Button type="submit" disabled={isSavingContexto}>
-                            {isSavingContexto && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            <Save className="h-4 w-4 mr-2" />
+                          <Button
+                            type='submit'
+                            disabled={isSavingContexto}
+                          >
+                            {isSavingContexto && (
+                              <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                            )}
+                            <Save className='h-4 w-4 mr-2' />
                             Guardar
                           </Button>
                         </DialogFooter>
@@ -821,24 +859,27 @@ export default function ChatbotFAQsPage() {
             </CardHeader>
             <CardContent>
               {/* Filtros Contextos */}
-              <div className="flex gap-4 mb-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className='flex gap-4 mb-6'>
+                <div className='relative flex-1'>
+                  <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                   <Input
-                    placeholder="Buscar en títulos o contenido..."
+                    placeholder='Buscar en títulos o contenido...'
                     value={searchTermContexto}
                     onChange={(e) => setSearchTermContexto(e.target.value)}
-                    className="pl-10"
+                    className='pl-10'
                   />
                 </div>
                 <select
                   value={filterTipo}
                   onChange={(e) => setFilterTipo(e.target.value)}
-                  className="border rounded-md px-3"
+                  className='border rounded-md px-3'
                 >
-                  <option value="">Todos los tipos</option>
+                  <option value=''>Todos los tipos</option>
                   {tiposContexto.map((tipo) => (
-                    <option key={tipo.value} value={tipo.value}>
+                    <option
+                      key={tipo.value}
+                      value={tipo.value}
+                    >
                       {tipo.label}
                     </option>
                   ))}
@@ -846,63 +887,79 @@ export default function ChatbotFAQsPage() {
               </div>
 
               {isLoadingContextos ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <div className='flex items-center justify-center py-8'>
+                  <Loader2 className='h-8 w-8 animate-spin text-blue-600' />
                 </div>
               ) : filteredContextos.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="font-medium">No hay contextos creados</p>
-                  <p className="text-sm mt-1">
-                    Los contextos permiten agregar información general como políticas, 
-                    descripciones de servicios, o datos del equipo médico.
+                <div className='text-center py-12 text-muted-foreground'>
+                  <FileText className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                  <p className='font-medium'>No hay contextos creados</p>
+                  <p className='text-sm mt-1'>
+                    Los contextos permiten agregar información general como
+                    políticas, descripciones de servicios, o datos del equipo
+                    médico.
                   </p>
-                  <Button 
-                    className="mt-4" 
-                    onClick={() => { setEditingContexto(null); setContextoDialogOpen(true); }}
+                  <Button
+                    className='mt-4'
+                    onClick={() => {
+                      setEditingContexto(null);
+                      setContextoDialogOpen(true);
+                    }}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className='h-4 w-4 mr-2' />
                     Crear primer contexto
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   {filteredContextos.map((ctx) => (
-                    <Card key={ctx.id} className={!ctx.activo ? "opacity-60" : ""}>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2">
+                    <Card
+                      key={ctx.id}
+                      className={!ctx.activo ? "opacity-60" : ""}
+                    >
+                      <CardHeader className='pb-2'>
+                        <div className='flex items-start justify-between'>
+                          <div className='flex items-center gap-2'>
                             <Switch
                               checked={ctx.activo}
                               onCheckedChange={() => toggleActivoContexto(ctx)}
                             />
                             <div>
-                              <CardTitle className="text-base">{ctx.titulo}</CardTitle>
-                              <Badge variant="outline" className="mt-1">
-                                {tiposContexto.find(t => t.value === ctx.tipo)?.label || ctx.tipo}
+                              <CardTitle className='text-base'>
+                                {ctx.titulo}
+                              </CardTitle>
+                              <Badge
+                                variant='outline'
+                                className='mt-1'
+                              >
+                                {tiposContexto.find((t) => t.value === ctx.tipo)
+                                  ?.label || ctx.tipo}
                               </Badge>
                             </div>
                           </div>
-                          <div className="flex gap-1">
+                          <div className='flex gap-1'>
                             <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => { setEditingContexto(ctx); setContextoDialogOpen(true); }}
+                              variant='ghost'
+                              size='sm'
+                              onClick={() => {
+                                setEditingContexto(ctx);
+                                setContextoDialogOpen(true);
+                              }}
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className='h-4 w-4' />
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="sm"
+                              variant='ghost'
+                              size='sm'
                               onClick={() => deleteContexto(ctx.id)}
                             >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              <Trash2 className='h-4 w-4 text-red-500' />
                             </Button>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                        <p className='text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3'>
                           {ctx.contenido}
                         </p>
                       </CardContent>

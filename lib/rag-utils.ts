@@ -28,12 +28,20 @@ const embeddingModel = google.textEmbeddingModel("text-embedding-004");
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    console.log("[Embedding] Generando embedding para texto de", text.length, "caracteres");
+    console.log(
+      "[Embedding] Generando embedding para texto de",
+      text.length,
+      "caracteres"
+    );
     const { embedding } = await embed({
       model: embeddingModel,
       value: text,
     });
-    console.log("[Embedding] Embedding generado con", embedding.length, "dimensiones");
+    console.log(
+      "[Embedding] Embedding generado con",
+      embedding.length,
+      "dimensiones"
+    );
     return embedding;
   } catch (error) {
     console.error("[Embedding] Error generando embedding:", error);
@@ -393,7 +401,10 @@ export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
       ...(faq.keywords || []),
     ].join(" ");
 
-    console.log("[SyncEmbed] Texto para embedding:", textForEmbedding.substring(0, 100) + "...");
+    console.log(
+      "[SyncEmbed] Texto para embedding:",
+      textForEmbedding.substring(0, 100) + "..."
+    );
 
     // Generar embedding
     const embedding = await generateEmbedding(textForEmbedding);
@@ -409,7 +420,10 @@ export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
       .eq("id", faqId);
 
     if (updateError) {
-      console.error("[SyncEmbed] Error actualizando embedding en BD:", updateError);
+      console.error(
+        "[SyncEmbed] Error actualizando embedding en BD:",
+        updateError
+      );
       return false;
     }
 
@@ -498,7 +512,9 @@ export async function syncAllFAQEmbeddings(): Promise<{
       }
     }
 
-    console.log(`[SyncEmbed] Sincronización completada: ${updated} actualizados, ${failed} fallidos`);
+    console.log(
+      `[SyncEmbed] Sincronización completada: ${updated} actualizados, ${failed} fallidos`
+    );
     return { updated, failed };
   } catch (error) {
     console.error("Error en syncAllFAQEmbeddings:", error);

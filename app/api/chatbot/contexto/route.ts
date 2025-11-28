@@ -103,7 +103,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error guardando contexto:", error);
     return NextResponse.json(
-      { error: "Error al guardar contexto", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Error al guardar contexto",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -126,10 +129,7 @@ export async function DELETE(req: Request) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
     const { error } = await supabase
