@@ -2,7 +2,7 @@ import { streamText, UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
 import {
   searchFAQsFromDB,
-  getContextoFromDB,
+  searchContextoFromDB,
   getTemaFromDB,
   generateRAGContext,
   isRelevantForFAQ,
@@ -133,13 +133,13 @@ IMPORTANTE:
 - SIEMPRE recomienda agendar una cita para evaluación personalizada
 - No menciones que eres una IA o modelo de lenguaje, no te salgas de tu rol de asistente de Dental Company`;
 
-    // Buscar contexto dinámico desde la BD
+    // Buscar contexto dinámico desde la BD usando embeddings vectoriales
     if (useFAQ && messages.length > 0 && isRelevantForFAQ(userQuery)) {
       try {
-        // Obtener FAQs, contexto y tema en paralelo
+        // Obtener FAQs (búsqueda semántica), contexto relevante y tema en paralelo
         const [faqs, contextos, tema] = await Promise.all([
           searchFAQsFromDB(userQuery, 3),
-          getContextoFromDB(),
+          searchContextoFromDB(userQuery, 2),
           getTemaFromDB(),
         ]);
 

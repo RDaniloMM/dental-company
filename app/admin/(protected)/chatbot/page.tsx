@@ -43,6 +43,9 @@ import {
   Tag,
   HelpCircle,
   Search,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,6 +57,20 @@ interface FAQ {
   categoria: string;
   prioridad: number;
   activo: boolean;
+}
+
+interface EmbeddingStats {
+  faqs: {
+    total: number;
+    withEmbedding: number;
+    needsUpdate: number;
+  };
+  contextos: {
+    total: number;
+    withEmbedding: number;
+    needsUpdate: number;
+  };
+  allSynced: boolean;
 }
 
 const categorias = [
@@ -75,6 +92,49 @@ export default function ChatbotFAQsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategoria, setFilterCategoria] = useState<string>("");
+  
+  // Estados para embeddings
+  const [embeddingStats, setEmbeddingStats] = useState<EmbeddingStats | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Cargar estado de embeddings
+  const fetchEmbeddingStats = async () => {
+    try {
+      const res = await fetch("/api/chatbot/sync-embeddings");
+      if (res.ok) {
+        const data = await res.json();
+        setEmbeddingStats(data);
+      }
+    } catch (error) {
+      console.error("Error cargando estado de embeddings:", error);
+    }
+  };
+
+  // Sincronizar embeddings
+  const syncEmbeddings = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch("/api/chatbot/sync-embeddings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "all" }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(`Embeddings sincronizados: ${data.faqsUpdated} FAQs, ${data.contextosUpdated} contextos`);
+        fetchEmbeddingStats();
+      } else {
+        const error = await res.json();
+        toast.error(error.error || "Error al sincronizar embeddings");
+      }
+    } catch (error) {
+      console.error("Error sincronizando embeddings:", error);
+      toast.error("Error al sincronizar embeddings");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Cargar FAQs
   const fetchFAQs = async () => {
@@ -95,6 +155,7 @@ export default function ChatbotFAQsPage() {
 
   useEffect(() => {
     fetchFAQs();
+    fetchEmbeddingStats();
   }, []);
 
   // Guardar FAQ
@@ -181,7 +242,34 @@ export default function ChatbotFAQsPage() {
             Gestiona las preguntas frecuentes que el chatbot usa para responder
           </p>
         </div>
-        <div className='flex gap-2'>
+        <div className='flex gap-2 items-center'>
+          {/* Indicador de estado de embeddings */}
+          {embeddingStats && !embeddingStats.allSynced && (
+            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              {embeddingStats.faqs.needsUpdate + embeddingStats.contextos.needsUpdate} sin sincronizar
+            </Badge>
+          )}
+          {embeddingStats?.allSynced && (
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              IA sincronizada
+            </Badge>
+          )}
+          
+          <Button
+            variant='outline'
+            onClick={syncEmbeddings}
+            disabled={isSyncing || embeddingStats?.allSynced}
+            title="Sincroniza los embeddings para búsqueda semántica"
+          >
+            {isSyncing ? (
+              <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+            ) : (
+              <Sparkles className='h-4 w-4 mr-2' />
+            )}
+            {isSyncing ? "Sincronizando..." : "Sync IA"}
+          </Button>
           <Button
             variant='outline'
             onClick={fetchFAQs}

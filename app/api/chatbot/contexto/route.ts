@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { generateEmbedding } from "@/lib/rag-utils";
 
 // GET - Obtener contexto adicional del chatbot
 export async function GET() {
@@ -40,12 +41,28 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id, titulo, contenido, tipo, activo } = body;
 
-    const contextoData = {
+    // Generar embedding automáticamente
+    let embedding: number[] | null = null;
+    try {
+      const textForEmbedding = `${titulo} ${contenido}`;
+      embedding = await generateEmbedding(textForEmbedding);
+    } catch (embeddingError) {
+      console.error("Error generando embedding (continuando sin él):", embeddingError);
+      // Continuar sin embedding - el sistema usará fallback
+    }
+
+    const contextoData: Record<string, unknown> = {
       titulo,
       contenido,
       tipo: tipo || "informacion",
       activo: activo !== false,
     };
+
+    // Solo agregar embedding si se generó correctamente
+    if (embedding) {
+      contextoData.embedding = JSON.stringify(embedding);
+      contextoData.embedding_updated_at = new Date().toISOString();
+    }
 
     if (id) {
       const { error } = await supabase
@@ -62,7 +79,10 @@ export async function POST(req: Request) {
       if (error) throw error;
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      embeddingGenerated: !!embedding
+    });
   } catch (error) {
     console.error("Error guardando contexto:", error);
     return NextResponse.json(

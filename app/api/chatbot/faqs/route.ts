@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { generateEmbedding } from "@/lib/rag-utils";
 
 // GET - Obtener FAQs (público para chatbot, completo para admin)
 export async function GET(req: Request) {
@@ -65,7 +66,17 @@ export async function POST(req: Request) {
       keywordsArray = keywords.map((k: string) => k.toLowerCase().trim());
     }
 
-    const faqData = {
+    // Generar embedding automáticamente
+    let embedding: number[] | null = null;
+    try {
+      const textForEmbedding = [pregunta, respuesta, ...keywordsArray].join(" ");
+      embedding = await generateEmbedding(textForEmbedding);
+    } catch (embeddingError) {
+      console.error("Error generando embedding (continuando sin él):", embeddingError);
+      // Continuar sin embedding - el sistema usará fallback de keywords
+    }
+
+    const faqData: Record<string, unknown> = {
       pregunta,
       respuesta,
       keywords: keywordsArray,
@@ -73,6 +84,12 @@ export async function POST(req: Request) {
       prioridad: prioridad || 0,
       activo: activo !== false,
     };
+
+    // Solo agregar embedding si se generó correctamente
+    if (embedding) {
+      faqData.embedding = JSON.stringify(embedding);
+      faqData.embedding_updated_at = new Date().toISOString();
+    }
 
     if (id) {
       // Actualizar existente
@@ -89,7 +106,10 @@ export async function POST(req: Request) {
       if (error) throw error;
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      embeddingGenerated: !!embedding 
+    });
   } catch (error) {
     console.error("Error guardando FAQ:", error);
     return NextResponse.json(
