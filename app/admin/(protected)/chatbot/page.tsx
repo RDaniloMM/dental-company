@@ -350,7 +350,8 @@ export default function ChatbotFAQsPage() {
             Base de Conocimiento del Chatbot
           </h1>
           <p className='text-muted-foreground'>
-            Gestiona las preguntas frecuentes y contextos que el chatbot usa para responder
+            Gestiona las preguntas frecuentes y contextos que el chatbot usa
+            para responder
           </p>
         </div>
         <div className='flex gap-2 items-center'>
@@ -497,8 +498,8 @@ export default function ChatbotFAQsPage() {
                           {editingFAQ?.id ? "Editar FAQ" : "Nueva FAQ"}
                         </DialogTitle>
                         <DialogDescription>
-                          Esta información será usada por el chatbot para responder
-                          preguntas
+                          Esta información será usada por el chatbot para
+                          responder preguntas
                         </DialogDescription>
                       </DialogHeader>
                       <form
@@ -556,8 +557,8 @@ export default function ChatbotFAQsPage() {
                             placeholder='horario, atención, abierto, cerrado'
                           />
                           <p className='text-xs text-muted-foreground'>
-                            Estas palabras ayudan al chatbot a encontrar esta FAQ cuando
-                            el usuario pregunta
+                            Estas palabras ayudan al chatbot a encontrar esta
+                            FAQ cuando el usuario pregunta
                           </p>
                         </div>
                         <div className='grid grid-cols-2 gap-4'>
