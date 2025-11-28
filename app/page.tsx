@@ -50,7 +50,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FileSearch,
 };
 
- // Datos del curriculum de odontólogos
+// Datos del curriculum de odontólogos
 const curriculumData: Record<
   string,
   {
