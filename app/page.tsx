@@ -811,10 +811,10 @@ const ServiciosSection = ({
   return (
     <section
       id='servicios'
-      className='py-24 bg-gradient-to-b from-gray-50 to-white'
+      className='py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white'
     >
       <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='text-center max-w-3xl mx-auto mb-16'>
+        <div className='text-center max-w-3xl mx-auto mb-10 sm:mb-12 lg:mb-16'>
           <span className='text-blue-600 font-semibold text-sm uppercase tracking-wider'>
             Nuestros Servicios
           </span>
@@ -1072,10 +1072,10 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
     <>
       <section
         id='nosotros'
-        className='py-24 bg-white'
+        className='py-12 sm:py-16 lg:py-20 bg-white'
       >
         <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='text-center max-w-3xl mx-auto mb-16'>
+          <div className='text-center max-w-3xl mx-auto mb-10 sm:mb-12 lg:mb-16'>
             <span className='text-blue-600 font-semibold text-sm uppercase tracking-wider'>
               Nuestro Equipo
             </span>
@@ -1178,10 +1178,10 @@ const ContactoSection = ({ tema }: { tema: Record<string, string> }) => {
   return (
     <section
       id='contacto'
-      className='py-24 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900'
+      className='py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900'
     >
       <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-16 items-center'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center'>
           {/* Info */}
           <div className='text-white'>
             <span className='text-blue-200 font-semibold text-sm uppercase tracking-wider'>

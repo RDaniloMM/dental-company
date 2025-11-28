@@ -117,7 +117,7 @@ export const FloatingChatbot = () => {
 
       {/* Ventana del chat */}
       {isOpen && (
-        <div className='fixed bottom-6 right-6 z-50 w-[90vw] sm:w-96 h-[600px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col overflow-hidden border border-gray-200'>
+        <div className='fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] h-[85vh] sm:h-[650px] sm:max-h-[85vh] bg-white sm:rounded-lg shadow-2xl flex flex-col overflow-hidden border-t sm:border border-gray-200'>
           {/* Header */}
           <div className='bg-blue-600 text-white p-4 flex justify-between items-center'>
             <div className='flex items-center gap-2'>
@@ -154,9 +154,9 @@ export const FloatingChatbot = () => {
               </p>
               <ul className='text-xs text-gray-600 mt-2 space-y-1 ml-4'>
                 <li>• Horarios de atención</li>
-                <li>• Agendar citas</li>
+                <li>• Ubicación de la clínica</li>
                 <li>• Información de servicios</li>
-                <li>• Precios y seguros</li>
+                <li>• Proceso para agendar citas</li>
               </ul>
             </div>
           )}
