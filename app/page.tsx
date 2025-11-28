@@ -32,6 +32,8 @@ import {
   Award,
   Quote,
   Heart,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 
 // Mapeo de iconos
@@ -435,73 +437,320 @@ const InfoCards = ({ tema }: { tema: Record<string, string> }) => (
 );
 
 // --- Servicios Section ---
+interface ServiceDetail {
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  detalleCompleto: string;
+  beneficios: string[];
+  duracion?: string;
+  recomendaciones?: string;
+}
+
+const serviciosDetallados: ServiceDetail[] = [
+  {
+    nombre: "Odontología General",
+    descripcion:
+      "Consultas, diagnósticos completos, limpiezas dentales profesionales (profilaxis), tratamiento de caries y revisiones periódicas.",
+    icono: "Stethoscope",
+    detalleCompleto:
+      "La odontología general es la base de una buena salud bucal. Realizamos evaluaciones completas de tu boca, detectando problemas en etapas tempranas para un tratamiento más efectivo y menos invasivo. Incluye radiografías digitales, examen de encías, evaluación de mordida y un plan de tratamiento personalizado según tus necesidades.",
+    beneficios: [
+      "Prevención de enfermedades bucales",
+      "Detección temprana de caries y problemas en las encías",
+      "Limpieza profunda que elimina sarro y manchas",
+      "Consejos personalizados para tu higiene diaria",
+      "Seguimiento continuo de tu salud dental",
+    ],
+    duracion: "30-60 minutos por consulta",
+    recomendaciones:
+      "Te sugerimos visitarnos cada 6 meses para mantener tu sonrisa saludable. Recuerda cepillarte después de cada comida y usar hilo dental diariamente.",
+  },
+  {
+    nombre: "Estética Dental",
+    descripcion:
+      "Blanqueamiento dental profesional, carillas de porcelana y composite, coronas estéticas libres de metal y diseño digital de sonrisa.",
+    icono: "Sparkles",
+    detalleCompleto:
+      "Transformamos tu sonrisa con tratamientos estéticos de última generación. Utilizamos tecnología digital para diseñar tu sonrisa ideal antes del tratamiento, permitiéndote ver cómo lucirás al finalizar. Trabajamos con materiales de alta calidad que garantizan resultados naturales y duraderos.",
+    beneficios: [
+      "Sonrisa más blanca y brillante",
+      "Corrección de forma, tamaño y color de dientes",
+      "Resultados naturales que lucen como tus propios dientes",
+      "Aumento de la autoestima y confianza",
+      "Materiales seguros y de larga duración",
+    ],
+    duracion: "1-3 citas según el tratamiento",
+    recomendaciones:
+      "Después del blanqueamiento, evita por 48 horas café, té, vino tinto y alimentos con colorantes. Mantén una buena higiene para que los resultados duren más tiempo.",
+  },
+  {
+    nombre: "Ortodoncia",
+    descripcion:
+      "Brackets metálicos y estéticos, tratamientos interceptivos en niños para corregir problemas de mordida y alineación dental.",
+    icono: "Smile",
+    detalleCompleto:
+      "Corregimos la posición de tus dientes y mejoramos tu mordida con tratamientos ortodónticos personalizados. Ofrecemos brackets tradicionales, estéticos (de cerámica transparente) y tratamientos especiales para niños que previenen problemas mayores en el futuro. La Dra. Gabriela Condori, especialista en ortodoncia con más de 10 años de experiencia, evaluará tu caso individualmente.",
+    beneficios: [
+      "Dientes perfectamente alineados",
+      "Mejora de la mordida para masticar mejor",
+      "Prevención de desgaste dental",
+      "Mayor facilidad para cepillarte y usar hilo dental",
+      "Mejora notable de tu perfil facial",
+    ],
+    duracion: "12-24 meses promedio",
+    recomendaciones:
+      "Asiste puntualmente a tus controles mensuales. Evita alimentos duros o pegajosos que puedan dañar los brackets. Usa los cepillos especiales que te proporcionamos para limpiar alrededor de los brackets.",
+  },
+  {
+    nombre: "Implantes Dentales",
+    descripcion:
+      "Implantes unitarios y múltiples, carga inmediata, prótesis sobre implantes y regeneración ósea guiada.",
+    icono: "Bone",
+    detalleCompleto:
+      "Los implantes dentales son la solución más avanzada y duradera para reemplazar dientes perdidos. Utilizamos implantes de titanio de alta calidad que se integran perfectamente con el hueso. El Dr. Ulises Peñaloza, especialista en implantología con 17 años de experiencia, ofrece técnicas de carga inmediata que permiten colocar dientes provisionales el mismo día de la cirugía.",
+    beneficios: [
+      "Solución permanente para dientes perdidos",
+      "Lucen y funcionan como dientes naturales",
+      "Mantienen saludable el hueso de tu mandíbula",
+      "No dañan los dientes vecinos",
+      "Pueden durar toda la vida con el cuidado adecuado",
+    ],
+    duracion: "3-6 meses para integración completa",
+    recomendaciones:
+      "Durante los primeros días después de la cirugía, consume alimentos blandos y fríos. No fumes, ya que afecta la cicatrización. Sigue todas las indicaciones que te daremos para asegurar el éxito del implante.",
+  },
+  {
+    nombre: "Cirugía Bucal",
+    descripcion:
+      "Extracciones simples y complejas, extracción de muelas del juicio, cirugía de encías e injertos de hueso y tejido.",
+    icono: "Syringe",
+    detalleCompleto:
+      "Realizamos procedimientos quirúrgicos con técnicas modernas y mínimamente invasivas para reducir molestias y acelerar tu recuperación. Nuestro equipo está especializado en extracciones complejas, incluyendo muelas del juicio que no han salido correctamente, y cirugías de regeneración para preparar tu boca para implantes.",
+    beneficios: [
+      "Procedimientos con mínimas molestias",
+      "Recuperación más rápida que con técnicas tradicionales",
+      "Anestesia efectiva para un procedimiento sin dolor",
+      "Seguimiento incluido después de la cirugía",
+      "Prevención de complicaciones a futuro",
+    ],
+    duracion: "30-90 minutos según el procedimiento",
+    recomendaciones:
+      "Después de la cirugía, descansa el resto del día y aplica hielo en la zona por intervalos de 15 minutos. Come alimentos blandos y fríos. Evita enjuagues fuertes las primeras 24 horas. Te daremos medicación para controlar cualquier molestia.",
+  },
+  {
+    nombre: "Endodoncia",
+    descripcion:
+      "Tratamiento de conductos (conocido como 'matar el nervio'), retratamientos y procedimientos para salvar dientes muy dañados.",
+    icono: "Microscope",
+    detalleCompleto:
+      "La endodoncia permite salvar dientes que de otra manera tendrían que ser extraídos. Este tratamiento, conocido popularmente como 'matar el nervio', elimina la infección interna del diente, limpia completamente los conductos y los sella para prevenir futuras infecciones. Con las técnicas modernas que utilizamos, el procedimiento es prácticamente indoloro.",
+    beneficios: [
+      "Salva dientes que parecían perdidos",
+      "Elimina el dolor intenso causado por la infección",
+      "Procedimiento prácticamente sin dolor",
+      "Conserva tu diente natural en lugar de reemplazarlo",
+      "Evita la necesidad de implantes o prótesis",
+    ],
+    duracion: "1-2 citas de 60-90 minutos",
+    recomendaciones:
+      "Es normal sentir sensibilidad los primeros días; esto pasará gradualmente. Evita masticar con ese diente hasta que te coloquemos la corona definitiva. Toma los medicamentos según las indicaciones para una recuperación cómoda.",
+  },
+  {
+    nombre: "Periodoncia",
+    descripcion:
+      "Tratamiento de encías inflamadas (gingivitis) y enfermedad periodontal, limpieza profunda, cirugía regenerativa y mantenimiento.",
+    icono: "ShieldCheck",
+    detalleCompleto:
+      "Tratamos las enfermedades de las encías, desde inflamación leve hasta casos avanzados donde hay pérdida de hueso. El Dr. Ulises Peñaloza, especialista en periodoncia, puede detener la progresión de la enfermedad y en muchos casos regenerar los tejidos perdidos. Las encías sanas son fundamentales porque la enfermedad de las encías es la principal causa de pérdida de dientes en adultos.",
+    beneficios: [
+      "Encías saludables que no sangran al cepillarte",
+      "Prevención de pérdida de dientes",
+      "Eliminación del mal aliento causado por bacterias",
+      "Posibilidad de recuperar hueso perdido",
+      "Mejor salud general (las encías enfermas afectan el corazón y otros órganos)",
+    ],
+    duracion: "Varias sesiones según la severidad",
+    recomendaciones:
+      "Después del tratamiento, tus encías pueden estar sensibles por unos días. Usa el enjuague especial que te recetaremos. Es muy importante que asistas a tus citas de mantenimiento cada 3-4 meses para evitar que la enfermedad regrese.",
+  },
+  {
+    nombre: "Odontopediatría",
+    descripcion:
+      "Atención dental especializada para niños, sellantes protectores, aplicación de flúor y técnicas especiales para que los pequeños no tengan miedo.",
+    icono: "Baby",
+    detalleCompleto:
+      "Brindamos atención dental especializada para los más pequeños de la casa en un ambiente amigable y libre de miedo. Utilizamos técnicas especiales de comunicación para que los niños tengan experiencias positivas en el dentista desde temprana edad. Nos enfocamos en la prevención para asegurar que sus dientes crezcan sanos y fuertes.",
+    beneficios: [
+      "Ambiente diseñado para que los niños se sientan cómodos",
+      "Prevención de caries desde los primeros dientes",
+      "Enseñamos higiene oral de forma divertida",
+      "Sellantes que protegen las muelitas de las caries",
+      "Detección temprana si necesitarán ortodoncia",
+    ],
+    duracion: "20-40 minutos por sesión",
+    recomendaciones:
+      "La primera visita al dentista debe ser al cumplir el primer año o cuando salga el primer diente. Supervisa el cepillado de tu hijo hasta los 7-8 años. Limita los dulces y jugos azucarados, especialmente antes de dormir.",
+  },
+  {
+    nombre: "Prótesis Dental",
+    descripcion:
+      "Coronas y puentes fijos, dentaduras removibles, prótesis totales y sobredentaduras sobre implantes para casos sin dientes.",
+    icono: "Puzzle",
+    detalleCompleto:
+      "Restauramos la función y belleza de tu sonrisa con prótesis dentales hechas a tu medida. Trabajamos con materiales modernos como el zirconio que lucen completamente naturales. Ofrecemos desde coronas individuales para un solo diente hasta rehabilitaciones completas para quienes han perdido todos sus dientes.",
+    beneficios: [
+      "Vuelve a masticar todos tus alimentos favoritos",
+      "Sonrisa restaurada con apariencia natural",
+      "Materiales resistentes que duran muchos años",
+      "Ajuste cómodo y preciso",
+      "Mejora de la pronunciación al hablar",
+    ],
+    duracion: "2-4 citas según el tipo de prótesis",
+    recomendaciones:
+      "Si tienes prótesis removible, retírala para dormir y mantenla limpia. Las prótesis fijas se cuidan igual que los dientes naturales. Visítanos regularmente para verificar el ajuste y hacer mantenimiento.",
+  },
+  {
+    nombre: "Diagnóstico de Patologías",
+    descripcion:
+      "Detección temprana de cáncer oral, evaluación de llagas que no sanan, manchas sospechosas y otras alteraciones de la boca.",
+    icono: "FileSearch",
+    detalleCompleto:
+      "Realizamos exámenes completos de toda tu boca para detectar cualquier lesión que requiera atención. La detección temprana de problemas serios, incluyendo lesiones pre-cancerosas y cáncer oral, es crucial para un tratamiento exitoso. Si encontramos algo que necesite evaluación especializada, te guiaremos en los siguientes pasos.",
+    beneficios: [
+      "La detección temprana puede salvar tu vida",
+      "Diagnóstico preciso de cualquier lesión en la boca",
+      "Seguimiento de manchas o llagas sospechosas",
+      "Coordinación con especialistas si es necesario",
+      "Tranquilidad de saber que todo está bien",
+    ],
+    duracion: "30-45 minutos de evaluación",
+    recomendaciones:
+      "Revisa tu boca mensualmente frente al espejo. Consulta de inmediato si notas llagas que no sanan en 2 semanas, manchas blancas o rojas, bultos, o cualquier cambio inusual. No te alarmes, la mayoría de las lesiones son benignas, pero es mejor verificar.",
+  },
+];
+
+// Modal de Servicio
+const ServicioModal = ({
+  isOpen,
+  onClose,
+  servicio,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  servicio: ServiceDetail | null;
+}) => {
+  if (!isOpen || !servicio) return null;
+
+  const Icon = iconMap[servicio.icono] || Stethoscope;
+
+  return (
+    <div
+      className='fixed inset-0 z-[100] flex items-center justify-center p-4'
+      onClick={onClose}
+    >
+      {/* Overlay */}
+      <div className='absolute inset-0 bg-black/60 backdrop-blur-sm' />
+
+      {/* Modal Content */}
+      <div
+        className='relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200'
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className='relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 p-8 rounded-t-3xl'>
+          <button
+            onClick={onClose}
+            className='absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors'
+          >
+            <X className='h-5 w-5 text-white' />
+          </button>
+          <div className='flex items-center gap-4'>
+            <div className='w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center'>
+              <Icon className='h-8 w-8 text-white' />
+            </div>
+            <div>
+              <h2 className='text-2xl font-bold text-white'>
+                {servicio.nombre}
+              </h2>
+              {servicio.duracion && (
+                <p className='text-blue-200 text-sm mt-1'>
+                  <Clock className='inline h-4 w-4 mr-1' />
+                  {servicio.duracion}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Contenido */}
+        <div className='p-8 space-y-6'>
+          {/* Descripción completa */}
+          <div>
+            <h3 className='text-lg font-bold text-gray-900 mb-3'>
+              ¿En qué consiste?
+            </h3>
+            <p className='text-gray-600 leading-relaxed'>
+              {servicio.detalleCompleto}
+            </p>
+          </div>
+
+          {/* Beneficios */}
+          <div className='bg-blue-50 rounded-2xl p-6'>
+            <h3 className='text-lg font-bold text-gray-900 mb-4 flex items-center gap-2'>
+              <CheckCircle className='h-5 w-5 text-blue-600' />
+              Beneficios
+            </h3>
+            <ul className='space-y-3'>
+              {servicio.beneficios.map((beneficio, index) => (
+                <li
+                  key={index}
+                  className='flex items-start gap-3 text-gray-700'
+                >
+                  <span className='w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0' />
+                  {beneficio}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Recomendaciones */}
+          {servicio.recomendaciones && (
+            <div className='bg-amber-50 rounded-2xl p-6'>
+              <h3 className='text-lg font-bold text-gray-900 mb-3 flex items-center gap-2'>
+                <AlertCircle className='h-5 w-5 text-amber-600' />
+                Recomendaciones
+              </h3>
+              <p className='text-gray-700'>{servicio.recomendaciones}</p>
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className='pt-4'>
+            <a
+              href='#contacto'
+              onClick={onClose}
+              className='block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/25'
+            >
+              Agendar una cita
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ServiciosSection = ({
   servicios,
 }: {
   servicios: CMSData["servicios"];
 }) => {
-  const defaultServices = [
-    {
-      nombre: "Odontología General",
-      descripcion:
-        "Consultas, diagnósticos completos, limpiezas dentales profesionales (profilaxis), tratamiento de caries y revisiones periódicas.",
-      icono: "Stethoscope",
-    },
-    {
-      nombre: "Estética Dental",
-      descripcion:
-        "Blanqueamiento dental profesional, carillas de porcelana y composite, coronas estéticas y diseño digital de sonrisa.",
-      icono: "Sparkles",
-    },
-    {
-      nombre: "Ortodoncia",
-      descripcion:
-        "Brackets metálicos y estéticos, tratamientos interceptivos en niños para corregir problemas de mordida y alineación.",
-      icono: "Smile",
-    },
-    {
-      nombre: "Implantes Dentales",
-      descripcion:
-        "Implantes unitarios y múltiples, carga inmediata, prótesis sobre implantes y regeneración ósea guiada.",
-      icono: "Bone",
-    },
-    {
-      nombre: "Cirugía Bucal",
-      descripcion:
-        "Extracciones simples y complejas, extracción de cordales (muelas del juicio), cirugía periodontal e injertos.",
-      icono: "Syringe",
-    },
-    {
-      nombre: "Endodoncia",
-      descripcion:
-        "Tratamiento de conductos radiculares, retratamientos endodónticos y apicectomías para salvar dientes dañados.",
-      icono: "Microscope",
-    },
-    {
-      nombre: "Periodoncia",
-      descripcion:
-        "Tratamiento de gingivitis y periodontitis, raspado radicular, cirugía periodontal regenerativa y mantenimiento.",
-      icono: "ShieldCheck",
-    },
-    {
-      nombre: "Odontopediatría",
-      descripcion:
-        "Atención dental especializada para niños, sellantes de fisuras, aplicación de flúor y manejo de conducta infantil.",
-      icono: "Baby",
-    },
-    {
-      nombre: "Prótesis Dental",
-      descripcion:
-        "Coronas y puentes fijos, prótesis removibles, prótesis totales y sobredentaduras sobre implantes.",
-      icono: "Puzzle",
-    },
-    {
-      nombre: "Diagnóstico de Patologías",
-      descripcion:
-        "Detección temprana de cáncer oral, lesiones premalignas, diagnóstico de enfermedades bucales e infecciones.",
-      icono: "FileSearch",
-    },
-  ];
+  const [selectedService, setSelectedService] = useState<ServiceDetail | null>(
+    null
+  );
+
+  const defaultServices = serviciosDetallados;
 
   const displayServices =
     servicios.length > 0
@@ -542,25 +791,43 @@ const ServiciosSection = ({
         >
           {displayServices.map((service, index) => {
             const Icon = iconMap[service.icono] || Stethoscope;
+            // Buscar el servicio detallado correspondiente
+            const servicioDetallado = serviciosDetallados.find(
+              (s) => s.nombre === service.nombre
+            );
             return (
               <div
                 key={service.id || index}
-                className='group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-1'
+                onClick={() =>
+                  servicioDetallado && setSelectedService(servicioDetallado)
+                }
+                className='group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-1 cursor-pointer'
               >
                 <div className='w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors duration-300'>
                   <Icon className='h-6 w-6 text-blue-600 group-hover:text-white transition-colors duration-300' />
                 </div>
-                <h3 className='text-lg font-bold text-gray-900 mb-2'>
+                <h3 className='text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors'>
                   {service.nombre}
                 </h3>
-                <p className='text-gray-600 text-sm leading-relaxed'>
+                <p className='text-gray-600 text-sm leading-relaxed mb-3'>
                   {service.descripcion}
                 </p>
+                <span className='inline-flex items-center gap-1 text-blue-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity'>
+                  Ver más información
+                  <ChevronDown className='h-4 w-4 rotate-[-90deg]' />
+                </span>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Modal de Servicio */}
+      <ServicioModal
+        isOpen={selectedService !== null}
+        onClose={() => setSelectedService(null)}
+        servicio={selectedService}
+      />
     </section>
   );
 };
