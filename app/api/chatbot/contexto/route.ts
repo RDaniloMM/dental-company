@@ -3,15 +3,23 @@ import { NextResponse } from "next/server";
 import { generateEmbedding } from "@/lib/rag-utils";
 
 // GET - Obtener contexto adicional del chatbot
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const supabase = await createClient();
+    const { searchParams } = new URL(req.url);
+    const all = searchParams.get("all") === "true";
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("chatbot_contexto")
       .select("*")
-      .eq("activo", true)
       .order("tipo", { ascending: true });
+
+    // Si no es admin o no pide todos, solo mostrar activos
+    if (!all) {
+      query = query.eq("activo", true);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
@@ -63,7 +71,7 @@ export async function POST(req: Request) {
 
     // Solo agregar embedding si se generó correctamente
     if (embedding) {
-      contextoData.embedding = JSON.stringify(embedding);
+      contextoData.embedding = `[${embedding.join(",")}]`;
       contextoData.embedding_updated_at = new Date().toISOString();
     }
 
@@ -73,13 +81,19 @@ export async function POST(req: Request) {
         .update(contextoData)
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error SQL update contexto:", error);
+        throw error;
+      }
     } else {
       const { error } = await supabase
         .from("chatbot_contexto")
         .insert(contextoData);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error SQL insert contexto:", error);
+        throw error;
+      }
     }
 
     return NextResponse.json({
@@ -89,7 +103,47 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error guardando contexto:", error);
     return NextResponse.json(
-      { error: "Error al guardar contexto" },
+      { error: "Error al guardar contexto", details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Eliminar contexto
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID requerido" },
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabase
+      .from("chatbot_contexto")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error eliminando contexto:", error);
+    return NextResponse.json(
+      { error: "Error al eliminar contexto" },
       { status: 500 }
     );
   }

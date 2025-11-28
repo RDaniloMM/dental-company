@@ -28,13 +28,15 @@ const embeddingModel = google.textEmbeddingModel("text-embedding-004");
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
+    console.log("[Embedding] Generando embedding para texto de", text.length, "caracteres");
     const { embedding } = await embed({
       model: embeddingModel,
       value: text,
     });
+    console.log("[Embedding] Embedding generado con", embedding.length, "dimensiones");
     return embedding;
   } catch (error) {
-    console.error("Error generando embedding:", error);
+    console.error("[Embedding] Error generando embedding:", error);
     throw error;
   }
 }
@@ -370,6 +372,7 @@ export function isRelevantForFAQ(query: string): boolean {
 export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
   try {
     const supabase = await createClient();
+    console.log("[SyncEmbed] Actualizando FAQ:", faqId);
 
     // Obtener el FAQ
     const { data: faq, error: fetchError } = await supabase
@@ -379,7 +382,7 @@ export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
       .single();
 
     if (fetchError || !faq) {
-      console.error("Error obteniendo FAQ:", fetchError);
+      console.error("[SyncEmbed] Error obteniendo FAQ:", fetchError);
       return false;
     }
 
@@ -390,8 +393,11 @@ export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
       ...(faq.keywords || []),
     ].join(" ");
 
+    console.log("[SyncEmbed] Texto para embedding:", textForEmbedding.substring(0, 100) + "...");
+
     // Generar embedding
     const embedding = await generateEmbedding(textForEmbedding);
+    console.log("[SyncEmbed] Embedding generado, guardando en BD...");
 
     // Actualizar en la BD - pgvector acepta array directamente o string formato [1,2,3]
     const { error: updateError } = await supabase
@@ -403,13 +409,14 @@ export async function updateFAQEmbedding(faqId: string): Promise<boolean> {
       .eq("id", faqId);
 
     if (updateError) {
-      console.error("Error actualizando embedding:", updateError);
+      console.error("[SyncEmbed] Error actualizando embedding en BD:", updateError);
       return false;
     }
 
+    console.log("[SyncEmbed] FAQ actualizado exitosamente:", faqId);
     return true;
   } catch (error) {
-    console.error("Error en updateFAQEmbedding:", error);
+    console.error("[SyncEmbed] Error en updateFAQEmbedding:", error);
     return false;
   }
 }
@@ -424,34 +431,32 @@ export async function syncAllFAQEmbeddings(): Promise<{
   try {
     const supabase = await createClient();
 
-    // Obtener FAQs sin embedding o con embedding desactualizado
+    // Obtener FAQs sin embedding
     const { data: faqs, error } = await supabase
       .from("chatbot_faqs")
-      .select(
-        "id, pregunta, respuesta, keywords, updated_at, embedding_updated_at"
-      )
-      .eq("activo", true);
+      .select("id, pregunta, respuesta, keywords, embedding")
+      .eq("activo", true)
+      .is("embedding", null);
 
-    if (error || !faqs) {
+    if (error) {
       console.error("Error obteniendo FAQs para sync:", error);
       return { updated: 0, failed: 0 };
     }
 
-    // Filtrar FAQs que necesitan actualización
-    const needsUpdate = faqs.filter((faq) => {
-      if (!faq.embedding_updated_at) return true;
-      const embeddingDate = new Date(faq.embedding_updated_at);
-      const updatedDate = new Date(faq.updated_at);
-      return updatedDate > embeddingDate;
-    });
+    if (!faqs || faqs.length === 0) {
+      console.log("[SyncEmbed] Todos los FAQs ya tienen embeddings");
+      return { updated: 0, failed: 0 };
+    }
+
+    console.log(`[SyncEmbed] ${faqs.length} FAQs necesitan embeddings`);
 
     let updated = 0;
     let failed = 0;
 
     // Procesar en batches de 5 para no sobrecargar la API
     const batchSize = 5;
-    for (let i = 0; i < needsUpdate.length; i += batchSize) {
-      const batch = needsUpdate.slice(i, i + batchSize);
+    for (let i = 0; i < faqs.length; i += batchSize) {
+      const batch = faqs.slice(i, i + batchSize);
 
       // Preparar textos para embedding
       const texts = batch.map((faq) =>
@@ -488,11 +493,12 @@ export async function syncAllFAQEmbeddings(): Promise<{
       }
 
       // Pequeña pausa entre batches para evitar rate limiting
-      if (i + batchSize < needsUpdate.length) {
+      if (i + batchSize < faqs.length) {
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
 
+    console.log(`[SyncEmbed] Sincronización completada: ${updated} actualizados, ${failed} fallidos`);
     return { updated, failed };
   } catch (error) {
     console.error("Error en syncAllFAQEmbeddings:", error);

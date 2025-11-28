@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -46,6 +47,7 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,6 +58,14 @@ interface FAQ {
   keywords: string[];
   categoria: string;
   prioridad: number;
+  activo: boolean;
+}
+
+interface Contexto {
+  id: string;
+  titulo: string;
+  contenido: string;
+  tipo: string;
   activo: boolean;
 }
 
@@ -84,6 +94,15 @@ const categorias = [
   "ubicacion",
 ];
 
+const tiposContexto = [
+  { value: "info", label: "Información General" },
+  { value: "servicios", label: "Servicios" },
+  { value: "politicas", label: "Políticas" },
+  { value: "promociones", label: "Promociones" },
+  { value: "equipo", label: "Equipo Médico" },
+  { value: "otro", label: "Otro" },
+];
+
 export default function ChatbotFAQsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -92,6 +111,15 @@ export default function ChatbotFAQsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategoria, setFilterCategoria] = useState<string>("");
+
+  // Estados para Contextos
+  const [isLoadingContextos, setIsLoadingContextos] = useState(true);
+  const [isSavingContexto, setIsSavingContexto] = useState(false);
+  const [contextos, setContextos] = useState<Contexto[]>([]);
+  const [editingContexto, setEditingContexto] = useState<Contexto | null>(null);
+  const [contextoDialogOpen, setContextoDialogOpen] = useState(false);
+  const [searchTermContexto, setSearchTermContexto] = useState("");
+  const [filterTipo, setFilterTipo] = useState<string>("");
 
   // Estados para embeddings
   const [embeddingStats, setEmbeddingStats] = useState<EmbeddingStats | null>(
@@ -159,8 +187,87 @@ export default function ChatbotFAQsPage() {
 
   useEffect(() => {
     fetchFAQs();
+    fetchContextos();
     fetchEmbeddingStats();
   }, []);
+
+  // ============ CONTEXTOS ============
+  const fetchContextos = async () => {
+    setIsLoadingContextos(true);
+    try {
+      const res = await fetch("/api/chatbot/contexto?all=true");
+      if (res.ok) {
+        const data = await res.json();
+        setContextos(data);
+      }
+    } catch (error) {
+      console.error("Error cargando contextos:", error);
+      toast.error("Error al cargar los contextos");
+    } finally {
+      setIsLoadingContextos(false);
+    }
+  };
+
+  const saveContexto = async (contexto: Partial<Contexto>) => {
+    setIsSavingContexto(true);
+    try {
+      const res = await fetch("/api/chatbot/contexto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contexto),
+      });
+
+      if (res.ok) {
+        toast.success(contexto.id ? "Contexto actualizado" : "Contexto creado");
+        fetchContextos();
+        fetchEmbeddingStats();
+        setContextoDialogOpen(false);
+        setEditingContexto(null);
+      } else {
+        throw new Error("Error al guardar");
+      }
+    } catch (error) {
+      console.error("Error guardando contexto:", error);
+      toast.error("Error al guardar contexto");
+    } finally {
+      setIsSavingContexto(false);
+    }
+  };
+
+  const deleteContexto = async (id: string) => {
+    if (!confirm("¿Estás seguro de eliminar este contexto?")) return;
+
+    try {
+      const res = await fetch(`/api/chatbot/contexto?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("Contexto eliminado");
+        fetchContextos();
+        fetchEmbeddingStats();
+      }
+    } catch (error) {
+      console.error("Error eliminando:", error);
+      toast.error("Error al eliminar");
+    }
+  };
+
+  const toggleActivoContexto = async (contexto: Contexto) => {
+    await saveContexto({ ...contexto, activo: !contexto.activo });
+  };
+
+  // Filtrar Contextos
+  const filteredContextos = contextos.filter((ctx) => {
+    const matchesSearch =
+      searchTermContexto === "" ||
+      ctx.titulo.toLowerCase().includes(searchTermContexto.toLowerCase()) ||
+      ctx.contenido.toLowerCase().includes(searchTermContexto.toLowerCase());
+
+    const matchesTipo = filterTipo === "" || ctx.tipo === filterTipo;
+
+    return matchesSearch && matchesTipo;
+  });
 
   // Guardar FAQ
   const saveFAQ = async (faq: Partial<FAQ>) => {
@@ -442,27 +549,40 @@ export default function ChatbotFAQsPage() {
             <div className='text-2xl font-bold text-green-600'>
               {faqs.filter((f) => f.activo).length}
             </div>
-            <p className='text-xs text-muted-foreground'>Activas</p>
+            <p className='text-xs text-muted-foreground'>FAQs Activas</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className='pt-6'>
-            <div className='text-2xl font-bold text-gray-400'>
-              {faqs.filter((f) => !f.activo).length}
-            </div>
-            <p className='text-xs text-muted-foreground'>Inactivas</p>
+            <div className='text-2xl font-bold text-blue-600'>{contextos.length}</div>
+            <p className='text-xs text-muted-foreground'>Total Contextos</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className='pt-6'>
-            <div className='text-2xl font-bold text-blue-600'>
-              {new Set(faqs.map((f) => f.categoria)).size}
+            <div className='text-2xl font-bold text-green-600'>
+              {contextos.filter((c) => c.activo).length}
             </div>
-            <p className='text-xs text-muted-foreground'>Categorías</p>
+            <p className='text-xs text-muted-foreground'>Contextos Activos</p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Tabs para FAQs y Contextos */}
+      <Tabs defaultValue="faqs" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="faqs" className="flex items-center gap-2">
+            <HelpCircle className="h-4 w-4" />
+            FAQs ({faqs.length})
+          </TabsTrigger>
+          <TabsTrigger value="contextos" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Contextos ({contextos.length})
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ============ TAB FAQs ============ */}
+        <TabsContent value="faqs">
       {/* Filtros */}
       <Card>
         <CardHeader>
@@ -592,6 +712,208 @@ export default function ChatbotFAQsPage() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        {/* ============ TAB CONTEXTOS ============ */}
+        <TabsContent value="contextos">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Contextos Adicionales
+                  </CardTitle>
+                  <CardDescription>
+                    Información general que el chatbot puede usar para cualquier respuesta
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={fetchContextos}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Actualizar
+                  </Button>
+                  <Dialog open={contextoDialogOpen} onOpenChange={(open) => {
+                    setContextoDialogOpen(open);
+                    if (!open) setEditingContexto(null);
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => { setEditingContexto(null); setContextoDialogOpen(true); }}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nuevo Contexto
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <FileText className="h-5 w-5" />
+                          {editingContexto?.id ? "Editar Contexto" : "Nuevo Contexto"}
+                        </DialogTitle>
+                        <DialogDescription>
+                          Agrega información que el chatbot pueda usar para contextualizar sus respuestas
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          saveContexto({
+                            id: editingContexto?.id,
+                            titulo: formData.get("titulo") as string,
+                            contenido: formData.get("contenido") as string,
+                            tipo: formData.get("tipo") as string,
+                            activo: true,
+                          });
+                        }}
+                        className="space-y-4"
+                      >
+                        <div className="space-y-2">
+                          <Label htmlFor="titulo">Título</Label>
+                          <Input
+                            id="titulo"
+                            name="titulo"
+                            defaultValue={editingContexto?.titulo}
+                            required
+                            placeholder="Ej: Sobre nuestra clínica"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="tipo">Tipo de Contexto</Label>
+                          <select
+                            id="tipo"
+                            name="tipo"
+                            defaultValue={editingContexto?.tipo || "info"}
+                            className="w-full border rounded-md p-2"
+                          >
+                            {tiposContexto.map((tipo) => (
+                              <option key={tipo.value} value={tipo.value}>
+                                {tipo.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="contenido">Contenido</Label>
+                          <Textarea
+                            id="contenido"
+                            name="contenido"
+                            defaultValue={editingContexto?.contenido}
+                            required
+                            rows={8}
+                            placeholder="Escribe aquí toda la información relevante que el chatbot debe conocer..."
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Puedes escribir información extensa. El chatbot la usará para responder preguntas relacionadas.
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button type="submit" disabled={isSavingContexto}>
+                            {isSavingContexto && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            <Save className="h-4 w-4 mr-2" />
+                            Guardar
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Filtros Contextos */}
+              <div className="flex gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar en títulos o contenido..."
+                    value={searchTermContexto}
+                    onChange={(e) => setSearchTermContexto(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <select
+                  value={filterTipo}
+                  onChange={(e) => setFilterTipo(e.target.value)}
+                  className="border rounded-md px-3"
+                >
+                  <option value="">Todos los tipos</option>
+                  {tiposContexto.map((tipo) => (
+                    <option key={tipo.value} value={tipo.value}>
+                      {tipo.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {isLoadingContextos ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                </div>
+              ) : filteredContextos.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="font-medium">No hay contextos creados</p>
+                  <p className="text-sm mt-1">
+                    Los contextos permiten agregar información general como políticas, 
+                    descripciones de servicios, o datos del equipo médico.
+                  </p>
+                  <Button 
+                    className="mt-4" 
+                    onClick={() => { setEditingContexto(null); setContextoDialogOpen(true); }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear primer contexto
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredContextos.map((ctx) => (
+                    <Card key={ctx.id} className={!ctx.activo ? "opacity-60" : ""}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={ctx.activo}
+                              onCheckedChange={() => toggleActivoContexto(ctx)}
+                            />
+                            <div>
+                              <CardTitle className="text-base">{ctx.titulo}</CardTitle>
+                              <Badge variant="outline" className="mt-1">
+                                {tiposContexto.find(t => t.value === ctx.tipo)?.label || ctx.tipo}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => { setEditingContexto(ctx); setContextoDialogOpen(true); }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteContexto(ctx.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                          {ctx.contenido}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

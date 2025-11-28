@@ -129,11 +129,14 @@ export async function GET(req: Request) {
 
     if (testError) {
       console.error("Error accediendo a chatbot_faqs:", testError);
-      return NextResponse.json({
-        error: "Error accediendo a la base de datos",
-        details: testError.message,
-        migrationNeeded: true,
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: "Error accediendo a la base de datos",
+          details: testError.message,
+          migrationNeeded: true,
+        },
+        { status: 500 }
+      );
     }
 
     // Contar FAQs - intentar obtener embedding info
@@ -145,7 +148,7 @@ export async function GET(req: Request) {
     // Si hay error porque las columnas no existen
     if (faqError) {
       console.error("Error obteniendo FAQs con embeddings:", faqError);
-      
+
       // Intentar sin las columnas de embedding
       const { data: faqsBasic } = await supabase
         .from("chatbot_faqs")
@@ -165,7 +168,8 @@ export async function GET(req: Request) {
         },
         allSynced: false,
         migrationNeeded: true,
-        migrationError: "Las columnas 'embedding' y 'embedding_updated_at' no existen. Ejecuta la migración SQL primero.",
+        migrationError:
+          "Las columnas 'embedding' y 'embedding_updated_at' no existen. Ejecuta la migración SQL primero.",
       });
     }
 
@@ -177,21 +181,15 @@ export async function GET(req: Request) {
     const faqStats = {
       total: faqs?.length || 0,
       withEmbedding: faqs?.filter((f) => f.embedding).length || 0,
-      needsUpdate:
-        faqs?.filter((f) => {
-          if (!f.embedding_updated_at) return true;
-          return new Date(f.updated_at) > new Date(f.embedding_updated_at);
-        }).length || 0,
+      // Solo necesita update si no tiene embedding
+      needsUpdate: faqs?.filter((f) => !f.embedding).length || 0,
     };
 
     const contextoStats = {
       total: contextos?.length || 0,
       withEmbedding: contextos?.filter((c) => c.embedding).length || 0,
-      needsUpdate:
-        contextos?.filter((c) => {
-          if (!c.embedding_updated_at) return true;
-          return new Date(c.updated_at) > new Date(c.embedding_updated_at);
-        }).length || 0,
+      // Solo necesita update si no tiene embedding
+      needsUpdate: contextos?.filter((c) => !c.embedding).length || 0,
     };
 
     const allSynced =
@@ -238,7 +236,7 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error("Error obteniendo estado de embeddings:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Error interno del servidor",
         details: error instanceof Error ? error.message : "Unknown error",
       },
