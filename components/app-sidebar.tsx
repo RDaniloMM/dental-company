@@ -12,6 +12,7 @@ import {
   BarChart3,
   FolderOpen,
   UserCog,
+  HelpCircle,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -62,10 +63,19 @@ const navBase = [
     url: "/admin/reportes",
     icon: BarChart3,
   },
+];
+
+// Navegación al final (Mi Cuenta y Ayuda)
+const navFooter = [
   {
     title: "Mi Cuenta",
     url: "/admin/ajustes",
     icon: Settings,
+  },
+  {
+    title: "Ayuda",
+    url: "/admin/ayuda",
+    icon: HelpCircle,
   },
 ];
 
@@ -137,7 +147,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   // Construir navegación basada en el rol
   const navMain = React.useMemo(() => {
     const isAdmin = userRole === "Admin" || userRole === "Administrador";
-    return isAdmin ? [...navBase, ...navAdmin] : navBase;
+    const adminItems = isAdmin ? navAdmin : [];
+    return [...navBase, ...adminItems, ...navFooter];
   }, [userRole]);
 
   if (!mounted) {
