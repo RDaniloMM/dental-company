@@ -13,13 +13,13 @@ export default function CalendarioHome() {
   };
 
   return (
-    <div className='flex flex-col h-full'>
+    <div className='flex flex-col h-full min-h-[inherit]'>
       {/* Sección calendario */}
-      <section className='flex-1 p-0 sm:p-4 flex flex-col space-y-2 sm:space-y-4 bg-card text-card-foreground border-0 sm:border sm:border-border rounded-none sm:rounded-md min-h-0'>
+      <section className='flex-1 p-0 sm:p-4 flex flex-col space-y-2 sm:space-y-4 bg-card text-card-foreground border-0 sm:border sm:border-border rounded-none sm:rounded-md'>
         <div className='px-2 sm:px-0'>
           <CalendarAgregar onCitaCreada={handleCitaCreada} />
         </div>
-        <div className='flex-1 min-h-0'>
+        <div className='flex-1 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]'>
           <VistaCalendario calendarKey={calendarKey} />
         </div>
       </section>

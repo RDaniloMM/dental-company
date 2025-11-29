@@ -5,8 +5,8 @@ import { KPICharts } from "@/components/kpi/KPICharts";
 export default async function HomePage() {
   return (
     <>
-      <main className='h-full'>
-        <div className='flex flex-col gap-6 h-full'>
+      <main className='min-h-full'>
+        <div className='flex flex-col gap-6'>
           {/* KPI Cards */}
           <KPICards />
 
@@ -14,7 +14,7 @@ export default async function HomePage() {
           <KPICharts />
 
           {/* Calendario */}
-          <div className='h-auto rounded-lg'>
+          <div className='min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] rounded-lg'>
             <CalendarHome />
           </div>
         </div>
