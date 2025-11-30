@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface CondicionMenuProps {
   toothId: string;
@@ -23,6 +23,7 @@ interface CondicionMenuProps {
   ) => void;
   setBorderColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   onClose: () => void;
+  isChild: boolean;
 }
 
 /* ============================================================
@@ -135,6 +136,8 @@ const dientesSuperiores = [
   "26",
   "27",
   "28",
+  "55", "54", "53", "52", "51",
+  "61", "62", "63", "64", "65",
 ];
 const dientesInferiores = [
   "48",
@@ -153,6 +156,8 @@ const dientesInferiores = [
   "36",
   "37",
   "38",
+  "85", "84", "83", "82", "81",
+  "71", "72", "73", "74", "75",
 ];
 
 /* ============================================================
@@ -243,6 +248,7 @@ export default function CondicionMenu({
   updateTooth,
   setBorderColors,
   onClose,
+  isChild,
 }: CondicionMenuProps) {
   const [showRangeModal, setShowRangeModal] = useState(false);
   const [rangeEnd, setRangeEnd] = useState<string>("");
@@ -250,10 +256,13 @@ export default function CondicionMenu({
   const [showFusionDirection, setShowFusionDirection] = useState(false);
   const [, setShowEspigaMuñonDirection] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [, setShowDrawingModal] = useState(false);
-  //const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  //const [isDrawing, setIsDrawing] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     setShowRangeModal(false);
@@ -263,9 +272,21 @@ export default function CondicionMenu({
   }, [toothId, setSelectedColor, setSelectedCondition]);
 
   const esDienteSuperior = dientesSuperiores.includes(toothId);
+
+  // Filtrar dientes según si es niño o adulto
+  const filteredSuperiores = dientesSuperiores.filter(id =>
+    isChild ? ["51", "52", "53", "54", "55", "61", "62", "63", "64", "65"].includes(id)
+      : ["11", "12", "13", "14", "15", "16", "17", "18", "21", "22", "23", "24", "25", "26", "27", "28"].includes(id)
+  );
+
+  const filteredInferiores = dientesInferiores.filter(id =>
+    isChild ? ["71", "72", "73", "74", "75", "81", "82", "83", "84", "85"].includes(id)
+      : ["31", "32", "33", "34", "35", "36", "37", "38", "41", "42", "43", "44", "45", "46", "47", "48"].includes(id)
+  );
+
   const dientesParaMostrar = esDienteSuperior
-    ? dientesSuperiores
-    : dientesInferiores;
+    ? filteredSuperiores
+    : filteredInferiores;
 
   const saveGeneralCondition = (
     condicion: string,
@@ -348,18 +369,18 @@ export default function CondicionMenu({
     const inicioIcon = isRemovible
       ? `aparato_remo_inicio_${color}`
       : isProtesisParcial
-      ? `pdpr_inicio_${color}`
-      : `aparato_inicio_${color}`;
+        ? `pdpr_inicio_${color}`
+        : `aparato_inicio_${color}`;
     const finIcon = isRemovible
       ? `aparato_remo_fin_${color}`
       : isProtesisParcial
-      ? `pdpr_fin_${color}`
-      : `aparato_fin_${color}`;
+        ? `pdpr_fin_${color}`
+        : `aparato_fin_${color}`;
     const lineIcon = isRemovible
       ? `aor_${toothId}_${rangeEnd}_${color}`
       : isProtesisParcial
-      ? `pdpr_${toothId}_${rangeEnd}_${color}`
-      : `aof_${toothId}_${rangeEnd}_${color}`;
+        ? `pdpr_${toothId}_${rangeEnd}_${color}`
+        : `aof_${toothId}_${rangeEnd}_${color}`;
 
     updateTooth(toothId, {
       generales: [{ condicion: `linea ${selectedCondition}`, icon: lineIcon }],
@@ -470,6 +491,7 @@ export default function CondicionMenu({
       {/* Campo de búsqueda */}
       <div className='p-4 sticky top-0 bg-background z-10 border-b'>
         <input
+          ref={inputRef}
           type='text'
           placeholder='Buscar condición...'
           value={searchTerm}
@@ -483,16 +505,15 @@ export default function CondicionMenu({
         <ul className='flex-1 overflow-y-auto p-4 grid grid-cols-1 gap-2'>
           {condiciones
             .filter((c) =>
-              c.toLowerCase().startsWith(searchTerm.toLowerCase().trim())
+              c.toLowerCase().includes(searchTerm.toLowerCase().trim())
             )
             .map((c) => (
               <li
                 key={c}
-                className={`p-2 border rounded-lg text-sm min-h-[40px] flex items-center ${
-                  habilitadas.includes(c)
-                    ? "cursor-pointer hover:bg-primary/10"
-                    : "bg-muted text-muted-foreground cursor-not-allowed"
-                }`}
+                className={`p-2 border rounded-lg text-sm min-h-[40px] flex items-center ${habilitadas.includes(c)
+                  ? "cursor-pointer hover:bg-primary/10"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
                 onClick={() => {
                   if (!habilitadas.includes(c)) return;
 
@@ -744,18 +765,18 @@ export default function CondicionMenu({
             {selectedCondition === "Diastema"
               ? "Selecciona la dirección del diastema"
               : selectedCondition === "Fusion"
-              ? "Selecciona la dirección de la fusión"
-              : selectedCondition === "Giroversión"
-              ? "Selecciona la dirección de la giroversión"
-              : selectedCondition === "Transposicion dentaria"
-              ? "Selecciona la dirección de la transposición dentaria"
-              : selectedCondition === "Pieza dentaria supernumeraria"
-              ? "Selecciona la dirección de la pieza dentaria supernumeraria"
-              : selectedCondition === "Espiga - muñón"
-              ? "Selecciona la dirección de la espiga - muñón"
-              : selectedCondition === "Fractura dental"
-              ? "Selecciona la dirección de la fractura dental"
-              : `Elige un color para "${selectedCondition}"`}
+                ? "Selecciona la dirección de la fusión"
+                : selectedCondition === "Giroversión"
+                  ? "Selecciona la dirección de la giroversión"
+                  : selectedCondition === "Transposicion dentaria"
+                    ? "Selecciona la dirección de la transposición dentaria"
+                    : selectedCondition === "Pieza dentaria supernumeraria"
+                      ? "Selecciona la dirección de la pieza dentaria supernumeraria"
+                      : selectedCondition === "Espiga - muñón"
+                        ? "Selecciona la dirección de la espiga - muñón"
+                        : selectedCondition === "Fractura dental"
+                          ? "Selecciona la dirección de la fractura dental"
+                          : `Elige un color para "${selectedCondition}"`}
           </p>
 
           {selectedCondition === "Diastema" ? (
@@ -878,8 +899,8 @@ export default function CondicionMenu({
                     {dir === "izq"
                       ? "Izquierda"
                       : dir === "cen"
-                      ? "Centro"
-                      : "Derecha"}
+                        ? "Centro"
+                        : "Derecha"}
                   </button>
                 ))}
               </div>
@@ -911,8 +932,8 @@ export default function CondicionMenu({
                     {dir === "izq"
                       ? "Izquierda"
                       : dir === "cen"
-                      ? "Centro"
-                      : "Derecha"}
+                        ? "Centro"
+                        : "Derecha"}
                   </button>
                 ))}
               </div>
@@ -1140,8 +1161,10 @@ export default function CondicionMenu({
           ) : selectedCondition === "Fractura dental" ? (
             <div className='flex gap-4'>
               <button
-                className='bg-red-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-red-500 text-white px-4 py-2 rounded-lg ${selectedColor === "red" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 onClick={() => setSelectedColor("red")}
+                disabled={selectedColor === "red"}
               >
                 Rojo
               </button>
@@ -1155,8 +1178,10 @@ export default function CondicionMenu({
           ) : selectedCondition === "Restauración temporal" ? (
             <div className='flex gap-4'>
               <button
-                className='bg-red-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-red-500 text-white px-4 py-2 rounded-lg ${selectedColor === "red" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 onClick={() => setSelectedColor("red")}
+                disabled={selectedColor === "red"}
               >
                 Rojo
               </button>
@@ -1170,7 +1195,9 @@ export default function CondicionMenu({
           ) : selectedCondition === "Sellantes" ? (
             <div className='flex gap-4'>
               <button
-                className='bg-red-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-red-500 text-white px-4 py-2 rounded-lg ${selectedColor === "red" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                disabled={selectedColor === "red"}
                 onClick={() => {
                   setSelectedColor("red");
                   if (toothId) {
@@ -1191,7 +1218,9 @@ export default function CondicionMenu({
               </button>
 
               <button
-                className='bg-blue-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${selectedColor === "blue" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                disabled={selectedColor === "blue"}
                 onClick={() => {
                   setSelectedColor("blue");
                   if (toothId) {
@@ -1214,7 +1243,9 @@ export default function CondicionMenu({
           ) : selectedCondition === "Superficie desgastada" ? (
             <div className='flex gap-4'>
               <button
-                className='bg-red-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-red-500 text-white px-4 py-2 rounded-lg ${selectedColor === "red" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                disabled={selectedColor === "red"}
                 onClick={() => {
                   updateTooth(toothId, {
                     generales: [
@@ -1236,14 +1267,18 @@ export default function CondicionMenu({
             // Botones color general
             <div className='flex gap-4'>
               <button
-                className='bg-red-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-red-500 text-white px-4 py-2 rounded-lg ${selectedColor === "red" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 onClick={() => handleSelect("red")}
+                disabled={selectedColor === "red"}
               >
                 Rojo
               </button>
               <button
-                className='bg-blue-500 text-white px-4 py-2 rounded-lg'
+                className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${selectedColor === "blue" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                 onClick={() => handleSelect("blue")}
+                disabled={selectedColor === "blue"}
               >
                 Azul
               </button>
@@ -1269,16 +1304,15 @@ export default function CondicionMenu({
               Diente actual:{" "}
               <span className='font-bold text-primary'>{toothId}</span>
             </p>
-            <div className='flex gap-2 overflow-x-auto py-1 px-1'>
+            <div className={`flex gap-2 overflow-x-auto py-1 px-1 ${isChild ? "justify-center" : ""}`}>
               {dientesParaMostrar.map((d) => (
                 <button
                   key={d}
                   onClick={() => setRangeEnd(d)}
-                  className={`px-3 py-2 border rounded transition-colors ${
-                    rangeEnd === d
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background"
-                  } ${d === toothId ? "ring-2 ring-blue-400 font-bold" : ""}`}
+                  className={`px-3 py-2 border rounded transition-colors ${rangeEnd === d
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background"
+                    } ${d === toothId ? "ring-2 ring-blue-400 font-bold" : ""}`}
                 >
                   {d}
                 </button>

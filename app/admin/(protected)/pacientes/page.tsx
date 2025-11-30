@@ -57,6 +57,8 @@ import {
   Settings2,
   Mail,
   MapPin,
+  Mars,
+  Venus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -511,7 +513,7 @@ export default function PacientesPage() {
                     {columnasVisibles.fecha_registro && (
                       <TableHead>Fecha Registro</TableHead>
                     )}
-                    <TableHead className='text-right'>Acciones</TableHead>
+                    <TableHead className='text-center'>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -592,12 +594,18 @@ export default function PacientesPage() {
                         {columnasVisibles.genero && (
                           <TableCell>
                             <Badge
-                              variant={
+                              className={
                                 paciente.genero === "M"
-                                  ? "default"
-                                  : "secondary"
+                                  ? "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200"
+                                  : "bg-pink-100 text-pink-800 hover:bg-pink-200 border-pink-200"
                               }
+                              variant="outline"
                             >
+                              {paciente.genero === "M" ? (
+                                <Mars className="w-3 h-3 mr-1" />
+                              ) : (
+                                <Venus className="w-3 h-3 mr-1" />
+                              )}
                               {paciente.genero === "M"
                                 ? "Masculino"
                                 : "Femenino"}
@@ -609,7 +617,7 @@ export default function PacientesPage() {
                             {new Date(paciente.created_at).toLocaleDateString()}
                           </TableCell>
                         )}
-                        <TableCell className='text-right'>
+                        <TableCell className='text-center'>
                           <Button
                             size='sm'
                             onClick={() => goToFicha(paciente.numero_historia)}

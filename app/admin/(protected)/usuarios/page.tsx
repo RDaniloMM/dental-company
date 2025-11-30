@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -355,7 +356,7 @@ export default function UsuariosPage() {
                 <TableHead>Teléfono</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Creado</TableHead>
-                <TableHead className='text-right'>Acciones</TableHead>
+                <TableHead className='text-center'>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -376,36 +377,38 @@ export default function UsuariosPage() {
                     </TableCell>
                     <TableCell>{user.email || "Sin email"}</TableCell>
                     <TableCell>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <Badge
+                        variant={user.rol === "Admin" ? "destructive" : "default"}
+                        className={
                           user.rol === "Admin"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
+                            ? "bg-red-100 text-red-800 hover:bg-red-200 border-red-200"
+                            : "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200"
+                        }
                       >
                         {user.rol}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       {user.especialidad || "Sin especialidad"}
                     </TableCell>
                     <TableCell>{user.telefono || "Sin teléfono"}</TableCell>
                     <TableCell>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <Badge
+                        variant={user.activo ? "default" : "destructive"}
+                        className={
                           user.activo
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                            ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200 border-red-200"
+                        }
                       >
                         {user.activo ? "Activo" : "Inactivo"}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className='text-right'>
-                      <div className='flex justify-end gap-2'>
+                    <TableCell className='text-center'>
+                      <div className='flex justify-center gap-2'>
                         <Button
                           variant='outline'
                           size='sm'

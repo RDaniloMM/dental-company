@@ -24,7 +24,7 @@ export default function HistoriaLayoutClient({
   }, []);
 
   return (
-    <div className='flex min-h-screen w-full bg-muted/40'>
+    <div className='flex min-h-[90vh] w-full bg-muted/40'>
       <FichaSidebar
         key={sidebarKey}
         patientId={patientId}
