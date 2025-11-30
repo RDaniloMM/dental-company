@@ -24,6 +24,20 @@ interface CondicionMenuProps {
   setBorderColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   onClose: () => void;
   isChild: boolean;
+  currentTooth?: {
+    zonas: { zona: string; condicion: string; color: string }[];
+    generales: {
+      condicion: string;
+      icon: string;
+      label?: string;
+      color?: string;
+    }[];
+  };
+  removeCondition: (
+    toothId: string,
+    type: "zona" | "general",
+    index: number
+  ) => void;
 }
 
 /* ============================================================
@@ -210,7 +224,49 @@ const formasPorCondicion: Record<
   "Restauración definitiva": "square",
   //"Superficie desgastada": "circle",
   "Tratamiento de conducto (TC) / Pulpectomía (PC)": "tratamiento_conducto",
+
+
   Impactación: "triangle",
+};
+
+const conditionNameMapping: Record<string, string> = {
+  clavija: "Pieza dentaria en clavija",
+  erupcion: "Pieza dentaria en erupción",
+  extruida: "Pieza dentaria extruida",
+  intruida: "Pieza dentaria intruida",
+  geminacion: "Geminación",
+  diastema: "Diastema",
+  fusion: "Fusion",
+  giro: "Giroversión",
+  transposicion: "Transposicion dentaria",
+  supernumeraria: "Pieza dentaria supernumeraria",
+  ausente: "Pieza dentaria ausente",
+  tratamiento_conducto: "Tratamiento de conducto (TC) / Pulpectomía (PC)",
+  etsi: "Edéntulo total superior/inferior",
+  PDCS: "Prótesis dental completa superior/inferior",
+};
+
+const getDisplayName = (condicion: string) => {
+  let cleanName = condicion;
+  // Normalizar prefijos y sufijos técnicos
+  if (cleanName.toLowerCase().startsWith("linea ")) {
+    cleanName = cleanName.substring(6);
+  } else if (cleanName.toLowerCase().startsWith("línea ")) {
+    cleanName = cleanName.substring(6);
+  }
+
+  if (cleanName.toLowerCase().endsWith(" - inicio")) {
+    cleanName = cleanName.substring(0, cleanName.length - 9);
+  } else if (cleanName.toLowerCase().endsWith(" - fin")) {
+    cleanName = cleanName.substring(0, cleanName.length - 6);
+  }
+
+  if (conditionNameMapping[cleanName]) return conditionNameMapping[cleanName];
+  // Check case-insensitive match in condiciones array
+  const match = condiciones.find(
+    (c) => c.toLowerCase() === cleanName.toLowerCase()
+  );
+  return match || cleanName;
 };
 
 /* ============================================================
@@ -249,6 +305,8 @@ export default function CondicionMenu({
   setBorderColors,
   onClose,
   isChild,
+  currentTooth,
+  removeCondition,
 }: CondicionMenuProps) {
   const [showRangeModal, setShowRangeModal] = useState(false);
   const [rangeEnd, setRangeEnd] = useState<string>("");
@@ -499,6 +557,92 @@ export default function CondicionMenu({
           className='w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none text-sm bg-background text-foreground'
         />
       </div>
+
+      {/* Sección de condiciones actuales */}
+      {currentTooth &&
+        (currentTooth.zonas.length > 0 || currentTooth.generales.length > 0) && (
+          <div className="p-4 border-b bg-muted/30">
+            <h3 className="text-sm font-medium mb-2 text-muted-foreground">
+              Condiciones actuales:
+            </h3>
+            <div className="flex flex-col gap-2">
+              {currentTooth.zonas.map((z, i) => (
+                <div
+                  key={`zona-${i}`}
+                  className="flex items-center justify-between bg-background p-2 rounded border text-sm"
+                >
+                  <span>
+                    Zona {z.zona}: {z.condicion}
+                  </span>
+                  <button
+                    onClick={() => removeCondition(toothId, "zona", i)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    title="Eliminar condición"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {currentTooth.generales.map((g, i) => {
+                const condLower = g.condicion.toLowerCase();
+
+                // Lógica de filtrado:
+                // Si existe "linea ...", esa es la principal. Ocultamos "- inicio" y "- fin" si "linea" está presente.
+                if (condLower.endsWith(" - inicio")) {
+                  const baseName = g.condicion.substring(0, g.condicion.length - 9);
+                  const hasLinea = currentTooth.generales.some(c => c.condicion.toLowerCase() === `linea ${baseName.toLowerCase()}`);
+                  if (hasLinea) return null;
+                }
+                if (condLower.endsWith(" - fin")) {
+                  const baseName = g.condicion.substring(0, g.condicion.length - 6);
+                  const hasLinea = currentTooth.generales.some(c => c.condicion.toLowerCase() === `linea ${baseName.toLowerCase()}`);
+                  if (hasLinea) return null;
+                }
+
+                const handleRemoveCondition = (index: number) => {
+                  if (condLower.startsWith("linea ")) {
+                    // Si borramos "linea", buscar y borrar también "- inicio"
+                    const baseName = g.condicion.substring(6); // quitar "linea "
+                    const inicioIndex = currentTooth.generales.findIndex(c => c.condicion.toLowerCase() === `${baseName.toLowerCase()} - inicio`);
+
+                    if (inicioIndex !== -1) {
+                      // Borrar el índice mayor primero para no afectar el otro
+                      const first = Math.max(index, inicioIndex);
+                      const second = Math.min(index, inicioIndex);
+                      removeCondition(toothId, "general", first);
+
+                      removeCondition(toothId, "general", second);
+                    } else {
+                      removeCondition(toothId, "general", index);
+                    }
+                  } else {
+                    removeCondition(toothId, "general", index);
+                  }
+                };
+
+                return (
+                  <div
+                    key={`gen-${i}`}
+                    className="flex items-center justify-between bg-background p-2 rounded border text-sm"
+                  >
+                    <span>
+                      {getDisplayName(g.condicion)}
+                      {g.label ? ` - ${g.label}` : ""}
+                    </span>
+                    <button
+                      onClick={() => handleRemoveCondition(i)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      title="Eliminar condición"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       <hr />
       {!selectedCondition ? (
         // ---------- Lista de condiciones ----------
@@ -1169,11 +1313,11 @@ export default function CondicionMenu({
                 Rojo
               </button>
               {/* <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                onClick={() => setSelectedColor("blue")}
-              >
-                Azul
-              </button> */}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                    onClick={() => setSelectedColor("blue")}
+                  >
+                    Azul
+                  </button> */}
             </div>
           ) : selectedCondition === "Restauración temporal" ? (
             <div className='flex gap-4'>
@@ -1186,11 +1330,11 @@ export default function CondicionMenu({
                 Rojo
               </button>
               {/* <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                onClick={() => setSelectedColor("blue")}
-              >
-                Azul
-              </button> */}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                    onClick={() => setSelectedColor("blue")}
+                  >
+                    Azul
+                  </button> */}
             </div>
           ) : selectedCondition === "Sellantes" ? (
             <div className='flex gap-4'>
@@ -1200,18 +1344,6 @@ export default function CondicionMenu({
                 disabled={selectedColor === "red"}
                 onClick={() => {
                   setSelectedColor("red");
-                  if (toothId) {
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "Sellantes",
-                          icon: `path_${toothId}`,
-                          color: "red",
-                          label: "S", // <-- aquí pones "S"
-                        },
-                      ],
-                    });
-                  }
                 }}
               >
                 Rojo
@@ -1223,18 +1355,6 @@ export default function CondicionMenu({
                 disabled={selectedColor === "blue"}
                 onClick={() => {
                   setSelectedColor("blue");
-                  if (toothId) {
-                    updateTooth(toothId, {
-                      generales: [
-                        {
-                          condicion: "Sellantes",
-                          icon: `path_${toothId}`,
-                          color: "blue",
-                          label: "S", // <-- también "S" aquí
-                        },
-                      ],
-                    });
-                  }
                 }}
               >
                 Azul
@@ -1402,9 +1522,10 @@ export default function CondicionMenu({
           </div>
         </div>
       )}
+
       {/* ============================================================
-     MODAL: Dirección de FUSIÓN
-============================================================ */}
+           MODAL: Dirección de FUSIÓN
+      ============================================================ */}
       {showFusionDirection && (
         <div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50'>
           <div className='bg-background rounded-xl p-6 shadow-lg w-80 flex flex-col items-center gap-4'>
