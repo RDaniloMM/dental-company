@@ -66,13 +66,14 @@ interface KPIData {
   tratamientos: {
     total: number;
     porEstado: {
-      pendiente: number;
-      enProgreso: number;
-      completado: number;
+      porCobrar: number;
+      parcial: number;
+      pagado: number;
       cancelado: number;
     };
     valorTotal: number;
-    valorCompletado: number;
+    valorCobrado: number;
+    valorPendiente: number;
     topProcedimientos: Array<{ nombre: string; count: number }>;
   };
 }
@@ -91,7 +92,7 @@ const CHART_LABELS: Record<keyof ChartVisibility, string> = {
   pacientes: "Pacientes Nuevos",
   citasMes: "Citas por Mes",
   citasEstado: "Estado de Citas",
-  tratamientosEstado: "Estado de Tratamientos",
+  tratamientosEstado: "Estado de Presupuestos",
   topProcedimientos: "Top Procedimientos",
 };
 
@@ -107,7 +108,7 @@ const DEFAULT_VISIBILITY: ChartVisibility = {
 const STORAGE_KEY = "kpi-charts-visibility";
 
 const COLORS_CITAS = ["#3b82f6", "#22c55e", "#10b981", "#ef4444", "#f59e0b"];
-const COLORS_TRATAMIENTOS = ["#f59e0b", "#3b82f6", "#22c55e", "#ef4444"];
+const COLORS_PRESUPUESTOS = ["#f59e0b", "#3b82f6", "#22c55e", "#ef4444"]; // Por Cobrar, Parcial, Pagado, Cancelado
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("es-PE", {
@@ -229,17 +230,11 @@ export function KPICharts() {
     { name: "No Asistió", value: data?.citas.porEstado.noAsistio || 0 },
   ].filter((item) => item.value > 0);
 
-  // Preparar datos para gráfico de pastel de tratamientos
+  // Preparar datos para gráfico de pastel de presupuestos/tratamientos
   const dataTratamientosEstado = [
-    { name: "Pendientes", value: data?.tratamientos.porEstado.pendiente || 0 },
-    {
-      name: "En Progreso",
-      value: data?.tratamientos.porEstado.enProgreso || 0,
-    },
-    {
-      name: "Completados",
-      value: data?.tratamientos.porEstado.completado || 0,
-    },
+    { name: "Por Cobrar", value: data?.tratamientos.porEstado.porCobrar || 0 },
+    { name: "Pago Parcial", value: data?.tratamientos.porEstado.parcial || 0 },
+    { name: "Pagado", value: data?.tratamientos.porEstado.pagado || 0 },
     { name: "Cancelados", value: data?.tratamientos.porEstado.cancelado || 0 },
   ].filter((item) => item.value > 0);
 
@@ -569,14 +564,16 @@ export function KPICharts() {
             </Card>
           )}
 
-          {/* Gráfico de Estado de Tratamientos */}
+          {/* Gráfico de Estado de Presupuestos */}
           {visibility.tratamientosEstado && (
             <Card>
               <CardHeader className='pb-2'>
                 <CardTitle className='text-base font-semibold'>
-                  Estado de Tratamientos
+                  Estado de Presupuestos
                 </CardTitle>
-                <CardDescription>Planes de procedimientos</CardDescription>
+                <CardDescription>
+                  Distribución por estado de pago
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className='h-[250px]'>
@@ -603,8 +600,8 @@ export function KPICharts() {
                             <Cell
                               key={`cell-${index}`}
                               fill={
-                                COLORS_TRATAMIENTOS[
-                                  index % COLORS_TRATAMIENTOS.length
+                                COLORS_PRESUPUESTOS[
+                                  index % COLORS_PRESUPUESTOS.length
                                 ]
                               }
                             />

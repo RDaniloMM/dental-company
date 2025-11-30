@@ -28,10 +28,16 @@ interface KPIData {
     crecimiento: number;
   };
   tratamientos: {
+    total: number;
     porEstado: {
-      pendiente: number;
-      enProgreso: number;
+      porCobrar: number;
+      parcial: number;
+      pagado: number;
+      cancelado: number;
     };
+    valorTotal: number;
+    valorCobrado: number;
+    valorPendiente: number;
   };
 }
 
@@ -166,9 +172,9 @@ export function KPICards() {
         </div>
         <div className='flex items-center text-xs text-muted-foreground mt-1'>
           <ClipboardList className='mr-1 h-3 w-3' />
-          {(data?.tratamientos.porEstado.pendiente || 0) +
-            (data?.tratamientos.porEstado.enProgreso || 0)}{" "}
-          tratamientos activos
+          {(data?.tratamientos.porEstado.porCobrar || 0) +
+            (data?.tratamientos.porEstado.parcial || 0)}{" "}
+          presupuestos pendientes
         </div>
       </div>
     </div>

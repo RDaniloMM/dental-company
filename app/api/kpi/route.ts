@@ -177,37 +177,42 @@ export async function GET() {
     const ingresosMesAnterior =
       pagosAnterior?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
 
-    // 10. Planes de tratamiento por estado
-    const { data: planesPorEstado } = await supabase
-      .from("planes_procedimiento")
-      .select("estado, costo_total");
+    // 10. Presupuestos/Tratamientos por estado (usando tabla presupuestos)
+    const { data: presupuestosPorEstado } = await supabase
+      .from("presupuestos")
+      .select("estado, costo_total, total_pagado, saldo_pendiente");
 
-    const estadosPlanes = {
-      pendiente: 0,
-      enProgreso: 0,
-      completado: 0,
-      cancelado: 0,
+    const estadosPresupuestos = {
+      porCobrar: 0, // Estado inicial - sin pagos
+      parcial: 0, // Con pagos parciales
+      pagado: 0, // Totalmente pagado
+      cancelado: 0, // Cancelado
     };
 
-    let valorTotalPlanes = 0;
-    let valorPlanesCompletados = 0;
+    let valorTotalPresupuestos = 0;
+    let valorCobrado = 0;
+    let valorPendiente = 0;
 
-    planesPorEstado?.forEach((plan) => {
-      valorTotalPlanes += Number(plan.costo_total) || 0;
-      switch (plan.estado) {
-        case "Pendiente":
-          estadosPlanes.pendiente++;
+    presupuestosPorEstado?.forEach((presupuesto) => {
+      const costoTotal = Number(presupuesto.costo_total) || 0;
+      const totalPagado = Number(presupuesto.total_pagado) || 0;
+
+      valorTotalPresupuestos += costoTotal;
+      valorCobrado += totalPagado;
+      valorPendiente += Number(presupuesto.saldo_pendiente) || 0;
+
+      switch (presupuesto.estado) {
+        case "Por Cobrar":
+          estadosPresupuestos.porCobrar++;
           break;
-        case "En Progreso":
-          estadosPlanes.enProgreso++;
-          valorPlanesCompletados += Number(plan.costo_total) || 0;
+        case "Parcial":
+          estadosPresupuestos.parcial++;
           break;
-        case "Completado":
-          estadosPlanes.completado++;
-          valorPlanesCompletados += Number(plan.costo_total) || 0;
+        case "Pagado":
+          estadosPresupuestos.pagado++;
           break;
         case "Cancelado":
-          estadosPlanes.cancelado++;
+          estadosPresupuestos.cancelado++;
           break;
       }
     });
@@ -326,10 +331,11 @@ export async function GET() {
         historico: ingresosPorMes,
       },
       tratamientos: {
-        total: planesPorEstado?.length || 0,
-        porEstado: estadosPlanes,
-        valorTotal: valorTotalPlanes,
-        valorCompletado: valorPlanesCompletados,
+        total: presupuestosPorEstado?.length || 0,
+        porEstado: estadosPresupuestos,
+        valorTotal: valorTotalPresupuestos,
+        valorCobrado: valorCobrado,
+        valorPendiente: valorPendiente,
         topProcedimientos,
       },
       personal: {
