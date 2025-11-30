@@ -320,7 +320,7 @@ export default function ReportesPage() {
         <CardContent>
           {/* Búsqueda */}
           <div className='flex gap-4 mb-6'>
-            <div className='relative flex-1'>
+            <div className='relative w-full max-w-sm'>
               <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
               <Input
                 placeholder='Buscar por nombre, DNI o número de historia...'
@@ -348,8 +348,8 @@ export default function ReportesPage() {
                     <TableHead>Paciente</TableHead>
                     <TableHead>DNI</TableHead>
                     <TableHead>Edad</TableHead>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead className='text-right'>Acciones</TableHead>
+                    <TableHead className='w-[180px]'>Contacto</TableHead>
+                    <TableHead className='text-center'>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -379,15 +379,16 @@ export default function ReportesPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className='text-right'>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={() => handleViewReporte(paciente)}
-                        >
-                          <Eye className='h-4 w-4 mr-2' />
-                          Ver Reportes
-                        </Button>
+                      <TableCell className='text-center'>
+                        <div className='flex justify-center'>
+                          <Button
+                            size='sm'
+                            onClick={() => handleViewReporte(paciente)}
+                          >
+                            <Eye className='h-4 w-4 mr-2' />
+                            Ver Reportes
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -514,7 +515,7 @@ export default function ReportesPage() {
                         <Badge
                           variant={
                             caso.estado === "Activo" ||
-                            caso.estado === "En Progreso"
+                              caso.estado === "En Progreso"
                               ? "default"
                               : "secondary"
                           }

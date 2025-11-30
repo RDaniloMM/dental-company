@@ -133,16 +133,31 @@ export default function CitasPage() {
   };
 
   const getEstadoBadge = (estado: string) => {
+    const styles: Record<string, string> = {
+      Programada: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      Confirmada: "bg-green-100 text-green-800 hover:bg-green-200 border-green-200",
+      Cancelada: "bg-red-100 text-red-800 hover:bg-red-200 border-red-200",
+      Completada: "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200",
+    };
+
     const variants: Record<
       string,
       "default" | "secondary" | "destructive" | "outline"
     > = {
       Programada: "secondary",
-      Confirmada: "default",
+      Confirmada: "outline", // Changed to outline to allow custom colors to show better or use default if preferred, but custom class overrides
       Cancelada: "destructive",
       Completada: "outline",
     };
-    return <Badge variant={variants[estado] || "secondary"}>{estado}</Badge>;
+
+    return (
+      <Badge
+        variant="outline"
+        className={`${styles[estado] || ""} border-0`}
+      >
+        {estado}
+      </Badge>
+    );
   };
 
   // Filtrar citas

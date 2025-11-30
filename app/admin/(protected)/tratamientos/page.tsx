@@ -843,9 +843,9 @@ export default function TratamientosPage() {
                           </TableHead>
                         )}
                         {columnasVisibles.estado && (
-                          <TableHead>Estado</TableHead>
+                          <TableHead className='text-center'>Estado</TableHead>
                         )}
-                        <TableHead className='text-right'>Acciones</TableHead>
+                        <TableHead className='text-center'>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -891,8 +891,8 @@ export default function TratamientosPage() {
                             </TableCell>
                           )}
                           {columnasVisibles.estado && (
-                            <TableCell>
-                              <div className='flex items-center gap-2'>
+                            <TableCell className='text-center'>
+                              <div className='flex items-center justify-center gap-2'>
                                 <Switch
                                   checked={proc.activo}
                                   onCheckedChange={() =>
@@ -905,8 +905,8 @@ export default function TratamientosPage() {
                               </div>
                             </TableCell>
                           )}
-                          <TableCell className='text-right'>
-                            <div className='flex justify-end gap-2'>
+                          <TableCell className='text-center'>
+                            <div className='flex justify-center gap-2'>
                               <Button
                                 variant='ghost'
                                 size='icon'
