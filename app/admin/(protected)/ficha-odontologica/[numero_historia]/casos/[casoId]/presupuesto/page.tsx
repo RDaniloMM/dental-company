@@ -56,7 +56,10 @@ interface Procedimiento {
   precios: {
     id: string;
     precio: number;
-    moneda: { id: string; codigo: string; simbolo: string };
+    moneda:
+      | { id: string; codigo: string; simbolo: string }
+      | { id: string; codigo: string; simbolo: string }[]
+      | null;
   }[];
 }
 
@@ -566,9 +569,10 @@ export default function PresupuestoPage() {
   const onSelectProcedimiento = (procId: string) => {
     const proc = procedimientos.find((p) => p.id === procId);
     if (proc) {
-      const precio = proc.precios?.find(
-        (p) => p.moneda.id === presupuesto?.moneda_id
-      );
+      const precio = proc.precios?.find((p) => {
+        const moneda = Array.isArray(p.moneda) ? p.moneda[0] : p.moneda;
+        return moneda?.id === presupuesto?.moneda_id;
+      });
       setItemForm({
         ...itemForm,
         procedimiento_id: procId,

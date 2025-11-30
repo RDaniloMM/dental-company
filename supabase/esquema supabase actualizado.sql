@@ -287,8 +287,13 @@ CREATE TABLE public.imagenes_pacientes (
   public_id text NOT NULL,
   fecha_subida timestamp with time zone NOT NULL DEFAULT now(),
   descripcion text,
+  caso_id uuid,
+  etapa text DEFAULT 'durante'::text CHECK (etapa = ANY (ARRAY['antes'::text, 'durante'::text, 'despues'::text, 'seguimiento'::text])),
+  fecha_captura date,
+  es_principal boolean DEFAULT false,
   CONSTRAINT imagenes_pacientes_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_paciente FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id)
+  CONSTRAINT fk_paciente FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
+  CONSTRAINT imagenes_pacientes_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id)
 );
 CREATE TABLE public.monedas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -342,6 +347,25 @@ CREATE TABLE public.pacientes (
   observaciones text,
   estado_civil character varying,
   CONSTRAINT pacientes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pagos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  presupuesto_id uuid NOT NULL,
+  paciente_id uuid NOT NULL,
+  monto numeric NOT NULL,
+  moneda_id uuid NOT NULL,
+  metodo_pago text NOT NULL DEFAULT 'efectivo'::text,
+  numero_comprobante text,
+  tipo_comprobante text DEFAULT 'boleta'::text,
+  notas text,
+  recibido_por uuid,
+  fecha_pago timestamp with time zone NOT NULL DEFAULT now(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pagos_pkey PRIMARY KEY (id),
+  CONSTRAINT pagos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
+  CONSTRAINT pagos_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id),
+  CONSTRAINT pagos_recibido_por_fkey FOREIGN KEY (recibido_por) REFERENCES public.personal(id),
+  CONSTRAINT pagos_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.presupuestos(id)
 );
 CREATE TABLE public.personal (
   id uuid NOT NULL,
@@ -415,6 +439,9 @@ CREATE TABLE public.presupuestos (
   fecha_creacion timestamp with time zone NOT NULL DEFAULT now(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   moneda_id uuid,
+  descuento_global numeric DEFAULT 0,
+  total_pagado numeric DEFAULT 0,
+  saldo_pendiente numeric DEFAULT (costo_total - COALESCE(total_pagado, (0)::numeric)),
   CONSTRAINT presupuestos_pkey PRIMARY KEY (id),
   CONSTRAINT presupuestos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
   CONSTRAINT presupuestos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id),
