@@ -138,6 +138,9 @@ export default function ChatbotFAQsPage() {
   });
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
+  // Estado para persistir el tab activo
+  const [activeTab, setActiveTab] = useState("config");
+
   // Cargar configuración del chatbot
   const fetchChatbotConfig = async () => {
     try {
@@ -484,7 +487,8 @@ export default function ChatbotFAQsPage() {
 
       {/* Tabs para FAQs, Contextos y Configuración */}
       <Tabs
-        defaultValue='config'
+        value={activeTab}
+        onValueChange={setActiveTab}
         className='space-y-4'
       >
         <TabsList>

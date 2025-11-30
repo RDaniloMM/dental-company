@@ -49,6 +49,7 @@ import {
   Upload,
   X,
   Bot,
+  Images,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -106,6 +107,17 @@ interface Miembro {
 
 interface TemaConfig {
   [key: string]: string;
+}
+
+interface ServicioImagen {
+  id: string;
+  servicio_id: string;
+  imagen_url: string;
+  public_id?: string;
+  descripcion?: string;
+  alt_text?: string;
+  orden: number;
+  visible: boolean;
 }
 
 const iconOptions = [
@@ -251,6 +263,18 @@ export default function CMSPage() {
   const [servicioDuracion, setServicioDuracion] = useState<string>("");
   const [servicioRecomendaciones, setServicioRecomendaciones] =
     useState<string>("");
+
+  // Estados para gestión de imágenes de servicios
+  const [imagenesDialogOpen, setImagenesDialogOpen] = useState(false);
+  const [servicioParaImagenes, setServicioParaImagenes] =
+    useState<Servicio | null>(null);
+  const [servicioImagenes, setServicioImagenes] = useState<ServicioImagen[]>(
+    []
+  );
+  const [isLoadingImagenes, setIsLoadingImagenes] = useState(false);
+  const [isUploadingServicioImage, setIsUploadingServicioImage] =
+    useState(false);
+  const [nuevaImagenDescripcion, setNuevaImagenDescripcion] = useState("");
 
   // Estados para configuración del chatbot (solo lectura para mostrar notas)
   const [chatbotConfig, setChatbotConfig] = useState<Record<string, string>>({
@@ -418,6 +442,108 @@ export default function CMSPage() {
     } catch (error) {
       console.error("Error restaurando:", error);
       toast.error("Error al restaurar");
+    }
+  };
+
+  // ============ GESTIÓN DE IMÁGENES DE SERVICIOS ============
+
+  // Cargar imágenes de un servicio
+  const fetchServicioImagenes = async (servicioId: string) => {
+    setIsLoadingImagenes(true);
+    try {
+      const res = await fetch(
+        `/api/cms/servicio-imagenes?servicioId=${servicioId}&all=true`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setServicioImagenes(data);
+      }
+    } catch (error) {
+      console.error("Error cargando imágenes:", error);
+      toast.error("Error al cargar imágenes");
+    } finally {
+      setIsLoadingImagenes(false);
+    }
+  };
+
+  // Abrir dialog de imágenes para un servicio
+  const openImagenesDialog = (servicio: Servicio) => {
+    setServicioParaImagenes(servicio);
+    setImagenesDialogOpen(true);
+    fetchServicioImagenes(servicio.id);
+  };
+
+  // Subir imagen de servicio
+  const uploadServicioImagen = async (file: File, descripcion: string) => {
+    if (!servicioParaImagenes) return;
+
+    setIsUploadingServicioImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("servicioId", servicioParaImagenes.id);
+      formData.append("descripcion", descripcion);
+      formData.append("altText", servicioParaImagenes.nombre);
+
+      const res = await fetch("/api/cms/servicio-imagenes", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        toast.success("Imagen subida correctamente");
+        fetchServicioImagenes(servicioParaImagenes.id);
+      } else {
+        const error = await res.json();
+        throw new Error(error.error || "Error al subir imagen");
+      }
+    } catch (error) {
+      console.error("Error subiendo imagen:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Error al subir imagen"
+      );
+    } finally {
+      setIsUploadingServicioImage(false);
+    }
+  };
+
+  // Eliminar imagen de servicio
+  const deleteServicioImagen = async (imagenId: string) => {
+    if (!confirm("¿Eliminar esta imagen?")) return;
+
+    try {
+      const res = await fetch(`/api/cms/servicio-imagenes?id=${imagenId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("Imagen eliminada");
+        if (servicioParaImagenes) {
+          fetchServicioImagenes(servicioParaImagenes.id);
+        }
+      }
+    } catch (error) {
+      console.error("Error eliminando imagen:", error);
+      toast.error("Error al eliminar imagen");
+    }
+  };
+
+  // Toggle visibilidad de imagen
+  const toggleImagenVisibilidad = async (imagen: ServicioImagen) => {
+    try {
+      const res = await fetch("/api/cms/servicio-imagenes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: imagen.id, visible: !imagen.visible }),
+      });
+
+      if (res.ok) {
+        if (servicioParaImagenes) {
+          fetchServicioImagenes(servicioParaImagenes.id);
+        }
+      }
+    } catch (error) {
+      console.error("Error actualizando imagen:", error);
     }
   };
 
@@ -962,6 +1088,14 @@ export default function CMSPage() {
                         <Button
                           variant='ghost'
                           size='sm'
+                          onClick={() => openImagenesDialog(servicio)}
+                          title='Gestionar imágenes'
+                        >
+                          <Images className='h-4 w-4 text-purple-500' />
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='sm'
                           onClick={() => {
                             setEditingServicio(servicio);
                             // Cargar datos detallados existentes
@@ -1475,6 +1609,141 @@ export default function CMSPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog para gestionar imágenes de servicio */}
+      <Dialog
+        open={imagenesDialogOpen}
+        onOpenChange={(open) => {
+          setImagenesDialogOpen(open);
+          if (!open) {
+            setServicioParaImagenes(null);
+            setServicioImagenes([]);
+            setNuevaImagenDescripcion("");
+          }
+        }}
+      >
+        <DialogContent className='max-w-3xl max-h-[80vh] overflow-y-auto'>
+          <DialogHeader>
+            <DialogTitle>
+              Imágenes de {servicioParaImagenes?.nombre || "Servicio"}
+            </DialogTitle>
+            <DialogDescription>
+              Gestiona las imágenes del carrusel para este servicio
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Subir nueva imagen */}
+          <div className='space-y-4 border-b pb-4'>
+            <Label className='text-base font-semibold'>
+              Agregar nueva imagen
+            </Label>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className='space-y-2'>
+                <Label>Imagen</Label>
+                <Input
+                  type='file'
+                  accept='image/*'
+                  disabled={isUploadingServicioImage}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      await uploadServicioImagen(file, nuevaImagenDescripcion);
+                      setNuevaImagenDescripcion("");
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </div>
+              <div className='space-y-2'>
+                <Label>Descripción (opcional)</Label>
+                <Input
+                  placeholder='Descripción de la imagen...'
+                  value={nuevaImagenDescripcion}
+                  onChange={(e) => setNuevaImagenDescripcion(e.target.value)}
+                  disabled={isUploadingServicioImage}
+                />
+              </div>
+            </div>
+            {isUploadingServicioImage && (
+              <p className='text-sm text-muted-foreground flex items-center gap-2'>
+                <Loader2 className='h-4 w-4 animate-spin' />
+                Subiendo imagen...
+              </p>
+            )}
+          </div>
+
+          {/* Lista de imágenes */}
+          <div className='space-y-4'>
+            <Label className='text-base font-semibold'>
+              Imágenes del carrusel ({servicioImagenes.length})
+            </Label>
+
+            {isLoadingImagenes ? (
+              <div className='flex items-center justify-center py-8'>
+                <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+              </div>
+            ) : servicioImagenes.length === 0 ? (
+              <div className='text-center py-8 text-muted-foreground'>
+                No hay imágenes. Agrega la primera imagen arriba.
+              </div>
+            ) : (
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                {servicioImagenes.map((imagen, index) => (
+                  <div
+                    key={imagen.id}
+                    className={`relative border rounded-lg overflow-hidden ${
+                      !imagen.visible ? "opacity-50" : ""
+                    }`}
+                  >
+                    <div className='aspect-video relative'>
+                      <Image
+                        src={imagen.imagen_url}
+                        alt={imagen.descripcion || `Imagen ${index + 1}`}
+                        fill
+                        className='object-cover'
+                      />
+                      <div className='absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs'>
+                        #{imagen.orden}
+                      </div>
+                    </div>
+                    <div className='p-3 space-y-2'>
+                      {imagen.descripcion && (
+                        <p className='text-sm text-muted-foreground truncate'>
+                          {imagen.descripcion}
+                        </p>
+                      )}
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-2'>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => toggleImagenVisibilidad(imagen)}
+                            title={imagen.visible ? "Ocultar" : "Mostrar"}
+                          >
+                            {imagen.visible ? (
+                              <Eye className='h-4 w-4 text-green-500' />
+                            ) : (
+                              <EyeOff className='h-4 w-4 text-gray-400' />
+                            )}
+                          </Button>
+                        </div>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => deleteServicioImagen(imagen.id)}
+                          title='Eliminar imagen'
+                        >
+                          <Trash2 className='h-4 w-4 text-red-500' />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

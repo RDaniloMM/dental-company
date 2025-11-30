@@ -18,12 +18,13 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Obtener parámetro casoId de la URL si existe
+    // Obtener parámetros de filtro
     const url = new URL(req.url);
     const casoId = url.searchParams.get("casoId");
+    const etapa = url.searchParams.get("etapa");
 
     let query = supabase
-      .from("imagenes_paciente")
+      .from("imagenes_pacientes")
       .select("*")
       .eq("paciente_id", pacienteId)
       .order("fecha_subida", { ascending: false });
@@ -31,6 +32,11 @@ export async function GET(
     // Filtrar por caso si se proporciona
     if (casoId) {
       query = query.eq("caso_id", casoId);
+    }
+
+    // Filtrar por etapa si se proporciona
+    if (etapa) {
+      query = query.eq("etapa", etapa);
     }
 
     const { data, error } = await query;

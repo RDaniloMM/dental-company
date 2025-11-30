@@ -21,7 +21,7 @@ export async function DELETE(
 
     // Obtener la imagen para conseguir el public_id
     const { data: imagen, error: fetchError } = await supabase
-      .from("imagenes_paciente")
+      .from("imagenes_pacientes")
       .select("public_id")
       .eq("id", id)
       .single();
@@ -43,7 +43,7 @@ export async function DELETE(
 
     // Eliminar de la base de datos
     const { error: deleteError } = await supabase
-      .from("imagenes_paciente")
+      .from("imagenes_pacientes")
       .delete()
       .eq("id", id);
 

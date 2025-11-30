@@ -21,6 +21,9 @@ export async function POST(req: Request) {
     const tipo = formData.get("tipo") as string;
     const descripcion = formData.get("descripcion") as string | null;
     const casoId = formData.get("caso_id") as string | null;
+    const etapa = formData.get("etapa") as string | null; // antes, durante, despues, seguimiento
+    const fechaCaptura = formData.get("fecha_captura") as string | null;
+    const esPrincipal = formData.get("es_principal") === "true";
 
     if (!file) {
       return NextResponse.json(
@@ -76,6 +79,9 @@ export async function POST(req: Request) {
       tipo: string;
       descripcion?: string;
       caso_id?: string;
+      etapa?: string;
+      fecha_captura?: string;
+      es_principal?: boolean;
     } = {
       paciente_id: pacienteId,
       public_id: result.public_id,
@@ -91,8 +97,20 @@ export async function POST(req: Request) {
       insertData.caso_id = casoId;
     }
 
+    if (etapa) {
+      insertData.etapa = etapa;
+    }
+
+    if (fechaCaptura) {
+      insertData.fecha_captura = fechaCaptura;
+    }
+
+    if (esPrincipal) {
+      insertData.es_principal = esPrincipal;
+    }
+
     const { data: imagen, error: dbError } = await supabase
-      .from("imagenes_paciente")
+      .from("imagenes_pacientes")
       .insert(insertData)
       .select()
       .single();

@@ -464,6 +464,11 @@ interface ServiceDetail {
   beneficios: string[];
   duracion?: string;
   recomendaciones?: string;
+  imagenes?: Array<{
+    id: string;
+    imagen_url: string;
+    descripcion?: string;
+  }>;
 }
 
 const serviciosDetallados: ServiceDetail[] = [
@@ -649,7 +654,7 @@ const serviciosDetallados: ServiceDetail[] = [
   },
 ];
 
-// Modal de Servicio
+// Modal de Servicio con Carrusel de Imágenes
 const ServicioModal = ({
   isOpen,
   onClose,
@@ -659,9 +664,14 @@ const ServicioModal = ({
   onClose: () => void;
   servicio: ServiceDetail | null;
 }) => {
+  const [emblaRef] = useEmblaCarousel({ loop: true }, [
+    Autoplay({ delay: 4000, stopOnInteraction: true }),
+  ]);
+
   if (!isOpen || !servicio) return null;
 
   const Icon = iconMap[servicio.icono] || Stethoscope;
+  const tieneImagenes = servicio.imagenes && servicio.imagenes.length > 0;
 
   return (
     <div
@@ -676,31 +686,89 @@ const ServicioModal = ({
         className='relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200'
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className='relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 p-8 rounded-t-3xl'>
-          <button
-            onClick={onClose}
-            className='absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors'
-          >
-            <X className='h-5 w-5 text-white' />
-          </button>
-          <div className='flex items-center gap-4'>
-            <div className='w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center'>
-              <Icon className='h-8 w-8 text-white' />
+        {/* Header con Carrusel o Gradiente */}
+        {tieneImagenes ? (
+          <div className='relative rounded-t-3xl overflow-hidden'>
+            <button
+              onClick={onClose}
+              className='absolute top-4 right-4 z-10 w-10 h-10 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center transition-colors'
+            >
+              <X className='h-5 w-5 text-white' />
+            </button>
+            <div
+              ref={emblaRef}
+              className='overflow-hidden'
+            >
+              <div className='flex'>
+                {servicio.imagenes!.map((img, index) => (
+                  <div
+                    key={img.id || index}
+                    className='flex-[0_0_100%] relative aspect-video'
+                  >
+                    <Image
+                      src={img.imagen_url}
+                      alt={
+                        img.descripcion ||
+                        `${servicio.nombre} - Imagen ${index + 1}`
+                      }
+                      fill
+                      className='object-cover'
+                    />
+                    {img.descripcion && (
+                      <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4'>
+                        <p className='text-white text-sm'>{img.descripcion}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div>
-              <h2 className='text-2xl font-bold text-white'>
-                {servicio.nombre}
-              </h2>
-              {servicio.duracion && (
-                <p className='text-blue-200 text-sm mt-1'>
-                  <Clock className='inline h-4 w-4 mr-1' />
-                  {servicio.duracion}
-                </p>
-              )}
+            {/* Info superpuesta */}
+            <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900/90 to-transparent p-6'>
+              <div className='flex items-center gap-4'>
+                <div className='w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center'>
+                  <Icon className='h-6 w-6 text-white' />
+                </div>
+                <div>
+                  <h2 className='text-xl font-bold text-white'>
+                    {servicio.nombre}
+                  </h2>
+                  {servicio.duracion && (
+                    <p className='text-blue-200 text-sm'>
+                      <Clock className='inline h-4 w-4 mr-1' />
+                      {servicio.duracion}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className='relative bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 p-8 rounded-t-3xl'>
+            <button
+              onClick={onClose}
+              className='absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors'
+            >
+              <X className='h-5 w-5 text-white' />
+            </button>
+            <div className='flex items-center gap-4'>
+              <div className='w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center'>
+                <Icon className='h-8 w-8 text-white' />
+              </div>
+              <div>
+                <h2 className='text-2xl font-bold text-white'>
+                  {servicio.nombre}
+                </h2>
+                {servicio.duracion && (
+                  <p className='text-blue-200 text-sm mt-1'>
+                    <Clock className='inline h-4 w-4 mr-1' />
+                    {servicio.duracion}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Contenido */}
         <div className='p-8 space-y-6'>
@@ -715,23 +783,25 @@ const ServicioModal = ({
           </div>
 
           {/* Beneficios */}
-          <div className='bg-blue-50 rounded-2xl p-6'>
-            <h3 className='text-lg font-bold text-gray-900 mb-4 flex items-center gap-2'>
-              <CheckCircle className='h-5 w-5 text-blue-600' />
-              Beneficios
-            </h3>
-            <ul className='space-y-3'>
-              {servicio.beneficios.map((beneficio, index) => (
-                <li
-                  key={index}
-                  className='flex items-start gap-3 text-gray-700'
-                >
-                  <span className='w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0' />
-                  {beneficio}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {servicio.beneficios && servicio.beneficios.length > 0 && (
+            <div className='bg-blue-50 rounded-2xl p-6'>
+              <h3 className='text-lg font-bold text-gray-900 mb-4 flex items-center gap-2'>
+                <CheckCircle className='h-5 w-5 text-blue-600' />
+                Beneficios
+              </h3>
+              <ul className='space-y-3'>
+                {servicio.beneficios.map((beneficio, index) => (
+                  <li
+                    key={index}
+                    className='flex items-start gap-3 text-gray-700'
+                  >
+                    <span className='w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0' />
+                    {beneficio}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Recomendaciones */}
           {servicio.recomendaciones && (
@@ -768,12 +838,47 @@ const ServiciosSection = ({
   const [selectedService, setSelectedService] = useState<ServiceDetail | null>(
     null
   );
+  const [loadingImages, setLoadingImages] = useState(false);
 
   // Usar servicios del CMS si existen, sino usar los hardcodeados como fallback
   const displayServices =
     servicios.length > 0
       ? servicios
       : serviciosDetallados.map((s, i) => ({ ...s, id: String(i), orden: i }));
+
+  // Función para cargar imágenes de un servicio
+  const loadServiceImages = async (
+    servicioId: string
+  ): Promise<
+    Array<{ id: string; imagen_url: string; descripcion?: string }>
+  > => {
+    try {
+      const res = await fetch(
+        `/api/cms/servicio-imagenes?servicioId=${servicioId}`
+      );
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (error) {
+      console.error("Error cargando imágenes del servicio:", error);
+    }
+    return [];
+  };
+
+  // Función para abrir el modal con imágenes
+  const openServiceModal = async (service: CMSData["servicios"][0]) => {
+    const serviceDetails = getServiceDetails(service);
+
+    // Si el servicio tiene ID (es del CMS), cargar sus imágenes
+    if (service.id && !service.id.match(/^\d+$/)) {
+      setLoadingImages(true);
+      const imagenes = await loadServiceImages(service.id);
+      serviceDetails.imagenes = imagenes;
+      setLoadingImages(false);
+    }
+
+    setSelectedService(serviceDetails);
+  };
 
   // Función para obtener los detalles del servicio (del CMS o hardcodeado)
   const getServiceDetails = (
@@ -842,11 +947,10 @@ const ServiciosSection = ({
         >
           {displayServices.map((service, index) => {
             const Icon = iconMap[service.icono] || Stethoscope;
-            const servicioDetallado = getServiceDetails(service);
             return (
               <div
                 key={service.id || index}
-                onClick={() => setSelectedService(servicioDetallado)}
+                onClick={() => openServiceModal(service)}
                 className='group bg-white rounded-xl p-3 sm:p-4 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-100 hover:-translate-y-0.5 cursor-pointer'
               >
                 <div className='w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-blue-600 transition-colors duration-300'>
@@ -870,6 +974,15 @@ const ServiciosSection = ({
         onClose={() => setSelectedService(null)}
         servicio={selectedService}
       />
+
+      {/* Loading overlay cuando carga imágenes */}
+      {loadingImages && (
+        <div className='fixed inset-0 z-[99] bg-black/20 flex items-center justify-center'>
+          <div className='bg-white rounded-xl p-4 shadow-xl'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600' />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
