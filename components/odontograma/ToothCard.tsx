@@ -23,6 +23,7 @@ interface Props {
   setSelectedTooth: (t: { id: string; isTop: boolean }) => void;
   onZoneSelect: (zone: string) => void;
   borderColor?: string;
+  placeholder?: boolean;
 }
 
 export default function ToothCard({
@@ -33,6 +34,7 @@ export default function ToothCard({
   setSelectedTooth,
   onZoneSelect,
   borderColor,
+  placeholder,
 }: Props) {
   const ToothComponent = ActionsTypeMap[getToothType(id)];
   const maxHeight = 60;
@@ -66,13 +68,12 @@ export default function ToothCard({
       {visibleLabels.map((g, idx) => (
         <span
           key={idx}
-          className={`${
-            g.color === "red"
-              ? "text-red-500"
-              : g.color === "blue"
+          className={`${g.color === "red"
+            ? "text-red-500"
+            : g.color === "blue"
               ? "text-blue-500"
               : "text-foreground"
-          }`}
+            }`}
           style={{ fontSize: "12px" }}
         >
           {g.label}
@@ -110,13 +111,12 @@ export default function ToothCard({
           {hiddenLabels.map((g, idx) => (
             <div
               key={idx}
-              className={`font-bold ${
-                g.color === "red"
-                  ? "text-red-500"
-                  : g.color === "blue"
+              className={`font-bold ${g.color === "red"
+                ? "text-red-500"
+                : g.color === "blue"
                   ? "text-blue-500"
                   : "text-foreground"
-              }`}
+                }`}
             >
               {g.label}
             </div>
@@ -144,6 +144,7 @@ export default function ToothCard({
       key={id}
       id={`tooth-${id}`}
       className='tooth-card'
+      onClick={() => setSelectedTooth({ id, isTop })}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -154,13 +155,14 @@ export default function ToothCard({
         cursor: "pointer",
         gap: "6px",
         position: "relative",
+        opacity: placeholder ? 0 : 1,
+        pointerEvents: placeholder ? "none" : "auto",
       }}
       whileHover={{
         borderColor: "hsl(var(--primary) / 0.5)",
         backgroundColor: "hsl(var(--primary) / 0.1)",
       }}
       transition={{ duration: 0.3 }}
-      onClick={() => setSelectedTooth({ id, isTop })}
     >
       {isTop ? (
         <>

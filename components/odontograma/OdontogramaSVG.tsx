@@ -45,12 +45,16 @@ interface Props {
   >;
   borderColors: Record<string, string>;
   setBorderColors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  isChild: boolean;
 }
 
 export default function OdontogramaSVG({
   teethList,
   odontograma,
   setOdontograma,
+  borderColors,
+  setBorderColors,
+  isChild,
 }: Props) {
   const [selectedTooth, setSelectedTooth] = useState<{
     id: string;
@@ -64,7 +68,6 @@ export default function OdontogramaSVG({
   );
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [zoneColors, setZoneColors] = useState<Record<string, string>>({});
-  const [borderColors, setBorderColors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const newZoneColors: Record<string, string> = {};
@@ -87,7 +90,7 @@ export default function OdontogramaSVG({
 
     setZoneColors(newZoneColors);
     setBorderColors(newBorderColors);
-  }, [odontograma]);
+  }, [odontograma, setBorderColors]);
 
   const updateTooth = (toothId: string, data: Partial<ToothData>) => {
     setOdontograma((prev) => ({
@@ -102,38 +105,67 @@ export default function OdontogramaSVG({
     }));
   };
 
-  const topTeeth = teethList.slice(0, 16);
-  const bottomTeeth = teethList.slice(16, 32);
+  const midPoint = Math.ceil(teethList.length / 2);
+  const topTeeth = teethList.slice(0, midPoint);
+  const bottomTeeth = teethList.slice(midPoint);
 
   return (
     <div className='relative flex flex-col items-center gap-5 p-4 odontograma-container'>
       <div className='flex gap-1'>
-        {topTeeth.map((id) => (
-          <ToothCard
-            key={id}
-            id={id}
-            isTop
-            odontograma={odontograma}
-            zoneColors={zoneColors}
-            setSelectedTooth={setSelectedTooth}
-            onZoneSelect={(zone) => setSelectedZone(zone)}
-            borderColor={"#ccc"}
-          />
-        ))}
+        {topTeeth.map((id, index) =>
+          id && id !== "-" ? (
+            <ToothCard
+              key={id}
+              id={id}
+              isTop
+              odontograma={odontograma}
+              zoneColors={zoneColors}
+              setSelectedTooth={setSelectedTooth}
+              onZoneSelect={(zone) => setSelectedZone(zone)}
+              borderColor={"#ccc"}
+            />
+          ) : (
+            <ToothCard
+              key={`empty-top-${index}`}
+              id="18" // Dummy ID for shape
+              isTop
+              odontograma={{}}
+              zoneColors={{}}
+              setSelectedTooth={() => { }}
+              onZoneSelect={() => { }}
+              borderColor="transparent"
+              placeholder
+            />
+          )
+        )}
       </div>
       <div className='flex gap-1'>
-        {bottomTeeth.map((id) => (
-          <ToothCard
-            key={id}
-            id={id}
-            isTop={false}
-            odontograma={odontograma}
-            zoneColors={zoneColors}
-            setSelectedTooth={setSelectedTooth}
-            onZoneSelect={(zone) => setSelectedZone(zone)}
-            borderColor={borderColors[id] || "#ccc"}
-          />
-        ))}
+        {bottomTeeth.map((id, index) =>
+          id && id !== "-" ? (
+            <ToothCard
+              key={id}
+              id={id}
+              isTop={false}
+              odontograma={odontograma}
+              zoneColors={zoneColors}
+              setSelectedTooth={setSelectedTooth}
+              onZoneSelect={(zone) => setSelectedZone(zone)}
+              borderColor={borderColors[id] || "#ccc"}
+            />
+          ) : (
+            <ToothCard
+              key={`empty-bottom-${index}`}
+              id="48" // Dummy ID for shape
+              isTop={false}
+              odontograma={{}}
+              zoneColors={{}}
+              setSelectedTooth={() => { }}
+              onZoneSelect={() => { }}
+              borderColor="transparent"
+              placeholder
+            />
+          )
+        )}
       </div>
 
       <svg className='absolute top-0 left-0 w-full h-full pointer-events-none'>
@@ -186,7 +218,7 @@ export default function OdontogramaSVG({
                     isTop={selectedTooth.isTop}
                     odontograma={odontograma}
                     zoneColors={zoneColors}
-                    setSelectedTooth={() => {}}
+                    setSelectedTooth={() => { }}
                     onZoneSelect={(zone) => setSelectedZone(zone)}
                     borderColor={borderColors[selectedTooth.id] || "#ccc"}
                   />
@@ -198,42 +230,42 @@ export default function OdontogramaSVG({
                     "Sellantes",
                     "Superficie desgastada",
                   ].includes(selectedCondition ?? "") && (
-                    <DrawingOverlay
-                      toothId={selectedTooth.id}
-                      drawColor={selectedColor || "blue"} // color que viene de CondicionMenu
-                      onSave={(newDraw) => {
-                        // Solo agregar path si realmente hay dibujo
-                        if (!newDraw.drawPath) return;
+                      <DrawingOverlay
+                        toothId={selectedTooth.id}
+                        drawColor={selectedColor || "blue"} // color que viene de CondicionMenu
+                        onSave={(newDraw) => {
+                          // Solo agregar path si realmente hay dibujo
+                          if (!newDraw.drawPath) return;
 
-                        setOdontograma((prev) => {
-                          const current = prev[selectedTooth.id] || {
-                            zonas: [],
-                            generales: [],
-                          };
+                          setOdontograma((prev) => {
+                            const current = prev[selectedTooth.id] || {
+                              zonas: [],
+                              generales: [],
+                            };
 
-                          return {
-                            ...prev,
-                            [selectedTooth.id]: {
-                              ...current,
-                              generales: [
-                                ...current.generales,
-                                {
-                                  condicion: selectedCondition!, // la condición seleccionada
-                                  icon: `path_${selectedTooth.id}`,
-                                  drawPath: newDraw.drawPath,
-                                  color: newDraw.color,
-                                },
-                              ],
-                            },
-                          };
-                        });
-                      }}
-                      onClose={() => {
-                        setSelectedTooth(null);
-                        setSelectedZone(null);
-                      }}
-                    />
-                  )}
+                            return {
+                              ...prev,
+                              [selectedTooth.id]: {
+                                ...current,
+                                generales: [
+                                  ...current.generales,
+                                  {
+                                    condicion: selectedCondition!, // la condición seleccionada
+                                    icon: `path_${selectedTooth.id}`,
+                                    drawPath: newDraw.drawPath,
+                                    color: newDraw.color,
+                                  },
+                                ],
+                              },
+                            };
+                          });
+                        }}
+                        onClose={() => {
+                          setSelectedTooth(null);
+                          setSelectedZone(null);
+                        }}
+                      />
+                    )}
                 </div>
 
                 <div className='flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-border'>
@@ -251,6 +283,7 @@ export default function OdontogramaSVG({
                       setSelectedTooth(null);
                       setSelectedZone(null);
                     }}
+                    isChild={isChild}
                   />
                 </div>
               </div>

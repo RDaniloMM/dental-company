@@ -26,6 +26,8 @@ const dientesSuperiores = [
   "26",
   "27",
   "28",
+  "51", "52", "53", "54", "55",
+  "61", "62", "63", "64", "65",
 ];
 
 const getOffsetY = (
@@ -75,9 +77,9 @@ export const renderAOF = (
         const y1 = Math.max(
           half,
           startBox.top +
-            startBox.height / 2 +
-            lineOffsetYStart -
-            containerEl.top
+          startBox.height / 2 +
+          lineOffsetYStart -
+          containerEl.top
         );
         const x2 = Math.min(
           containerEl.width - half,
@@ -222,6 +224,8 @@ export const renderAOR = (
           "36",
           "37",
           "38",
+          "85", "84", "83", "82", "81", "71", "72", "73", "74", "75",
+          "55", "54", "53", "52", "51", "61", "62", "63", "64", "65",
         ];
 
         const startIndex = teethOrder.indexOf(start);
@@ -480,28 +484,24 @@ export const renderDiastema = (
         const xCentro =
           direccion === "der"
             ? box.right -
-              containerEl.left +
-              separacion / 2 +
-              acercamiento +
-              offsetX
+            containerEl.left +
+            separacion / 2 +
+            acercamiento +
+            offsetX
             : box.left -
-              containerEl.left -
-              separacion / 2 -
-              acercamiento +
-              offsetX;
+            containerEl.left -
+            separacion / 2 -
+            acercamiento +
+            offsetX;
 
         const curvaSuperior = dientesSuperiores.includes(toothId) ? -1 : 1;
-        const pathDerecha = `M ${xCentro + separacion / 2} ${
-          yBase - altura
-        } Q ${xCentro + separacion / 2 - ancho} ${yBase} ${
-          xCentro + separacion / 2
-        } ${yBase + altura}`;
+        const pathDerecha = `M ${xCentro + separacion / 2} ${yBase - altura
+          } Q ${xCentro + separacion / 2 - ancho} ${yBase} ${xCentro + separacion / 2
+          } ${yBase + altura}`;
 
-        const pathIzquierda = `M ${xCentro - separacion / 2} ${
-          yBase - altura
-        } Q ${xCentro - separacion / 2 + ancho} ${yBase} ${
-          xCentro - separacion / 2
-        } ${yBase + altura}`;
+        const pathIzquierda = `M ${xCentro - separacion / 2} ${yBase - altura
+          } Q ${xCentro - separacion / 2 + ancho} ${yBase} ${xCentro - separacion / 2
+          } ${yBase + altura}`;
 
         return (
           <React.Fragment key={`diastema-group-${toothId}-${idx}`}>
@@ -627,7 +627,7 @@ export const renderGeminacion = (
 
         const box = toothEl.getBoundingClientRect();
 
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
         const yCentro =
           box.top +
           box.height / 2 -
@@ -680,7 +680,7 @@ export const renderGiroversion = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const xCentro = box.left + box.width / 2 - containerEl.left;
         let yCentro =
@@ -693,9 +693,8 @@ export const renderGiroversion = (
 
         const dirMultiplier = direccion === "der" ? 1 : -1;
 
-        const pathD = `M ${-box.width / 2} 0 Q 0 ${
-          -curveOffset * (esSuperior ? -1 : 1)
-        } ${box.width / 2} 0`;
+        const pathD = `M ${-box.width / 2} 0 Q 0 ${-curveOffset * (esSuperior ? -1 : 1)
+          } ${box.width / 2} 0`;
 
         return (
           <g
@@ -756,7 +755,7 @@ export const renderPiezaAusente = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const yCentro =
           box.top +
@@ -827,15 +826,15 @@ export const renderPiezaClavija = (
         const h = (Math.sqrt(3) / 2) * size;
         const pointsArray = esSuperior
           ? [
-              [0, -h / 2],
-              [-size / 2, h / 2],
-              [size / 2, h / 2],
-            ]
+            [0, -h / 2],
+            [-size / 2, h / 2],
+            [size / 2, h / 2],
+          ]
           : [
-              [0, h / 2],
-              [-size / 2, -h / 2],
-              [size / 2, -h / 2],
-            ];
+            [0, h / 2],
+            [-size / 2, -h / 2],
+            [size / 2, -h / 2],
+          ];
 
         const pointsStr = pointsArray.map(([x, y]) => `${x},${y}`).join(" ");
 
@@ -896,7 +895,7 @@ export const renderEspigaMunon = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         // 🔸 Centro del cuadrado
         const xCentro = box.left - containerEl.left + box.width / 2 + offsetX;
@@ -1015,7 +1014,7 @@ export const renderTratamientoConducto = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const xCentro = box.left - containerEl.left + box.width / 2 + offsetX;
         const yInicio =
@@ -1313,7 +1312,7 @@ export const renderSupernumeraria = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         let xCentro = box.left + box.width / 2 - containerEl.left;
         const yCentro =
@@ -1383,7 +1382,7 @@ export const renderTransposicion = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const yCentro =
           box.top +
@@ -1395,14 +1394,12 @@ export const renderTransposicion = (
         const curveDir = esSuperior ? -1 : 1;
         const isLeft = direccion === "izq";
 
-        const pathD1 = `M 0 0 Q ${ancho / 2} ${
-          curveOffset * curveDir
-        } ${ancho} 0`;
+        const pathD1 = `M 0 0 Q ${ancho / 2} ${curveOffset * curveDir
+          } ${ancho} 0`;
         const xFirst = xInicio + (isLeft ? -offsetFirst : offsetFirst);
 
-        const pathD2 = `M 0 0 Q ${ancho / 2} ${
-          curveOffset * curveDir
-        } ${ancho} 0`;
+        const pathD2 = `M 0 0 Q ${ancho / 2} ${curveOffset * curveDir
+          } ${ancho} 0`;
         const xSecondBase = isLeft
           ? xInicio - ancho - spacing
           : xInicio + ancho + spacing;
@@ -1525,7 +1522,7 @@ export const renderProtesisParcialFija = (
         const x2 = endBox.left + endBox.width / 2 - containerEl.left;
         const y2 =
           endBox.top + endBox.height / 2 + lineOffsetYEnd - containerEl.top;
-        const esDienteSuperior = parseInt(start) < 30;
+        const esDienteSuperior = dientesSuperiores.includes(start);
         return (
           <g key={`ppf-${start}-${end}-${idx}`}>
             <line

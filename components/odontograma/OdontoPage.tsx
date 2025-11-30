@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { Save, FilePlus } from "lucide-react";
 import VersionSelect from "./VersionSelect";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,40 +32,21 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
   const [versionSeleccionada, setVersionSeleccionada] = useState<number | null>(
     null
   );
+  const [fechaRegistro, setFechaRegistro] = useState<string | null>(null);
+  const [, setActiveTab] = useState<"adulto" | "nino">("adulto");
+  const [especificaciones, setEspecificaciones] = useState("");
+  const [observaciones, setObservaciones] = useState("");
 
-  const teethList = [
-    "18",
-    "17",
-    "16",
-    "15",
-    "14",
-    "13",
-    "12",
-    "11",
-    "21",
-    "22",
-    "23",
-    "24",
-    "25",
-    "26",
-    "27",
-    "28",
-    "48",
-    "47",
-    "46",
-    "45",
-    "44",
-    "43",
-    "42",
-    "41",
-    "31",
-    "32",
-    "33",
-    "34",
-    "35",
-    "36",
-    "37",
-    "38",
+  const adultTeeth = [
+    "18", "17", "16", "15", "14", "13", "12", "11",
+    "21", "22", "23", "24", "25", "26", "27", "28",
+    "48", "47", "46", "45", "44", "43", "42", "41",
+    "31", "32", "33", "34", "35", "36", "37", "38"
+  ];
+
+  const childTeeth = [
+    "-", "-", "-", "55", "54", "53", "52", "51", "61", "62", "63", "64", "65", "-", "-", "-",
+    "-", "-", "-", "85", "84", "83", "82", "81", "71", "72", "73", "74", "75", "-", "-", "-"
   ];
 
   // -------- Cargar versiones ----------
@@ -106,10 +88,14 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
         console.warn("No hay datos para la versión seleccionada");
         setOdontograma({});
         setBorderColors({});
+        setFechaRegistro(null);
       } else if (data) {
         const json = data.odontograma_data as Record<string, Diente>;
         setOdontograma(json);
         reconstruirBorderColors(json);
+        setFechaRegistro(data.fecha_registro || data.created_at || null);
+        setEspecificaciones(data.especificaciones || "");
+        setObservaciones(data.observaciones || "");
       }
       setLoading(false);
     };
@@ -151,6 +137,8 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
         paciente_id: patientId,
         odontograma_data: odontograma,
         version: nuevaVersion,
+        especificaciones: especificaciones,
+        observaciones: observaciones,
       },
     ]);
 
@@ -170,19 +158,45 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     const nuevaVersion = versiones.length ? Math.max(...versiones) + 1 : 1;
     setOdontograma({});
     setBorderColors({});
+    setEspecificaciones("");
+    setObservaciones("");
     setVersionSeleccionada(nuevaVersion);
+    setFechaRegistro(null);
   };
 
   return (
     <div>
-      <h1 className="text-xl font-bold">Odontograma Digital</h1>
+      <h1 className="text-xl font-bold mb-6">Odontograma Digital</h1>
 
-      <div className="flex gap-4 flex-wrap items-center">
-        <VersionSelect
-          versiones={versiones}
-          selectedVersion={versionSeleccionada}
-          onSelectVersion={setVersionSeleccionada}
-        />
+      <div className="flex gap-4 flex-wrap items-center mb-6">
+        <div className="flex flex-col">
+          <label className="text-xs text-muted-foreground">Versión</label>
+          <VersionSelect
+            versiones={versiones}
+            selectedVersion={versionSeleccionada}
+            onSelectVersion={setVersionSeleccionada}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-xs text-muted-foreground">Fecha Registro</label>
+          <input
+            type="text"
+            value={
+              fechaRegistro
+                ? new Date(fechaRegistro).toLocaleString("es-PE", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                : "-"
+            }
+            readOnly
+            className="border rounded px-2 py-1 text-sm bg-muted w-52"
+          />
+        </div>
 
         <button
           onClick={guardarOdontograma}
@@ -201,13 +215,53 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
         </button>
       </div>
 
-      <OdontogramaSVG
-        teethList={teethList}
-        odontograma={odontograma}
-        setOdontograma={setOdontograma}
-        borderColors={borderColors}
-        setBorderColors={setBorderColors}
-      />
+      <Tabs defaultValue="adulto" className="w-full" onValueChange={(val) => setActiveTab(val as "adulto" | "nino")}>
+        <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto mb-4">
+          <TabsTrigger value="adulto">Adulto</TabsTrigger>
+          <TabsTrigger value="nino">Niño</TabsTrigger>
+        </TabsList>
+        <TabsContent value="adulto">
+          <OdontogramaSVG
+            teethList={adultTeeth}
+            odontograma={odontograma}
+            setOdontograma={setOdontograma}
+            borderColors={borderColors}
+            setBorderColors={setBorderColors}
+            isChild={false}
+          />
+        </TabsContent>
+        <TabsContent value="nino">
+          <OdontogramaSVG
+            teethList={childTeeth}
+            odontograma={odontograma}
+            setOdontograma={setOdontograma}
+            borderColors={borderColors}
+            setBorderColors={setBorderColors}
+            isChild={true}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Especificaciones</label>
+          <textarea
+            className="border rounded-lg p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-primary focus:outline-none bg-background"
+            placeholder="Escribe aquí las especificaciones..."
+            value={especificaciones}
+            onChange={(e) => setEspecificaciones(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Observaciones</label>
+          <textarea
+            className="border rounded-lg p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-primary focus:outline-none bg-background"
+            placeholder="Escribe aquí las observaciones..."
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
