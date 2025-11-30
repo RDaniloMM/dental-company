@@ -397,7 +397,8 @@ export default function ImagenesPacientePage() {
             <p className='text-muted-foreground text-center'>
               No hay imágenes registradas para este paciente.
               <br />
-              Usa el botón &quot;Nueva Imagen&quot; para subir radiografías, fotos o documentos.
+              Usa el botón &quot;Nueva Imagen&quot; para subir radiografías,
+              fotos o documentos.
             </p>
           </CardContent>
         </Card>

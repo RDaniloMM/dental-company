@@ -267,7 +267,8 @@ export default function ImagenesCasoPage() {
             <p className='text-muted-foreground text-center'>
               No hay imágenes para este caso.
               <br />
-              Usa el botón &quot;Nueva Imagen&quot; para comenzar a documentar el tratamiento.
+              Usa el botón &quot;Nueva Imagen&quot; para comenzar a documentar
+              el tratamiento.
             </p>
           </CardContent>
         </Card>
