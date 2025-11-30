@@ -105,6 +105,33 @@ export default function OdontogramaSVG({
     }));
   };
 
+  const removeCondition = (
+    toothId: string,
+    type: "zona" | "general",
+    index: number
+  ) => {
+    setOdontograma((prev) => {
+      const tooth = prev[toothId];
+      if (!tooth) return prev;
+
+      if (type === "zona") {
+        const newZonas = [...tooth.zonas];
+        newZonas.splice(index, 1);
+        return {
+          ...prev,
+          [toothId]: { ...tooth, zonas: newZonas },
+        };
+      } else {
+        const newGenerales = [...tooth.generales];
+        newGenerales.splice(index, 1);
+        return {
+          ...prev,
+          [toothId]: { ...tooth, generales: newGenerales },
+        };
+      }
+    });
+  };
+
   const midPoint = Math.ceil(teethList.length / 2);
   const topTeeth = teethList.slice(0, midPoint);
   const bottomTeeth = teethList.slice(midPoint);
@@ -254,6 +281,7 @@ export default function OdontogramaSVG({
                                     icon: `path_${selectedTooth.id}`,
                                     drawPath: newDraw.drawPath,
                                     color: newDraw.color,
+                                    label: selectedCondition === "Sellantes" ? "S" : undefined,
                                   },
                                 ],
                               },
@@ -284,6 +312,8 @@ export default function OdontogramaSVG({
                       setSelectedZone(null);
                     }}
                     isChild={isChild}
+                    currentTooth={odontograma[selectedTooth.id]}
+                    removeCondition={removeCondition}
                   />
                 </div>
               </div>

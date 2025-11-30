@@ -126,7 +126,12 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
   // -------- Guardar nueva versión --------
   const guardarOdontograma = async () => {
     if (Object.keys(odontograma).length === 0) {
-      return Swal.fire("Aviso", "No hay información para guardar", "warning");
+      return Swal.fire({
+        title: "Aviso",
+        text: "No hay información para guardar",
+        icon: "warning",
+        confirmButtonColor: "hsl(175, 80%, 35%)",
+      });
     }
 
     setLoading(true);
@@ -143,11 +148,21 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     ]);
 
     if (error) {
-      Swal.fire("Error", "No se pudo guardar", "error");
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo guardar",
+        icon: "error",
+        confirmButtonColor: "hsl(175, 80%, 35%)",
+      });
       return setLoading(false);
     }
 
-    Swal.fire("Guardado!", `Versión ${nuevaVersion}`, "success");
+    Swal.fire({
+      title: "Guardado!",
+      text: `Versión ${nuevaVersion}`,
+      icon: "success",
+      confirmButtonColor: "hsl(175, 80%, 35%)",
+    });
     setVersiones([nuevaVersion, ...versiones]);
     setVersionSeleccionada(nuevaVersion);
     setLoading(false);
