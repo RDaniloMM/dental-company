@@ -140,15 +140,15 @@ export default function CitasPage() {
       Completada: "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200",
     };
 
-    const variants: Record<
-      string,
-      "default" | "secondary" | "destructive" | "outline"
-    > = {
-      Programada: "secondary",
-      Confirmada: "outline", // Changed to outline to allow custom colors to show better or use default if preferred, but custom class overrides
-      Cancelada: "destructive",
-      Completada: "outline",
-    };
+    // const variants: Record<
+    //   string,
+    //   "default" | "secondary" | "destructive" | "outline"
+    // > = {
+    //   Programada: "secondary",
+    //   Confirmada: "outline", // Changed to outline to allow custom colors to show better or use default if preferred, but custom class overrides
+    //   Cancelada: "destructive",
+    //   Completada: "outline",
+    // };
 
     return (
       <Badge
