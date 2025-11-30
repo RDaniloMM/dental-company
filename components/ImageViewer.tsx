@@ -22,6 +22,7 @@ interface ImageViewerProps {
     fecha_captura?: string | null;
     caso?: { id: string; nombre_caso: string } | null;
   } | null;
+  numeroFicha?: string | null;
   tiposConfig?: { value: string; label: string; color: string }[];
   etapasConfig?: { value: string; label: string; color: string }[];
 }
@@ -77,6 +78,7 @@ export function ImageViewer({
   open,
   onOpenChange,
   image,
+  numeroFicha,
   tiposConfig = defaultTiposConfig,
   etapasConfig = defaultEtapasConfig,
 }: ImageViewerProps) {
@@ -89,6 +91,60 @@ export function ImageViewer({
   const etapaInfo = etapasConfig.find((e) => e.value === image.etapa);
   const titulo = image.titulo || image.descripcion || "Imagen";
 
+  // Generar nombre descriptivo para la descarga
+  const generateFileName = () => {
+    const parts: string[] = [];
+
+    // Agregar número de ficha al inicio
+    if (numeroFicha) {
+      parts.push(`Ficha_${numeroFicha}`);
+    }
+
+    // Agregar nombre del caso si existe
+    if (image.caso?.nombre_caso) {
+      parts.push(image.caso.nombre_caso);
+    }
+
+    // Agregar tipo de imagen
+    if (tipoInfo) {
+      parts.push(tipoInfo.label);
+    }
+
+    // Agregar etapa si existe
+    if (etapaInfo) {
+      parts.push(etapaInfo.label);
+    }
+
+    // Agregar título o descripción
+    if (image.titulo) {
+      parts.push(image.titulo);
+    } else if (image.descripcion) {
+      parts.push(image.descripcion);
+    }
+
+    // Agregar fecha de captura
+    if (image.fecha_captura) {
+      const fecha = new Date(image.fecha_captura);
+      parts.push(fecha.toISOString().split("T")[0]); // YYYY-MM-DD
+    }
+
+    // Si no hay partes, usar un nombre genérico
+    if (parts.length === 0) {
+      parts.push("imagen");
+    }
+
+    // Unir partes y limpiar caracteres especiales
+    const fileName = parts
+      .join("_")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+      .replace(/[^a-zA-Z0-9_-]/g, "_") // Reemplazar caracteres especiales
+      .replace(/_+/g, "_") // Evitar múltiples guiones bajos
+      .replace(/^_|_$/g, ""); // Quitar guiones al inicio/final
+
+    return `${fileName}.jpg`;
+  };
+
   const handleDownload = async () => {
     setDownloading(true);
     try {
@@ -97,10 +153,7 @@ export function ImageViewer({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${titulo.replace(/[^a-zA-Z0-9]/g, "_")}_${image.id.slice(
-        0,
-        8
-      )}.jpg`;
+      a.download = generateFileName();
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
