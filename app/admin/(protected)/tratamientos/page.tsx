@@ -58,6 +58,7 @@ import {
   Package,
   Settings2,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 // Definición de columnas disponibles para la tabla de procedimientos
 const COLUMNAS_PROCEDIMIENTOS = {
@@ -891,11 +892,17 @@ export default function TratamientosPage() {
                           )}
                           {columnasVisibles.estado && (
                             <TableCell>
-                              <Badge
-                                variant={proc.activo ? "default" : "secondary"}
-                              >
-                                {proc.activo ? "Activo" : "Inactivo"}
-                              </Badge>
+                              <div className='flex items-center gap-2'>
+                                <Switch
+                                  checked={proc.activo}
+                                  onCheckedChange={() =>
+                                    handleToggleActive(proc)
+                                  }
+                                />
+                                <span className='text-sm text-muted-foreground'>
+                                  {proc.activo ? "Activo" : "Inactivo"}
+                                </span>
+                              </div>
                             </TableCell>
                           )}
                           <TableCell className='text-right'>
@@ -906,13 +913,6 @@ export default function TratamientosPage() {
                                 onClick={() => handleOpenDialog(proc)}
                               >
                                 <Edit className='h-4 w-4' />
-                              </Button>
-                              <Button
-                                variant='ghost'
-                                size='icon'
-                                onClick={() => handleToggleActive(proc)}
-                              >
-                                <Trash2 className='h-4 w-4' />
                               </Button>
                             </div>
                           </TableCell>

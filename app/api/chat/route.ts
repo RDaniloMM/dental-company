@@ -3,7 +3,7 @@ import { google } from "@ai-sdk/google";
 import {
   searchFAQsFromDB,
   searchContextoFromDB,
-  getTemaFromDB,
+  getInfoFromDB,
   getServiciosFromDB,
   getEquipoFromDB,
   getChatbotConfigFromDB,
@@ -122,12 +122,23 @@ export async function POST(req: Request) {
     // Obtener configuración del chatbot (incluyendo system prompt personalizado)
     const chatbotConfig = await getChatbotConfigFromDB();
 
+    // Verificar qué fuentes están habilitadas en la configuración
+    const usarInfoGeneral = chatbotConfig.chatbot_usar_info_general !== "false";
+    const usarServicios = chatbotConfig.chatbot_usar_servicios !== "false";
+    const usarEquipo = chatbotConfig.chatbot_usar_equipo !== "false";
+
     // Sistema base - Prompt optimizado para asistente público de clínica dental
     // Usar prompt personalizado si está configurado, o el default
     const customPrompt = chatbotConfig.chatbot_system_prompt?.trim();
-    let systemPrompt =
-      customPrompt ||
-      `Eres el asistente virtual de Dental Company, una clínica dental en Tacna, Perú.
+
+    // Si hay prompt personalizado, usarlo. Si no, generar uno basado en la configuración
+    let systemPrompt: string;
+
+    if (customPrompt) {
+      systemPrompt = customPrompt;
+    } else {
+      // Prompt base genérico (sin información específica de la clínica)
+      systemPrompt = `Eres un asistente virtual de una clínica dental.
 
 TU ROL:
 - Responde de manera amable, profesional y empática
@@ -141,24 +152,25 @@ IMPORTANTE:
 - NO proporciones diagnósticos médicos
 - NO recomiendes tratamientos específicos sin evaluación profesional
 - SIEMPRE recomienda agendar una cita para evaluación personalizada
-- No menciones que eres una IA o modelo de lenguaje, no te salgas de tu rol de asistente de Dental Company`;
+- No menciones que eres una IA o modelo de lenguaje, mantente en tu rol de asistente`;
+    }
 
     // Buscar contexto dinámico desde la BD usando embeddings vectoriales
     if (useFAQ && messages.length > 0 && isRelevantForFAQ(userQuery)) {
       try {
-        // Obtener FAQs, contexto, tema, servicios y equipo en paralelo
-        const [faqs, contextos, tema, servicios, equipo] = await Promise.all([
+        // Solo obtener datos de las fuentes habilitadas
+        const [faqs, contextos, info, servicios, equipo] = await Promise.all([
           searchFAQsFromDB(userQuery, 3),
           searchContextoFromDB(userQuery, 2),
-          getTemaFromDB(),
-          getServiciosFromDB(),
-          getEquipoFromDB(),
+          usarInfoGeneral ? getInfoFromDB() : Promise.resolve({}),
+          usarServicios ? getServiciosFromDB() : Promise.resolve([]),
+          usarEquipo ? getEquipoFromDB() : Promise.resolve([]),
         ]);
 
         const ragContext = generateRAGContext(
           faqs,
           contextos,
-          tema,
+          info,
           servicios,
           equipo,
           chatbotConfig

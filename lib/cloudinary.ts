@@ -16,7 +16,7 @@ export function uploadImage(
   file: Buffer,
   folder: string,
   publicId: string,
-  tipo: "perfil" | "carrusel" | "general" = "general"
+  tipo: "perfil" | "carrusel" | "general" | "paciente" = "general"
 ): Promise<UploadResult> {
   // Configuraciones de transformación según el tipo
   const transformations: Record<string, object> = {
@@ -41,6 +41,13 @@ export function uploadImage(
       width: 1200,
       crop: "limit",
       quality: "auto:good",
+      fetch_format: "webp",
+    },
+    paciente: {
+      // Imágenes de pacientes (radiografías, etc.): alta calidad
+      width: 2000,
+      crop: "limit",
+      quality: "auto:best", // Mejor calidad para diagnóstico
       fetch_format: "webp",
     },
   };

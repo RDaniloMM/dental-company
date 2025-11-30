@@ -50,6 +50,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import {
   UserCog,
   Users,
@@ -66,6 +67,7 @@ import {
   Edit,
   Phone,
   ShieldAlert,
+  Key,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -104,6 +106,7 @@ export default function PersonalPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("personal");
+  const [registroPublico, setRegistroPublico] = useState(false);
 
   // Verificar permisos de admin
   useEffect(() => {
@@ -185,10 +188,50 @@ export default function PersonalPage() {
     }
   };
 
+  // Cargar configuración de seguridad (registro público)
+  const fetchSecurityConfig = async () => {
+    try {
+      const res = await fetch("/api/auth/config");
+      if (res.ok) {
+        const config = await res.json();
+        setRegistroPublico(config.publicRegistration);
+      }
+    } catch (error) {
+      console.error("Error cargando config seguridad:", error);
+    }
+  };
+
+  // Toggle registro público
+  const toggleRegistroPublico = async (enabled: boolean) => {
+    try {
+      const res = await fetch("/api/auth/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clave: "registro_publico_habilitado",
+          valor: enabled ? "true" : "false",
+        }),
+      });
+
+      if (res.ok) {
+        setRegistroPublico(enabled);
+        toast.success(
+          enabled
+            ? "Registro público habilitado"
+            : "Registro público deshabilitado - Se requiere código de invitación"
+        );
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al actualizar configuración");
+    }
+  };
+
   useEffect(() => {
     if (isAuthorized) {
       fetchPersonal();
       fetchCodigos();
+      fetchSecurityConfig();
     }
   }, [isAuthorized]);
 
@@ -228,16 +271,22 @@ export default function PersonalPage() {
     setIsSaving(true);
 
     const formData = new FormData(e.currentTarget);
+    const codigo = formData.get("codigo") as string;
     const rol = formData.get("rol") as string;
     const usos = Number(formData.get("usos")) || 1;
+    const expiraDias = formData.get("expira")
+      ? Number(formData.get("expira"))
+      : undefined;
 
     try {
       const res = await fetch("/api/auth/invitaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          codigo: codigo || undefined,
           rol_asignado: rol,
           usos_maximos: usos,
+          expira_en_dias: expiraDias,
         }),
       });
 
@@ -643,203 +692,276 @@ export default function PersonalPage() {
           </Card>
         </TabsContent>
 
-        {/* Tab: Códigos de Invitación */}
+        {/* Tab: Códigos de Invitación y Seguridad */}
         <TabsContent value='invitaciones'>
-          <Card>
-            <CardHeader>
-              <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-                <div>
-                  <CardTitle>Códigos de Invitación</CardTitle>
-                  <CardDescription className='hidden sm:block'>
-                    Códigos para registrar nuevos usuarios
-                  </CardDescription>
+          <div className='space-y-6'>
+            {/* Configuración de Registro */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <Shield className='h-5 w-5' />
+                  Control de Acceso
+                </CardTitle>
+                <CardDescription>
+                  Configura cómo los usuarios pueden registrarse en el sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-6'>
+                <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg'>
+                  <div className='space-y-1'>
+                    <h4 className='font-medium'>Registro Público</h4>
+                    <p className='text-sm text-muted-foreground'>
+                      {registroPublico
+                        ? "Cualquier persona puede crear una cuenta"
+                        : "Se requiere código de invitación para registrarse"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={registroPublico}
+                    onCheckedChange={toggleRegistroPublico}
+                  />
                 </div>
-                <Dialog
-                  open={codigoDialogOpen}
-                  onOpenChange={setCodigoDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button size='sm'>
-                      <Plus className='h-4 w-4 mr-2' />
-                      Nuevo
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Crear Código de Invitación</DialogTitle>
-                      <DialogDescription>
-                        Este código permitirá a nuevos usuarios registrarse en
-                        el sistema
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form
-                      onSubmit={crearCodigo}
-                      className='space-y-4'
-                    >
-                      <div className='space-y-2'>
-                        <Label htmlFor='rol'>Rol asignado</Label>
-                        <Select
-                          name='rol'
-                          defaultValue='Odontólogo'
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='Seleccionar rol' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value='Odontólogo'>
-                              Odontólogo
-                            </SelectItem>
-                            <SelectItem value='Administrador'>
-                              Administrador
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className='space-y-2'>
-                        <Label htmlFor='usos'>Número de usos máximos</Label>
-                        <Input
-                          id='usos'
-                          name='usos'
-                          type='number'
-                          defaultValue={1}
-                          min={1}
-                          max={100}
-                        />
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          type='submit'
-                          disabled={isSaving}
-                        >
-                          {isSaving && (
-                            <Loader2 className='h-4 w-4 mr-2 animate-spin' />
-                          )}
-                          Crear Código
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {codigos.length === 0 ? (
-                <div className='text-center py-8 text-muted-foreground'>
-                  No hay códigos de invitación
+
+                {!registroPublico && (
+                  <div className='p-4 border border-amber-200 bg-amber-50 dark:bg-amber-950/20 rounded-lg'>
+                    <p className='text-sm text-amber-800 dark:text-amber-200'>
+                      <strong>Modo Seguro Activo:</strong> Los nuevos usuarios
+                      necesitan un código de invitación válido para registrarse.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Códigos de Invitación */}
+            <Card>
+              <CardHeader>
+                <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+                  <div>
+                    <CardTitle className='flex items-center gap-2'>
+                      <Key className='h-5 w-5' />
+                      Códigos de Invitación
+                    </CardTitle>
+                    <CardDescription className='hidden sm:block'>
+                      Gestiona los códigos para invitar nuevos usuarios
+                    </CardDescription>
+                  </div>
+                  <Dialog
+                    open={codigoDialogOpen}
+                    onOpenChange={setCodigoDialogOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button size='sm'>
+                        <Plus className='h-4 w-4 mr-2' />
+                        Nuevo Código
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Crear Código de Invitación</DialogTitle>
+                        <DialogDescription>
+                          Este código permitirá a nuevos usuarios registrarse en
+                          el sistema
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        onSubmit={crearCodigo}
+                        className='space-y-4'
+                      >
+                        <div className='space-y-2'>
+                          <Label htmlFor='codigo'>Código (opcional)</Label>
+                          <Input
+                            id='codigo'
+                            name='codigo'
+                            placeholder='Dejar vacío para generar automáticamente'
+                          />
+                          <p className='text-xs text-muted-foreground'>
+                            Si no especificas, se generará uno como DC-XXXXXX
+                          </p>
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='rol'>Rol asignado</Label>
+                          <Select
+                            name='rol'
+                            defaultValue='Odontólogo'
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder='Seleccionar rol' />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value='Odontólogo'>
+                                Odontólogo
+                              </SelectItem>
+                              <SelectItem value='Recepcionista'>
+                                Recepcionista
+                              </SelectItem>
+                              <SelectItem value='Auxiliar'>Auxiliar</SelectItem>
+                              <SelectItem value='Administrador'>
+                                Administrador
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div className='space-y-2'>
+                            <Label htmlFor='usos'>Usos máximos</Label>
+                            <Input
+                              id='usos'
+                              name='usos'
+                              type='number'
+                              defaultValue={1}
+                              min={1}
+                              max={100}
+                            />
+                          </div>
+                          <div className='space-y-2'>
+                            <Label htmlFor='expira'>Expira en (días)</Label>
+                            <Input
+                              id='expira'
+                              name='expira'
+                              type='number'
+                              placeholder='Sin expiración'
+                              min={1}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type='submit'
+                            disabled={isSaving}
+                          >
+                            {isSaving && (
+                              <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                            )}
+                            Crear Código
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              ) : (
-                <div className='overflow-x-auto -mx-6 px-6'>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Código</TableHead>
-                        <TableHead className='hidden sm:table-cell'>
-                          Rol
-                        </TableHead>
-                        <TableHead>Usos</TableHead>
-                        <TableHead className='hidden md:table-cell'>
-                          Estado
-                        </TableHead>
-                        <TableHead className='text-right'>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {codigos.map((codigo) => (
-                        <TableRow key={codigo.id}>
-                          <TableCell>
-                            <div className='flex items-center gap-1'>
-                              <code className='bg-muted px-1.5 py-0.5 rounded font-mono text-xs'>
-                                {codigo.codigo}
-                              </code>
-                              <Button
-                                variant='ghost'
-                                size='icon'
-                                className='h-6 w-6'
-                                onClick={() => copiarCodigo(codigo.codigo)}
-                              >
-                                {copiedCode === codigo.codigo ? (
-                                  <Check className='h-3 w-3 text-green-500' />
-                                ) : (
-                                  <Copy className='h-3 w-3' />
-                                )}
-                              </Button>
-                            </div>
-                            <div className='text-xs text-muted-foreground sm:hidden mt-1'>
-                              {codigo.rol_asignado}
-                            </div>
-                          </TableCell>
-                          <TableCell className='hidden sm:table-cell'>
-                            <Badge
-                              variant={
-                                codigo.rol_asignado === "Administrador"
-                                  ? "default"
-                                  : "outline"
-                              }
-                              className='text-xs'
-                            >
-                              {codigo.rol_asignado === "Administrador" ? (
-                                <Shield className='h-3 w-3 mr-1' />
-                              ) : (
-                                <Stethoscope className='h-3 w-3 mr-1' />
-                              )}
-                              <span className='hidden md:inline'>
-                                {codigo.rol_asignado}
-                              </span>
-                            </Badge>
-                          </TableCell>
-                          <TableCell className='text-sm'>
-                            {codigo.usos_actuales}/{codigo.usos_maximos}
-                          </TableCell>
-                          <TableCell className='hidden md:table-cell'>
-                            <Badge
-                              variant={codigo.activo ? "default" : "secondary"}
-                              className='text-xs'
-                            >
-                              {codigo.activo ? "Activo" : "Inactivo"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className='text-right'>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
+              </CardHeader>
+              <CardContent>
+                {codigos.length === 0 ? (
+                  <div className='text-center py-8 text-muted-foreground'>
+                    No hay códigos de invitación
+                  </div>
+                ) : (
+                  <div className='overflow-x-auto -mx-6 px-6'>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Código</TableHead>
+                          <TableHead className='hidden sm:table-cell'>
+                            Rol
+                          </TableHead>
+                          <TableHead>Usos</TableHead>
+                          <TableHead className='hidden md:table-cell'>
+                            Estado
+                          </TableHead>
+                          <TableHead className='text-right'>Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {codigos.map((codigo) => (
+                          <TableRow key={codigo.id}>
+                            <TableCell>
+                              <div className='flex items-center gap-1'>
+                                <code className='bg-muted px-1.5 py-0.5 rounded font-mono text-xs'>
+                                  {codigo.codigo}
+                                </code>
                                 <Button
                                   variant='ghost'
                                   size='icon'
-                                  className='h-8 w-8'
+                                  className='h-6 w-6'
+                                  onClick={() => copiarCodigo(codigo.codigo)}
                                 >
-                                  <Trash2 className='h-4 w-4 text-destructive' />
+                                  {copiedCode === codigo.codigo ? (
+                                    <Check className='h-3 w-3 text-green-500' />
+                                  ) : (
+                                    <Copy className='h-3 w-3' />
+                                  )}
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    ¿Eliminar código?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta acción no se puede deshacer.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>
-                                    Cancelar
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => eliminarCodigo(codigo.id)}
-                                    className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                              </div>
+                              <div className='text-xs text-muted-foreground sm:hidden mt-1'>
+                                {codigo.rol_asignado}
+                              </div>
+                            </TableCell>
+                            <TableCell className='hidden sm:table-cell'>
+                              <Badge
+                                variant={
+                                  codigo.rol_asignado === "Administrador"
+                                    ? "default"
+                                    : "outline"
+                                }
+                                className='text-xs'
+                              >
+                                {codigo.rol_asignado === "Administrador" ? (
+                                  <Shield className='h-3 w-3 mr-1' />
+                                ) : (
+                                  <Stethoscope className='h-3 w-3 mr-1' />
+                                )}
+                                <span className='hidden md:inline'>
+                                  {codigo.rol_asignado}
+                                </span>
+                              </Badge>
+                            </TableCell>
+                            <TableCell className='text-sm'>
+                              {codigo.usos_actuales}/{codigo.usos_maximos}
+                            </TableCell>
+                            <TableCell className='hidden md:table-cell'>
+                              <Badge
+                                variant={
+                                  codigo.activo ? "default" : "secondary"
+                                }
+                                className='text-xs'
+                              >
+                                {codigo.activo ? "Activo" : "Inactivo"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className='text-right'>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant='ghost'
+                                    size='icon'
+                                    className='h-8 w-8'
                                   >
-                                    Eliminar
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                                    <Trash2 className='h-4 w-4 text-destructive' />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      ¿Eliminar código?
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta acción no se puede deshacer.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                      Cancelar
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => eliminarCodigo(codigo.id)}
+                                      className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                    >
+                                      Eliminar
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

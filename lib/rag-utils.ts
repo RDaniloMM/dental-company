@@ -300,13 +300,18 @@ export async function getContextoFromDB(): Promise<Contexto[]> {
 }
 
 /**
- * Obtener configuración del tema (para info de contacto, etc.)
+ * Obtener información general de la clínica (contacto, horarios, etc.)
+ * Excluye los registros del grupo 'chatbot' que son configuración del bot
  */
-export async function getTemaFromDB(): Promise<Record<string, string>> {
+export async function getInfoFromDB(): Promise<Record<string, string>> {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from("cms_tema").select("*");
+    // Solo obtener datos del tema CMS, NO la configuración del chatbot
+    const { data, error } = await supabase
+      .from("cms_tema")
+      .select("clave, valor")
+      .or("grupo.is.null,grupo.neq.chatbot");
 
     if (error || !data) {
       console.error("Error obteniendo tema:", error);
@@ -318,7 +323,7 @@ export async function getTemaFromDB(): Promise<Record<string, string>> {
       return acc;
     }, {} as Record<string, string>);
   } catch (error) {
-    console.error("Error en getTemaFromDB:", error);
+    console.error("Error en getInfoFromDB:", error);
     return {};
   }
 }
