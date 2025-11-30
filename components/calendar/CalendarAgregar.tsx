@@ -69,12 +69,26 @@ export default function GoogleCalendarPage({
       width: "auto",
       html: `
       <style>
-        .swal2-popup { border-radius: 16px !important; background: #f9fafb !important; font-family: 'Inter', sans-serif; }
-        .swal2-title { font-weight: 600; color: #1f2937; font-size: 1.4rem; }
+        .swal2-popup { border-radius: 16px !important; background: hsl(var(--card)) !important; color: hsl(var(--foreground)) !important; font-family: 'Inter', sans-serif; }
+        .swal2-title { font-weight: 600; color: hsl(var(--foreground)); font-size: 1.4rem; }
+        .swal2-html-container { color: hsl(var(--muted-foreground)) !important; }
         #calendar-form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; text-align: left; }
-        #calendar-form label { font-weight: 500; color: #374151; margin-bottom: 2px; }
-        #calendar-form input, #calendar-form select, #calendar-form textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; background: #fff; }
-        #calendar-form input:focus, #calendar-form select:focus, #calendar-form textarea:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 1px #3b82f6; }
+        #calendar-form label { font-weight: 500; color: hsl(var(--foreground)); margin-bottom: 2px; }
+        #calendar-form input, #calendar-form select, #calendar-form textarea { width: 100%; padding: 8px 10px; border: 1px solid hsl(var(--border)); border-radius: 8px; font-size: 0.95rem; background: hsl(var(--background)); color: hsl(var(--foreground)); }
+        #calendar-form input:focus, #calendar-form select:focus, #calendar-form textarea:focus { border-color: hsl(var(--primary)); outline: none; box-shadow: 0 0 0 1px hsl(var(--primary)); }
+        
+        /* SweetAlert2 Buttons */
+        .swal2-confirm {
+          background-color: hsl(var(--primary)) !important;
+          color: hsl(var(--primary-foreground)) !important;
+        }
+        .swal2-confirm:focus {
+          box-shadow: 0 0 0 3px hsl(var(--ring)) !important;
+        }
+        .swal2-cancel {
+          background-color: hsl(var(--muted)) !important;
+          color: hsl(var(--muted-foreground)) !important;
+        }
       </style>
 
       <form id="calendar-form">
@@ -82,19 +96,19 @@ export default function GoogleCalendarPage({
         <select id="paciente_id" required>
           <option value="">Seleccione...</option>
           ${pacientes
-            .map(
-              (p) =>
-                `<option value="${p.id}">${p.nombres} ${p.apellidos}</option>`
-            )
-            .join("")}
+          .map(
+            (p) =>
+              `<option value="${p.id}">${p.nombres} ${p.apellidos}</option>`
+          )
+          .join("")}
         </select>
 
         <label>Odontólogo:</label>
         <select id="odontologo_id" required>
           <option value="">Seleccione...</option>
           ${odontologos
-            .map((o) => `<option value="${o.id}">${o.nombre_completo}</option>`)
-            .join("")}
+          .map((o) => `<option value="${o.id}">${o.nombre_completo}</option>`)
+          .join("")}
         </select>
 
         <label>Motivo de la cita:</label>
@@ -121,8 +135,8 @@ export default function GoogleCalendarPage({
             <select id="moneda_id">
               <option value="">Seleccione...</option>
               ${monedas
-                .map((m) => `<option value="${m.id}">${m.nombre}</option>`)
-                .join("")}
+          .map((m) => `<option value="${m.id}">${m.nombre}</option>`)
+          .join("")}
             </select>
           </div>
           <div>
@@ -181,12 +195,10 @@ export default function GoogleCalendarPage({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               summary: `Cita: ${data.motivo || "Consulta odontológica"}`,
-              description: `Paciente: ${
-                pacientes.find((p) => p.id === data.paciente_id)?.nombres
-              }\nOdontólogo: ${
-                odontologos.find((o) => o.id === data.odontologo_id)
+              description: `Paciente: ${pacientes.find((p) => p.id === data.paciente_id)?.nombres
+                }\nOdontólogo: ${odontologos.find((o) => o.id === data.odontologo_id)
                   ?.nombre_completo
-              }\nNotas: ${data.notas || "Sin notas"}`,
+                }\nNotas: ${data.notas || "Sin notas"}`,
               start: startDate.toISOString(),
               end: endDate.toISOString(),
             }),
@@ -244,16 +256,14 @@ export default function GoogleCalendarPage({
 
           {/* Badge de conexión */}
           <span
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium ${
-              connected
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium ${connected
                 ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
-            }`}
+              }`}
           >
             <span
-              className={`w-2 h-2 rounded-full ${
-                connected ? "bg-green-500" : "bg-red-500"
-              }`}
+              className={`w-2 h-2 rounded-full ${connected ? "bg-green-500" : "bg-red-500"
+                }`}
             ></span>
             {connected ? "Conectado" : "Sin conexión"}
           </span>
@@ -262,7 +272,7 @@ export default function GoogleCalendarPage({
         <button
           onClick={openEventForm}
           disabled={!connected}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition disabled:bg-muted disabled:text-muted-foreground"
         >
           Nueva cita
         </button>
