@@ -36,6 +36,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ImageViewer } from "@/components/ImageViewer";
 
 interface CasoImagen {
   id: string;
@@ -91,12 +92,13 @@ export default function ImagenesCasoPage() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<CasoImagen | null>(null);
 
-  // Form state
+  // Form state - fecha de hoy por defecto
+  const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData] = useState({
     titulo: "",
     descripcion: "",
     tipo: "general",
-    fecha_captura: "",
+    fecha_captura: today,
   });
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -154,12 +156,18 @@ export default function ImagenesCasoPage() {
 
     setUploading(true);
     try {
-      // Subir a Cloudinary
+      // Usar API específica para imágenes de casos clínicos
       const formDataUpload = new FormData();
       formDataUpload.append("file", selectedFile);
-      formDataUpload.append("tipo", "casos");
+      formDataUpload.append("caso_id", casoId);
+      formDataUpload.append("tipo", formData.tipo);
+      if (formData.titulo) formDataUpload.append("titulo", formData.titulo);
+      if (formData.descripcion)
+        formDataUpload.append("descripcion", formData.descripcion);
+      if (formData.fecha_captura)
+        formDataUpload.append("fecha_captura", formData.fecha_captura);
 
-      const uploadRes = await fetch("/api/cms/upload", {
+      const uploadRes = await fetch("/api/imagenes/caso", {
         method: "POST",
         body: formDataUpload,
       });
@@ -168,23 +176,6 @@ export default function ImagenesCasoPage() {
         const error = await uploadRes.json();
         throw new Error(error.error || "Error al subir la imagen");
       }
-
-      const { url, public_id } = await uploadRes.json();
-
-      // Guardar en BD
-      const { error: dbError } = await supabase
-        .from("seguimiento_imagenes")
-        .insert({
-          caso_id: casoId,
-          url,
-          public_id,
-          titulo: formData.titulo || null,
-          descripcion: formData.descripcion || null,
-          tipo: formData.tipo,
-          fecha_captura: formData.fecha_captura || null,
-        });
-
-      if (dbError) throw dbError;
 
       toast.success("Imagen subida correctamente");
       setDialogOpen(false);
@@ -205,26 +196,26 @@ export default function ImagenesCasoPage() {
     if (!confirm("¿Estás seguro de eliminar esta imagen?")) return;
 
     try {
-      // Eliminar de Cloudinary si tiene public_id
-      if (imagen.public_id) {
-        await fetch(`/api/cms/upload?public_id=${imagen.public_id}`, {
-          method: "DELETE",
-        });
+      // Usar API específica para imágenes de casos clínicos
+      const params = new URLSearchParams({ id: imagen.id });
+      if (imagen.public_id) params.append("public_id", imagen.public_id);
+
+      const res = await fetch(`/api/imagenes/caso?${params.toString()}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Error al eliminar la imagen");
       }
-
-      // Eliminar de BD
-      const { error } = await supabase
-        .from("seguimiento_imagenes")
-        .delete()
-        .eq("id", imagen.id);
-
-      if (error) throw error;
 
       toast.success("Imagen eliminada");
       loadImagenes();
     } catch (error) {
       console.error("Error eliminando imagen:", error);
-      toast.error("Error al eliminar la imagen");
+      toast.error(
+        error instanceof Error ? error.message : "Error al eliminar la imagen"
+      );
     }
   };
 
@@ -233,7 +224,7 @@ export default function ImagenesCasoPage() {
       titulo: "",
       descripcion: "",
       tipo: "general",
-      fecha_captura: "",
+      fecha_captura: new Date().toISOString().split("T")[0],
     });
     setPreviewUrl("");
     setSelectedFile(null);
@@ -276,15 +267,8 @@ export default function ImagenesCasoPage() {
             <p className='text-muted-foreground text-center'>
               No hay imágenes para este caso.
               <br />
-              Sube la primera imagen para comenzar a documentar el tratamiento.
+              Usa el botón &quot;Nueva Imagen&quot; para comenzar a documentar el tratamiento.
             </p>
-            <Button
-              className='mt-4'
-              onClick={() => setDialogOpen(true)}
-            >
-              <Upload className='h-4 w-4 mr-2' />
-              Subir Imagen
-            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -486,38 +470,23 @@ export default function ImagenesCasoPage() {
       </Dialog>
 
       {/* Visor de imagen */}
-      <Dialog
+      <ImageViewer
         open={viewerOpen}
         onOpenChange={setViewerOpen}
-      >
-        <DialogContent className='max-w-4xl'>
-          {selectedImage && (
-            <>
-              <DialogHeader>
-                <DialogTitle>
-                  {selectedImage.titulo || "Imagen del caso"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className='relative aspect-video'>
-                <Image
-                  src={selectedImage.url}
-                  alt={selectedImage.titulo || "Imagen"}
-                  fill
-                  className='object-contain'
-                />
-              </div>
-              <div className='flex items-center justify-between'>
-                {getTipoBadge(selectedImage.tipo)}
-                {selectedImage.descripcion && (
-                  <p className='text-sm text-muted-foreground'>
-                    {selectedImage.descripcion}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        image={
+          selectedImage
+            ? {
+                id: selectedImage.id,
+                url: selectedImage.url,
+                titulo: selectedImage.titulo,
+                descripcion: selectedImage.descripcion,
+                tipo: selectedImage.tipo,
+                fecha_captura: selectedImage.fecha_captura,
+              }
+            : null
+        }
+        tiposConfig={tiposImagen}
+      />
     </div>
   );
 }

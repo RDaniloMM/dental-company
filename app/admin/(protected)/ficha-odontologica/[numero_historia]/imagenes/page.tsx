@@ -34,20 +34,33 @@ import {
   ZoomIn,
   Calendar,
   ImageIcon,
+  FolderOpen,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ImageViewer } from "@/components/ImageViewer";
 
 interface PacienteImagen {
   id: string;
-  seguimiento_id: string | null;
+  paciente_id: string;
   caso_id: string | null;
   url: string;
-  public_id: string | null;
-  titulo: string | null;
-  descripcion: string | null;
+  public_id: string;
   tipo: string;
+  descripcion: string | null;
+  etapa: string | null;
   fecha_captura: string | null;
-  uploaded_at: string;
+  es_principal: boolean;
+  fecha_subida: string;
+  caso?: {
+    id: string;
+    nombre_caso: string;
+  } | null;
+}
+
+interface CasoClinico {
+  id: string;
+  nombre_caso: string;
+  estado: string;
 }
 
 const tiposImagen = [
@@ -90,9 +103,32 @@ const tiposImagen = [
     color: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
   },
   {
-    value: "general",
-    label: "General",
+    value: "otro",
+    label: "Otro",
     color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+  },
+];
+
+const etapasImagen = [
+  {
+    value: "antes",
+    label: "Antes del tratamiento",
+    color: "bg-orange-100 text-orange-800",
+  },
+  {
+    value: "durante",
+    label: "Durante el tratamiento",
+    color: "bg-blue-100 text-blue-800",
+  },
+  {
+    value: "despues",
+    label: "Después del tratamiento",
+    color: "bg-green-100 text-green-800",
+  },
+  {
+    value: "seguimiento",
+    label: "Seguimiento",
+    color: "bg-purple-100 text-purple-800",
   },
 ];
 
@@ -102,6 +138,7 @@ export default function ImagenesPacientePage() {
   const supabase = createClient();
 
   const [imagenes, setImagenes] = useState<PacienteImagen[]>([]);
+  const [casos, setCasos] = useState<CasoClinico[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -109,21 +146,24 @@ export default function ImagenesPacientePage() {
   const [selectedImage, setSelectedImage] = useState<PacienteImagen | null>(
     null
   );
-  const [historiaId, setHistoriaId] = useState<string | null>(null);
+  const [pacienteId, setPacienteId] = useState<string | null>(null);
 
-  // Form state
+  // Form state - fecha de hoy por defecto
+  const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData] = useState({
-    titulo: "",
     descripcion: "",
-    tipo: "general",
-    fecha_captura: "",
+    tipo: "otro",
+    etapa: "",
+    caso_id: "",
+    fecha_captura: today,
+    es_principal: false,
   });
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Obtener historia_id del paciente
+  // Obtener paciente_id
   useEffect(() => {
-    const fetchHistoriaId = async () => {
+    const fetchPacienteId = async () => {
       const { data: paciente } = await supabase
         .from("pacientes")
         .select("id")
@@ -131,49 +171,56 @@ export default function ImagenesPacientePage() {
         .single();
 
       if (paciente) {
-        const { data: historia } = await supabase
-          .from("historias_clinicas")
-          .select("id")
-          .eq("paciente_id", paciente.id)
-          .single();
-
-        if (historia) {
-          setHistoriaId(historia.id);
-        }
+        setPacienteId(paciente.id);
       }
     };
 
-    fetchHistoriaId();
+    fetchPacienteId();
   }, [numeroHistoria, supabase]);
 
-  // Cargar imágenes del paciente (todas las que no tienen caso_id)
+  // Cargar casos clínicos del paciente
+  const loadCasos = useCallback(async () => {
+    if (!pacienteId) return;
+
+    try {
+      // Obtener historia_id primero
+      const { data: historia } = await supabase
+        .from("historias_clinicas")
+        .select("id")
+        .eq("paciente_id", pacienteId)
+        .single();
+
+      if (historia) {
+        const { data: casosData } = await supabase
+          .from("casos_clinicos")
+          .select("id, nombre_caso, estado")
+          .eq("historia_id", historia.id)
+          .order("fecha_inicio", { ascending: false });
+
+        setCasos(casosData || []);
+      }
+    } catch (error) {
+      console.error("Error cargando casos:", error);
+    }
+  }, [pacienteId, supabase]);
+
+  // Cargar imágenes del paciente
   const loadImagenes = useCallback(async () => {
-    if (!historiaId) return;
+    if (!pacienteId) return;
 
     try {
       setLoading(true);
 
-      // Obtener todos los seguimientos de esta historia
-      const { data: seguimientos } = await supabase
-        .from("seguimientos")
-        .select("id")
-        .eq("historia_id", historiaId);
-
-      if (!seguimientos || seguimientos.length === 0) {
-        setImagenes([]);
-        setLoading(false);
-        return;
-      }
-
-      const seguimientoIds = seguimientos.map((s) => s.id);
-
-      // Obtener imágenes de esos seguimientos (sin caso_id, que son las generales del paciente)
       const { data, error } = await supabase
-        .from("seguimiento_imagenes")
-        .select("*")
-        .in("seguimiento_id", seguimientoIds)
-        .is("caso_id", null)
-        .order("uploaded_at", { ascending: false });
+        .from("imagenes_pacientes")
+        .select(
+          `
+          *,
+          caso:casos_clinicos(id, nombre_caso)
+        `
+        )
+        .eq("paciente_id", pacienteId)
+        .order("fecha_subida", { ascending: false });
 
       if (error) throw error;
       setImagenes(data || []);
@@ -183,13 +230,14 @@ export default function ImagenesPacientePage() {
     } finally {
       setLoading(false);
     }
-  }, [historiaId, supabase]);
+  }, [pacienteId, supabase]);
 
   useEffect(() => {
-    if (historiaId) {
+    if (pacienteId) {
       loadImagenes();
+      loadCasos();
     }
-  }, [historiaId, loadImagenes]);
+  }, [pacienteId, loadImagenes, loadCasos]);
 
   // Dropzone
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -213,48 +261,35 @@ export default function ImagenesPacientePage() {
 
   // Subir imagen
   const handleUpload = async () => {
-    if (!selectedFile || !historiaId) {
+    if (!selectedFile || !pacienteId) {
       toast.error("Selecciona una imagen");
       return;
     }
 
     setUploading(true);
     try {
-      // Primero necesitamos un seguimiento para asociar la imagen
-      // Buscar o crear un seguimiento general
-      let seguimientoId: string;
-
-      const { data: existingSeguimiento } = await supabase
-        .from("seguimientos")
-        .select("id")
-        .eq("historia_id", historiaId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existingSeguimiento) {
-        seguimientoId = existingSeguimiento.id;
-      } else {
-        // Crear un seguimiento nuevo
-        const { data: newSeguimiento, error: segError } = await supabase
-          .from("seguimientos")
-          .insert({
-            historia_id: historiaId,
-            notas: "Seguimiento de imágenes",
-          })
-          .select("id")
-          .single();
-
-        if (segError) throw segError;
-        seguimientoId = newSeguimiento.id;
-      }
-
-      // Subir a Cloudinary
       const formDataUpload = new FormData();
       formDataUpload.append("file", selectedFile);
-      formDataUpload.append("tipo", "pacientes");
+      formDataUpload.append("paciente_id", pacienteId);
+      formDataUpload.append("tipo", formData.tipo);
 
-      const uploadRes = await fetch("/api/cms/upload", {
+      if (formData.descripcion) {
+        formDataUpload.append("descripcion", formData.descripcion);
+      }
+      if (formData.caso_id) {
+        formDataUpload.append("caso_id", formData.caso_id);
+      }
+      if (formData.etapa) {
+        formDataUpload.append("etapa", formData.etapa);
+      }
+      if (formData.fecha_captura) {
+        formDataUpload.append("fecha_captura", formData.fecha_captura);
+      }
+      if (formData.es_principal) {
+        formDataUpload.append("es_principal", "true");
+      }
+
+      const uploadRes = await fetch("/api/imagenes/upload", {
         method: "POST",
         body: formDataUpload,
       });
@@ -263,24 +298,6 @@ export default function ImagenesPacientePage() {
         const error = await uploadRes.json();
         throw new Error(error.error || "Error al subir la imagen");
       }
-
-      const { url, public_id } = await uploadRes.json();
-
-      // Guardar en BD
-      const { error: dbError } = await supabase
-        .from("seguimiento_imagenes")
-        .insert({
-          seguimiento_id: seguimientoId,
-          url,
-          ruta: url,
-          public_id,
-          titulo: formData.titulo || null,
-          descripcion: formData.descripcion || null,
-          tipo: formData.tipo,
-          fecha_captura: formData.fecha_captura || null,
-        });
-
-      if (dbError) throw dbError;
 
       toast.success("Imagen subida correctamente");
       setDialogOpen(false);
@@ -301,20 +318,11 @@ export default function ImagenesPacientePage() {
     if (!confirm("¿Estás seguro de eliminar esta imagen?")) return;
 
     try {
-      // Eliminar de Cloudinary si tiene public_id
-      if (imagen.public_id) {
-        await fetch(`/api/cms/upload?public_id=${imagen.public_id}`, {
-          method: "DELETE",
-        });
-      }
+      const res = await fetch(`/api/imagenes/${imagen.id}`, {
+        method: "DELETE",
+      });
 
-      // Eliminar de BD
-      const { error } = await supabase
-        .from("seguimiento_imagenes")
-        .delete()
-        .eq("id", imagen.id);
-
-      if (error) throw error;
+      if (!res.ok) throw new Error("Error al eliminar");
 
       toast.success("Imagen eliminada");
       loadImagenes();
@@ -326,10 +334,12 @@ export default function ImagenesPacientePage() {
 
   const resetForm = () => {
     setFormData({
-      titulo: "",
       descripcion: "",
-      tipo: "general",
-      fecha_captura: "",
+      tipo: "otro",
+      etapa: "",
+      caso_id: "",
+      fecha_captura: new Date().toISOString().split("T")[0],
+      es_principal: false,
     });
     setPreviewUrl("");
     setSelectedFile(null);
@@ -340,6 +350,20 @@ export default function ImagenesPacientePage() {
       tiposImagen.find((t) => t.value === tipo) ||
       tiposImagen[tiposImagen.length - 1];
     return <Badge className={tipoInfo.color}>{tipoInfo.label}</Badge>;
+  };
+
+  const getEtapaBadge = (etapa: string | null) => {
+    if (!etapa) return null;
+    const etapaInfo = etapasImagen.find((e) => e.value === etapa);
+    if (!etapaInfo) return null;
+    return (
+      <Badge
+        variant='outline'
+        className={etapaInfo.color}
+      >
+        {etapaInfo.label}
+      </Badge>
+    );
   };
 
   if (loading) {
@@ -373,15 +397,8 @@ export default function ImagenesPacientePage() {
             <p className='text-muted-foreground text-center'>
               No hay imágenes registradas para este paciente.
               <br />
-              Sube radiografías, fotos o documentos para comenzar.
+              Usa el botón &quot;Nueva Imagen&quot; para subir radiografías, fotos o documentos.
             </p>
-            <Button
-              className='mt-4'
-              onClick={() => setDialogOpen(true)}
-            >
-              <Upload className='h-4 w-4 mr-2' />
-              Subir Imagen
-            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -394,10 +411,17 @@ export default function ImagenesPacientePage() {
               <div className='relative aspect-square'>
                 <Image
                   src={imagen.url}
-                  alt={imagen.titulo || "Imagen del paciente"}
+                  alt={imagen.descripcion || "Imagen del paciente"}
                   fill
                   className='object-cover'
                 />
+                {imagen.es_principal && (
+                  <div className='absolute top-2 left-2'>
+                    <Badge className='bg-yellow-500 text-white'>
+                      ⭐ Principal
+                    </Badge>
+                  </div>
+                )}
                 <div className='absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100'>
                   <Button
                     size='icon'
@@ -418,21 +442,27 @@ export default function ImagenesPacientePage() {
                   </Button>
                 </div>
               </div>
-              <CardContent className='p-3'>
-                <div className='flex items-center justify-between mb-2'>
+              <CardContent className='p-3 space-y-2'>
+                <div className='flex items-center justify-between flex-wrap gap-1'>
                   {getTipoBadge(imagen.tipo)}
-                  {imagen.fecha_captura && (
-                    <span className='text-xs text-muted-foreground flex items-center'>
-                      <Calendar className='h-3 w-3 mr-1' />
-                      {new Date(imagen.fecha_captura).toLocaleDateString()}
-                    </span>
-                  )}
+                  {getEtapaBadge(imagen.etapa)}
                 </div>
-                {imagen.titulo && (
-                  <p className='font-medium text-sm truncate'>
-                    {imagen.titulo}
-                  </p>
+
+                {/* Mostrar caso asociado */}
+                {imagen.caso && (
+                  <div className='flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded'>
+                    <FolderOpen className='h-3 w-3' />
+                    <span className='truncate'>{imagen.caso.nombre_caso}</span>
+                  </div>
                 )}
+
+                {imagen.fecha_captura && (
+                  <span className='text-xs text-muted-foreground flex items-center'>
+                    <Calendar className='h-3 w-3 mr-1' />
+                    {new Date(imagen.fecha_captura).toLocaleDateString()}
+                  </span>
+                )}
+
                 {imagen.descripcion && (
                   <p className='text-xs text-muted-foreground truncate'>
                     {imagen.descripcion}
@@ -503,6 +533,35 @@ export default function ImagenesPacientePage() {
               )}
             </div>
 
+            {/* Caso clínico asociado */}
+            <div className='space-y-2'>
+              <Label>Caso clínico (opcional)</Label>
+              <Select
+                value={formData.caso_id}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    caso_id: value === "none" ? "" : value,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Sin caso asociado' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='none'>Sin caso asociado</SelectItem>
+                  {casos.map((caso) => (
+                    <SelectItem
+                      key={caso.id}
+                      value={caso.id}
+                    >
+                      {caso.nombre_caso} ({caso.estado})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Campos */}
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-2'>
@@ -529,25 +588,42 @@ export default function ImagenesPacientePage() {
                 </Select>
               </div>
               <div className='space-y-2'>
-                <Label>Fecha de captura</Label>
-                <Input
-                  type='date'
-                  value={formData.fecha_captura}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fecha_captura: e.target.value })
+                <Label>Etapa del tratamiento</Label>
+                <Select
+                  value={formData.etapa}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      etapa: value === "none" ? "" : value,
+                    })
                   }
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder='Seleccionar...' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='none'>Sin especificar</SelectItem>
+                    {etapasImagen.map((etapa) => (
+                      <SelectItem
+                        key={etapa.value}
+                        value={etapa.value}
+                      >
+                        {etapa.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             <div className='space-y-2'>
-              <Label>Título (opcional)</Label>
+              <Label>Fecha de captura</Label>
               <Input
-                value={formData.titulo}
+                type='date'
+                value={formData.fecha_captura}
                 onChange={(e) =>
-                  setFormData({ ...formData, titulo: e.target.value })
+                  setFormData({ ...formData, fecha_captura: e.target.value })
                 }
-                placeholder='Ej: Radiografía panorámica inicial'
               />
             </div>
 
@@ -583,38 +659,25 @@ export default function ImagenesPacientePage() {
       </Dialog>
 
       {/* Visor de imagen */}
-      <Dialog
+      <ImageViewer
         open={viewerOpen}
         onOpenChange={setViewerOpen}
-      >
-        <DialogContent className='max-w-4xl'>
-          {selectedImage && (
-            <>
-              <DialogHeader>
-                <DialogTitle>
-                  {selectedImage.titulo || "Imagen del paciente"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className='relative aspect-video'>
-                <Image
-                  src={selectedImage.url}
-                  alt={selectedImage.titulo || "Imagen"}
-                  fill
-                  className='object-contain'
-                />
-              </div>
-              <div className='flex items-center justify-between'>
-                {getTipoBadge(selectedImage.tipo)}
-                {selectedImage.descripcion && (
-                  <p className='text-sm text-muted-foreground'>
-                    {selectedImage.descripcion}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        image={
+          selectedImage
+            ? {
+                id: selectedImage.id,
+                url: selectedImage.url,
+                titulo: selectedImage.descripcion,
+                tipo: selectedImage.tipo,
+                etapa: selectedImage.etapa,
+                fecha_captura: selectedImage.fecha_captura,
+                caso: selectedImage.caso,
+              }
+            : null
+        }
+        tiposConfig={tiposImagen}
+        etapasConfig={etapasImagen}
+      />
     </div>
   );
 }

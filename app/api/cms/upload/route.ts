@@ -66,12 +66,35 @@ export async function POST(req: Request) {
     const publicId = `${sanitizedName}_${timestamp}`;
 
     // Subir a Cloudinary con optimización según tipo
-    const folder =
-      tipo === "equipo" ? "dental_company/equipo" : "dental_company/carrusel";
-    const tipoImagen = tipo === "equipo" ? "perfil" : "carrusel";
+    let folder: string;
+    let tipoImagen: "perfil" | "carrusel" | "general" | "paciente";
+
+    switch (tipo) {
+      case "equipo":
+        folder = "dental_company/equipo";
+        tipoImagen = "perfil";
+        break;
+      case "casos":
+        folder = "dental_company/casos";
+        tipoImagen = "general";
+        break;
+      case "pacientes":
+        folder = "dental_company/pacientes";
+        tipoImagen = "paciente";
+        break;
+      case "servicios":
+        folder = "dental_company/servicios";
+        tipoImagen = "general";
+        break;
+      default:
+        folder = "dental_company/carrusel";
+        tipoImagen = "carrusel";
+    }
+
     const result = await uploadImage(buffer, folder, publicId, tipoImagen);
 
     return NextResponse.json({
+      url: result.secure_url,
       secure_url: result.secure_url,
       public_id: result.public_id,
     });
