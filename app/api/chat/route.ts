@@ -4,6 +4,9 @@ import {
   searchFAQsFromDB,
   searchContextoFromDB,
   getTemaFromDB,
+  getServiciosFromDB,
+  getEquipoFromDB,
+  getChatbotConfigFromDB,
   generateRAGContext,
   isRelevantForFAQ,
 } from "@/lib/rag-utils";
@@ -116,8 +119,15 @@ export async function POST(req: Request) {
       .map((part) => part.text)
       .join(" ");
 
+    // Obtener configuración del chatbot (incluyendo system prompt personalizado)
+    const chatbotConfig = await getChatbotConfigFromDB();
+
     // Sistema base - Prompt optimizado para asistente público de clínica dental
-    let systemPrompt = `Eres el asistente virtual de Dental Company, una clínica dental en Tacna, Perú.
+    // Usar prompt personalizado si está configurado, o el default
+    const customPrompt = chatbotConfig.chatbot_system_prompt?.trim();
+    let systemPrompt =
+      customPrompt ||
+      `Eres el asistente virtual de Dental Company, una clínica dental en Tacna, Perú.
 
 TU ROL:
 - Responde de manera amable, profesional y empática
@@ -136,14 +146,23 @@ IMPORTANTE:
     // Buscar contexto dinámico desde la BD usando embeddings vectoriales
     if (useFAQ && messages.length > 0 && isRelevantForFAQ(userQuery)) {
       try {
-        // Obtener FAQs (búsqueda semántica), contexto relevante y tema en paralelo
-        const [faqs, contextos, tema] = await Promise.all([
+        // Obtener FAQs, contexto, tema, servicios y equipo en paralelo
+        const [faqs, contextos, tema, servicios, equipo] = await Promise.all([
           searchFAQsFromDB(userQuery, 3),
           searchContextoFromDB(userQuery, 2),
           getTemaFromDB(),
+          getServiciosFromDB(),
+          getEquipoFromDB(),
         ]);
 
-        const ragContext = generateRAGContext(faqs, contextos, tema);
+        const ragContext = generateRAGContext(
+          faqs,
+          contextos,
+          tema,
+          servicios,
+          equipo,
+          chatbotConfig
+        );
         if (ragContext) {
           systemPrompt += "\n\n" + ragContext;
         }

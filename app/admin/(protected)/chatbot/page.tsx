@@ -48,6 +48,8 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
+  Settings,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -127,6 +129,58 @@ export default function ChatbotFAQsPage() {
   );
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // Estados para configuración del chatbot
+  const [chatbotConfig, setChatbotConfig] = useState<Record<string, string>>({
+    chatbot_usar_info_general: "true",
+    chatbot_usar_servicios: "true",
+    chatbot_usar_equipo: "true",
+    chatbot_system_prompt: "",
+  });
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+
+  // Cargar configuración del chatbot
+  const fetchChatbotConfig = async () => {
+    try {
+      const res = await fetch("/api/chatbot/config");
+      if (res.ok) {
+        const data = await res.json();
+        setChatbotConfig((prev) => ({ ...prev, ...data }));
+      }
+    } catch (error) {
+      console.error("Error cargando config chatbot:", error);
+    }
+  };
+
+  // Guardar configuración del chatbot
+  const saveChatbotConfig = async (key: string, value: string) => {
+    setIsSavingConfig(true);
+    try {
+      const res = await fetch("/api/chatbot/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: value }),
+      });
+
+      if (res.ok) {
+        setChatbotConfig((prev) => ({ ...prev, [key]: value }));
+        toast.success("Configuración guardada");
+      } else {
+        toast.error("Error al guardar configuración");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al guardar configuración");
+    } finally {
+      setIsSavingConfig(false);
+    }
+  };
+
+  // Toggle configuración del chatbot
+  const toggleChatbotConfig = async (key: string) => {
+    const currentValue = chatbotConfig[key] !== "false";
+    await saveChatbotConfig(key, currentValue ? "false" : "true");
+  };
+
   // Cargar estado de embeddings
   const fetchEmbeddingStats = async () => {
     try {
@@ -189,6 +243,7 @@ export default function ChatbotFAQsPage() {
     fetchFAQs();
     fetchContextos();
     fetchEmbeddingStats();
+    fetchChatbotConfig();
   }, []);
 
   // ============ CONTEXTOS ============
@@ -380,7 +435,7 @@ export default function ChatbotFAQsPage() {
           <Button
             variant='outline'
             onClick={syncEmbeddings}
-            disabled={isSyncing || embeddingStats?.allSynced}
+            disabled={isSyncing}
             title='Sincroniza los embeddings para búsqueda semántica'
           >
             {isSyncing ? (
@@ -427,12 +482,19 @@ export default function ChatbotFAQsPage() {
         </Card>
       </div>
 
-      {/* Tabs para FAQs y Contextos */}
+      {/* Tabs para FAQs, Contextos y Configuración */}
       <Tabs
-        defaultValue='faqs'
+        defaultValue='config'
         className='space-y-4'
       >
         <TabsList>
+          <TabsTrigger
+            value='config'
+            className='flex items-center gap-2'
+          >
+            <Settings className='h-4 w-4' />
+            Configuración
+          </TabsTrigger>
           <TabsTrigger
             value='faqs'
             className='flex items-center gap-2'
@@ -445,7 +507,7 @@ export default function ChatbotFAQsPage() {
             className='flex items-center gap-2'
           >
             <FileText className='h-4 w-4' />
-            Contextos ({contextos.length})
+            Contextos Adicionales ({contextos.length})
           </TabsTrigger>
         </TabsList>
 
@@ -976,6 +1038,153 @@ export default function ChatbotFAQsPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ============ TAB CONFIGURACIÓN ============ */}
+        <TabsContent value='config'>
+          <div className='space-y-6'>
+            {/* System Prompt */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <MessageCircle className='h-5 w-5' />
+                  System Prompt del Chatbot
+                </CardTitle>
+                <CardDescription>
+                  Personaliza las instrucciones base que definen el
+                  comportamiento y personalidad del asistente virtual
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div className='space-y-2'>
+                  <Label htmlFor='systemPrompt'>
+                    Instrucciones del Sistema
+                  </Label>
+                  <Textarea
+                    id='systemPrompt'
+                    placeholder='Ej: Eres un asistente amable de una clínica dental. Responde en español de manera profesional pero cercana. Si no sabes algo, indícalo honestamente...'
+                    value={chatbotConfig.chatbot_system_prompt || ""}
+                    onChange={(e) =>
+                      setChatbotConfig((prev) => ({
+                        ...prev,
+                        chatbot_system_prompt: e.target.value,
+                      }))
+                    }
+                    className='min-h-[200px] font-mono text-sm'
+                  />
+                  <p className='text-xs text-muted-foreground'>
+                    Estas instrucciones se envían al chatbot antes de cada
+                    conversación para definir su personalidad, tono y
+                    comportamiento.
+                  </p>
+                </div>
+                <Button
+                  onClick={() =>
+                    saveChatbotConfig(
+                      "chatbot_system_prompt",
+                      chatbotConfig.chatbot_system_prompt || ""
+                    )
+                  }
+                  disabled={isSavingConfig}
+                >
+                  {isSavingConfig ? (
+                    <>
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className='mr-2 h-4 w-4' />
+                      Guardar System Prompt
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Contexto del CMS */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center gap-2'>
+                  <Settings className='h-5 w-5' />
+                  Información del CMS
+                </CardTitle>
+                <CardDescription>
+                  Controla qué información del CMS estará disponible para el
+                  chatbot como contexto adicional
+                </CardDescription>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                <div className='grid gap-4'>
+                  <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg'>
+                    <div className='space-y-1'>
+                      <h4 className='font-medium flex items-center gap-2'>
+                        <FileText className='h-4 w-4' />
+                        Información General
+                      </h4>
+                      <p className='text-sm text-muted-foreground'>
+                        Nombre de la clínica, dirección, teléfono, horarios,
+                        etc.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={
+                        chatbotConfig.chatbot_usar_info_general !== "false"
+                      }
+                      onCheckedChange={() =>
+                        toggleChatbotConfig("chatbot_usar_info_general")
+                      }
+                    />
+                  </div>
+
+                  <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg'>
+                    <div className='space-y-1'>
+                      <h4 className='font-medium flex items-center gap-2'>
+                        <BookOpen className='h-4 w-4' />
+                        Servicios
+                      </h4>
+                      <p className='text-sm text-muted-foreground'>
+                        Lista de servicios dentales ofrecidos y sus
+                        descripciones
+                      </p>
+                    </div>
+                    <Switch
+                      checked={chatbotConfig.chatbot_usar_servicios !== "false"}
+                      onCheckedChange={() =>
+                        toggleChatbotConfig("chatbot_usar_servicios")
+                      }
+                    />
+                  </div>
+
+                  <div className='flex items-center justify-between p-4 bg-muted/50 rounded-lg'>
+                    <div className='space-y-1'>
+                      <h4 className='font-medium flex items-center gap-2'>
+                        <Users className='h-4 w-4' />
+                        Equipo Médico
+                      </h4>
+                      <p className='text-sm text-muted-foreground'>
+                        Información sobre los doctores y especialistas
+                      </p>
+                    </div>
+                    <Switch
+                      checked={chatbotConfig.chatbot_usar_equipo !== "false"}
+                      onCheckedChange={() =>
+                        toggleChatbotConfig("chatbot_usar_equipo")
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className='mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+                  <p className='text-sm text-blue-700'>
+                    <strong>Nota:</strong> El chatbot siempre tendrá acceso a
+                    las FAQs activas y a los Contextos configurados en esta
+                    misma sección.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

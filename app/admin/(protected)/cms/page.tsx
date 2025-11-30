@@ -53,8 +53,29 @@ import {
   Check,
   Upload,
   X,
+  Bot,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// Componente de nota para chatbot
+function ChatbotNote({ enabled }: { enabled: boolean }) {
+  return (
+    <div
+      className={`flex items-center gap-2 text-xs px-3 py-2 rounded-md ${
+        enabled
+          ? "bg-blue-50 text-blue-700 border border-blue-200"
+          : "bg-gray-50 text-gray-500 border border-gray-200"
+      }`}
+    >
+      <Bot className='h-3 w-3' />
+      <span>
+        {enabled
+          ? "Esta información la conocerá el chatbot"
+          : "El chatbot NO usará esta información"}
+      </span>
+    </div>
+  );
+}
 
 interface Servicio {
   id: string;
@@ -254,6 +275,26 @@ export default function CMSPage() {
   const [servicioRecomendaciones, setServicioRecomendaciones] =
     useState<string>("");
 
+  // Estados para configuración del chatbot (solo lectura para mostrar notas)
+  const [chatbotConfig, setChatbotConfig] = useState<Record<string, string>>({
+    chatbot_usar_info_general: "true",
+    chatbot_usar_servicios: "true",
+    chatbot_usar_equipo: "true",
+  });
+
+  // Cargar configuración del chatbot
+  const fetchChatbotConfig = async () => {
+    try {
+      const res = await fetch("/api/chatbot/config");
+      if (res.ok) {
+        const data = await res.json();
+        setChatbotConfig((prev) => ({ ...prev, ...data }));
+      }
+    } catch (error) {
+      console.error("Error cargando config chatbot:", error);
+    }
+  };
+
   // Cargar datos (inicial)
   const fetchData = async () => {
     setIsLoading(true);
@@ -410,6 +451,7 @@ export default function CMSPage() {
   useEffect(() => {
     fetchData();
     fetchSecurityConfig();
+    fetchChatbotConfig();
   }, []);
 
   // Guardar tema
@@ -660,10 +702,17 @@ export default function CMSPage() {
         <TabsContent value='general'>
           <Card>
             <CardHeader>
-              <CardTitle>Información General</CardTitle>
-              <CardDescription>
-                Configura la información básica de la clínica
-              </CardDescription>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle>Información General</CardTitle>
+                  <CardDescription>
+                    Configura la información básica de la clínica
+                  </CardDescription>
+                </div>
+                <ChatbotNote
+                  enabled={chatbotConfig.chatbot_usar_info_general !== "false"}
+                />
+              </div>
             </CardHeader>
             <CardContent className='space-y-6'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -765,12 +814,17 @@ export default function CMSPage() {
         {/* Tab: Servicios */}
         <TabsContent value='servicios'>
           <Card>
-            <CardHeader className='flex flex-row items-center justify-between'>
+            <CardHeader className='flex flex-row items-center justify-between flex-wrap gap-4'>
               <div>
                 <CardTitle>Servicios</CardTitle>
                 <CardDescription>
                   Gestiona los servicios mostrados en la landing page
                 </CardDescription>
+                <div className='mt-2'>
+                  <ChatbotNote
+                    enabled={chatbotConfig.chatbot_usar_servicios !== "false"}
+                  />
+                </div>
               </div>
               <Dialog
                 open={dialogOpen && dialogType === "servicio"}
@@ -1099,12 +1153,17 @@ export default function CMSPage() {
         {/* Tab: Equipo */}
         <TabsContent value='equipo'>
           <Card>
-            <CardHeader className='flex flex-row items-center justify-between'>
+            <CardHeader className='flex flex-row items-center justify-between flex-wrap gap-4'>
               <div>
                 <CardTitle>Equipo</CardTitle>
                 <CardDescription>
                   Gestiona los miembros del equipo
                 </CardDescription>
+                <div className='mt-2'>
+                  <ChatbotNote
+                    enabled={chatbotConfig.chatbot_usar_equipo !== "false"}
+                  />
+                </div>
               </div>
               <Dialog
                 open={dialogOpen && dialogType === "miembro"}

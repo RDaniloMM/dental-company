@@ -49,6 +49,21 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id, titulo, contenido, tipo, activo } = body;
 
+    // Si solo estamos actualizando el campo 'activo' (toggle)
+    if (id && titulo === undefined && contenido === undefined) {
+      const { error } = await supabase
+        .from("chatbot_contexto")
+        .update({ activo: activo !== false })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      return NextResponse.json({
+        success: true,
+        toggleOnly: true,
+      });
+    }
+
     // Generar embedding automáticamente
     let embedding: number[] | null = null;
     try {

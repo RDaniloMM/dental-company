@@ -55,6 +55,21 @@ export async function POST(req: Request) {
     const { id, pregunta, respuesta, keywords, categoria, prioridad, activo } =
       body;
 
+    // Si solo estamos actualizando el campo 'activo' (toggle)
+    if (id && pregunta === undefined && respuesta === undefined) {
+      const { error } = await supabase
+        .from("chatbot_faqs")
+        .update({ activo: activo !== false })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      return NextResponse.json({
+        success: true,
+        toggleOnly: true,
+      });
+    }
+
     // Procesar keywords (puede venir como string separado por comas o array)
     let keywordsArray: string[] = [];
     if (typeof keywords === "string") {
@@ -90,9 +105,9 @@ export async function POST(req: Request) {
       activo: activo !== false,
     };
 
-    // Solo agregar embedding si se generó correctamente
+    // Solo agregar embedding si se generó correctamente - usar formato correcto para pgvector
     if (embedding) {
-      faqData.embedding = JSON.stringify(embedding);
+      faqData.embedding = `[${embedding.join(",")}]`;
       faqData.embedding_updated_at = new Date().toISOString();
     }
 

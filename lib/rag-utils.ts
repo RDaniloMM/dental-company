@@ -82,7 +82,7 @@ export async function searchFAQsFromDB(
     const { data, error } = await supabase.rpc("search_faqs_by_embedding", {
       query_embedding: `[${queryEmbedding.join(",")}]`,
       match_threshold: 0.45, // Umbral de similitud (0.45 = 45% similar)
-      match_count: topK,
+      match_count: topK * 2, // Pedimos más para filtrar después
     });
 
     if (error) {
@@ -96,25 +96,45 @@ export async function searchFAQsFromDB(
       return searchFAQsByKeywords(query, topK);
     }
 
-    return data.map(
-      (item: {
-        id: string;
-        pregunta: string;
-        respuesta: string;
-        keywords: string[];
-        categoria: string;
-        prioridad: number;
-        similarity: number;
-      }) => ({
-        id: item.id,
-        pregunta: item.pregunta,
-        respuesta: item.respuesta,
-        keywords: item.keywords || [],
-        categoria: item.categoria,
-        prioridad: item.prioridad,
-        similarity: item.similarity,
-      })
+    // IMPORTANTE: Verificar que solo usamos FAQs activos
+    // Consultamos el estado activo de cada FAQ retornado
+    const faqIds = data.map((item: { id: string }) => item.id);
+    const { data: activeCheck } = await supabase
+      .from("chatbot_faqs")
+      .select("id, activo")
+      .in("id", faqIds)
+      .eq("activo", true);
+
+    const activeIds = new Set(
+      (activeCheck || []).map((f: { id: string }) => f.id)
     );
+
+    // Filtrar solo los FAQs que están activos
+    const activeFaqs = data.filter((item: { id: string }) =>
+      activeIds.has(item.id)
+    );
+
+    return activeFaqs
+      .slice(0, topK)
+      .map(
+        (item: {
+          id: string;
+          pregunta: string;
+          respuesta: string;
+          keywords: string[];
+          categoria: string;
+          prioridad: number;
+          similarity: number;
+        }) => ({
+          id: item.id,
+          pregunta: item.pregunta,
+          respuesta: item.respuesta,
+          keywords: item.keywords || [],
+          categoria: item.categoria,
+          prioridad: item.prioridad,
+          similarity: item.similarity,
+        })
+      );
   } catch (error) {
     console.error("Error en searchFAQsFromDB:", error);
     // Fallback a búsqueda por keywords
@@ -221,15 +241,34 @@ export async function searchContextoFromDB(
     const { data, error } = await supabase.rpc("search_contexto_by_embedding", {
       query_embedding: `[${queryEmbedding.join(",")}]`,
       match_threshold: 0.4,
-      match_count: topK,
+      match_count: topK * 2, // Pedimos más para filtrar después
     });
 
     if (error) {
       console.error("Error en búsqueda vectorial de contexto:", error);
-      return getContextoFromDB(); // Fallback: retornar todo el contexto
+      return getContextoFromDB(); // Fallback: retornar todo el contexto activo
     }
 
-    return data || [];
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // IMPORTANTE: Verificar que solo usamos contexto activo
+    const ctxIds = data.map((item: { id: string }) => item.id);
+    const { data: activeCheck } = await supabase
+      .from("chatbot_contexto")
+      .select("id, activo")
+      .in("id", ctxIds)
+      .eq("activo", true);
+
+    const activeIds = new Set(
+      (activeCheck || []).map((c: { id: string }) => c.id)
+    );
+    const activeContexto = data.filter((item: { id: string }) =>
+      activeIds.has(item.id)
+    );
+
+    return activeContexto.slice(0, topK);
   } catch (error) {
     console.error("Error en searchContextoFromDB:", error);
     return getContextoFromDB();
@@ -284,18 +323,133 @@ export async function getTemaFromDB(): Promise<Record<string, string>> {
   }
 }
 
+export interface Servicio {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  detalle_completo?: string;
+  beneficios?: string[];
+  duracion?: string;
+}
+
+export interface Miembro {
+  id: string;
+  nombre: string;
+  cargo: string;
+  especialidad: string;
+  curriculum?: {
+    formacion?: string[];
+    experiencia?: string[];
+    especialidades?: string[];
+    filosofia?: string;
+  } | null;
+}
+
+/**
+ * Obtener servicios visibles para el chatbot
+ */
+export async function getServiciosFromDB(): Promise<Servicio[]> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("cms_servicios")
+      .select("id, nombre, descripcion, detalle_completo, beneficios, duracion")
+      .eq("visible", true)
+      .order("orden", { ascending: true });
+
+    if (error || !data) {
+      console.error("Error obteniendo servicios:", error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error en getServiciosFromDB:", error);
+    return [];
+  }
+}
+
+/**
+ * Obtener equipo visible para el chatbot
+ */
+export async function getEquipoFromDB(): Promise<Miembro[]> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("cms_equipo")
+      .select("id, nombre, cargo, especialidad, curriculum")
+      .eq("visible", true)
+      .order("orden", { ascending: true });
+
+    if (error || !data) {
+      console.error("Error obteniendo equipo:", error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error en getEquipoFromDB:", error);
+    return [];
+  }
+}
+
+/**
+ * Obtener configuración de contexto del chatbot desde cms_tema (grupo='chatbot')
+ */
+export async function getChatbotConfigFromDB(): Promise<
+  Record<string, string>
+> {
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("cms_tema")
+      .select("clave, valor")
+      .eq("grupo", "chatbot");
+
+    if (error || !data) {
+      // Si no hay datos, devolver valores por defecto
+      return {
+        chatbot_usar_info_general: "true",
+        chatbot_usar_servicios: "true",
+        chatbot_usar_equipo: "true",
+        chatbot_system_prompt: "",
+      };
+    }
+
+    return data.reduce((acc, item) => {
+      acc[item.clave] = item.valor;
+      return acc;
+    }, {} as Record<string, string>);
+  } catch (error) {
+    console.error("Error en getChatbotConfigFromDB:", error);
+    return {
+      chatbot_usar_info_general: "true",
+      chatbot_usar_servicios: "true",
+      chatbot_usar_equipo: "true",
+      chatbot_system_prompt: "",
+    };
+  }
+}
+
 /**
  * Genera el contexto RAG para incluir en el prompt del modelo
  */
 export function generateRAGContext(
   faqs: FAQ[],
   contextos: Contexto[] = [],
-  tema: Record<string, string> = {}
+  tema: Record<string, string> = {},
+  servicios: Servicio[] = [],
+  equipo: Miembro[] = [],
+  config: Record<string, string> = {}
 ): string {
   let context = "";
 
-  // Agregar información de contacto desde el tema
-  if (Object.keys(tema).length > 0) {
+  // Agregar información de contacto desde el tema (si está habilitado)
+  const usarInfoGeneral = config.chatbot_usar_info_general !== "false";
+  if (usarInfoGeneral && Object.keys(tema).length > 0) {
     context += "INFORMACIÓN ACTUALIZADA DE LA CLÍNICA:\n";
     if (tema.nombre_clinica) context += `- Nombre: ${tema.nombre_clinica}\n`;
     if (tema.direccion) context += `- Dirección: ${tema.direccion}\n`;
@@ -305,6 +459,50 @@ export function generateRAGContext(
     if (tema.horario_sabado) context += `- Sábados: ${tema.horario_sabado}\n`;
     if (tema.whatsapp_numero)
       context += `- WhatsApp: +${tema.whatsapp_numero}\n`;
+    context += "\n";
+  }
+
+  // Agregar servicios (si está habilitado)
+  const usarServicios = config.chatbot_usar_servicios !== "false";
+  if (usarServicios && servicios.length > 0) {
+    context += "SERVICIOS QUE OFRECEMOS:\n";
+    servicios.forEach((servicio) => {
+      context += `\n• ${servicio.nombre}: ${servicio.descripcion}`;
+      if (servicio.duracion) context += ` (Duración: ${servicio.duracion})`;
+      context += "\n";
+      if (servicio.detalle_completo) {
+        context += `  Detalles: ${servicio.detalle_completo}\n`;
+      }
+      if (servicio.beneficios && servicio.beneficios.length > 0) {
+        context += `  Beneficios: ${servicio.beneficios.join(", ")}\n`;
+      }
+    });
+    context += "\n";
+  }
+
+  // Agregar equipo (si está habilitado)
+  const usarEquipo = config.chatbot_usar_equipo !== "false";
+  if (usarEquipo && equipo.length > 0) {
+    context += "NUESTRO EQUIPO MÉDICO:\n";
+    equipo.forEach((miembro) => {
+      context += `\n• ${miembro.nombre}`;
+      if (miembro.cargo) context += ` - ${miembro.cargo}`;
+      if (miembro.especialidad) context += ` (${miembro.especialidad})`;
+      context += "\n";
+      if (miembro.curriculum) {
+        if (
+          miembro.curriculum.especialidades &&
+          miembro.curriculum.especialidades.length > 0
+        ) {
+          context += `  Especialidades: ${miembro.curriculum.especialidades.join(
+            ", "
+          )}\n`;
+        }
+        if (miembro.curriculum.filosofia) {
+          context += `  Filosofía: ${miembro.curriculum.filosofia}\n`;
+        }
+      }
+    });
     context += "\n";
   }
 
