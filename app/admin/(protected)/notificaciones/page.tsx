@@ -11,6 +11,7 @@ import {
 import { Bell, Calendar, Cake, PartyPopper } from "lucide-react";
 import { SendButton } from "./send-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { getClinicDate } from "@/lib/time";
 
 export default async function NotificacionesPage() {
     const supabase = await createClient();
@@ -20,7 +21,7 @@ export default async function NotificacionesPage() {
         .select("id, nombres, apellidos, fecha_nacimiento, email")
         .not("fecha_nacimiento", "is", null);
 
-    const today = new Date();
+    const today = getClinicDate();
     today.setHours(0, 0, 0, 0); // Normalizar a inicio del día
     const currentYear = today.getFullYear();
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendBirthdayEmail } from "@/app/admin/(protected)/notificaciones/actions";
+import { getClinicDate } from "@/lib/time";
 
 export async function GET(req: NextRequest) {
     // Verificar autenticación del Cron Job (opcional pero recomendado)
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const today = new Date();
+    const today = getClinicDate();
     const currentMonth = today.getMonth();
     const currentDay = today.getDate();
 

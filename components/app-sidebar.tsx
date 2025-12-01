@@ -29,6 +29,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+import { getClinicDate } from "@/lib/time";
+
 const teams = [
   {
     name: "Clínica Dental",
@@ -153,8 +155,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         .select("fecha_nacimiento")
         .not("fecha_nacimiento", "is", null);
 
+
       if (patients) {
-        const today = new Date();
+        const today = getClinicDate();
         const currentMonth = today.getMonth();
         const currentDay = today.getDate();
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Cake, PartyPopper } from "lucide-react";
 import Link from "next/link";
+import { getClinicDate } from "@/lib/time";
 
 export default async function Page() {
   const supabase = await createClient();
@@ -11,7 +12,7 @@ export default async function Page() {
     .select("id, nombres, apellidos, fecha_nacimiento")
     .not("fecha_nacimiento", "is", null);
 
-  const today = new Date();
+  const today = getClinicDate();
   const currentMonth = today.getMonth();
   const currentDay = today.getDate();
 
