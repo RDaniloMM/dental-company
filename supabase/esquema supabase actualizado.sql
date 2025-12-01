@@ -11,6 +11,7 @@ CREATE TABLE public.ajustes_aplicacion (
   orden integer DEFAULT 0,
   updated_at timestamp with time zone DEFAULT now(),
   created_at timestamp with time zone DEFAULT now(),
+  resend_api_key text,
   CONSTRAINT ajustes_aplicacion_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.antecedentes (
@@ -313,6 +314,8 @@ CREATE TABLE public.odontogramas (
   odontograma_data jsonb,
   fecha_registro timestamp with time zone DEFAULT now(),
   version integer NOT NULL,
+  especificaciones text,
+  observaciones text,
   CONSTRAINT odontogramas_pkey PRIMARY KEY (id),
   CONSTRAINT odontogramas_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id)
 );
@@ -361,11 +364,17 @@ CREATE TABLE public.pagos (
   recibido_por uuid,
   fecha_pago timestamp with time zone NOT NULL DEFAULT now(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  deleted_at timestamp with time zone,
+  deleted_by uuid,
+  updated_at timestamp with time zone DEFAULT now(),
+  updated_by uuid,
   CONSTRAINT pagos_pkey PRIMARY KEY (id),
   CONSTRAINT pagos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
   CONSTRAINT pagos_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id),
   CONSTRAINT pagos_recibido_por_fkey FOREIGN KEY (recibido_por) REFERENCES public.personal(id),
-  CONSTRAINT pagos_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.presupuestos(id)
+  CONSTRAINT pagos_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.presupuestos(id),
+  CONSTRAINT pagos_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES public.personal(id),
+  CONSTRAINT pagos_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.personal(id)
 );
 CREATE TABLE public.personal (
   id uuid NOT NULL,
@@ -419,12 +428,12 @@ CREATE TABLE public.presupuesto_items (
   costo_unitario numeric NOT NULL,
   descuento_porcentaje numeric DEFAULT 0,
   costo_final numeric NOT NULL,
-  estado text NOT NULL DEFAULT 'Pendiente'::text,
+  estado text NOT NULL DEFAULT 'Pendiente'::text CHECK (estado = ANY (ARRAY['Pendiente'::text, 'Realizado'::text, 'Cancelado'::text])),
   orden_ejecucion integer,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT presupuesto_items_pkey PRIMARY KEY (id),
-  CONSTRAINT presupuesto_items_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.presupuestos(id),
-  CONSTRAINT presupuesto_items_procedimiento_id_fkey FOREIGN KEY (procedimiento_id) REFERENCES public.procedimientos(id)
+  CONSTRAINT presupuesto_items_procedimiento_id_fkey FOREIGN KEY (procedimiento_id) REFERENCES public.procedimientos(id),
+  CONSTRAINT presupuesto_items_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.presupuestos(id)
 );
 CREATE TABLE public.presupuestos (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -434,19 +443,29 @@ CREATE TABLE public.presupuestos (
   nombre text NOT NULL,
   observacion text,
   especialidad text,
-  costo_total numeric NOT NULL,
+  costo_total numeric NOT NULL CHECK (costo_total >= 0::numeric),
   estado text NOT NULL DEFAULT 'Por Cobrar'::text,
   fecha_creacion timestamp with time zone NOT NULL DEFAULT now(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  moneda_id uuid,
-  descuento_global numeric DEFAULT 0,
-  total_pagado numeric DEFAULT 0,
+  moneda_id uuid CHECK (moneda_id IS NOT NULL),
+  descuento_global numeric DEFAULT 0 CHECK (descuento_global >= 0::numeric AND descuento_global <= 100::numeric),
+  total_pagado numeric DEFAULT 0 CHECK (total_pagado >= 0::numeric),
   saldo_pendiente numeric DEFAULT (costo_total - COALESCE(total_pagado, (0)::numeric)),
+  items_json jsonb DEFAULT '[]'::jsonb,
+  creador_personal_id uuid,
+  creador_nombre text,
+  creador_rol text,
+  deleted_at timestamp with time zone,
+  deleted_by uuid,
+  updated_at timestamp with time zone DEFAULT now(),
+  updated_by uuid,
   CONSTRAINT presupuestos_pkey PRIMARY KEY (id),
   CONSTRAINT presupuestos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
   CONSTRAINT presupuestos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id),
   CONSTRAINT presupuestos_medico_id_fkey FOREIGN KEY (medico_id) REFERENCES public.personal(id),
-  CONSTRAINT fk_moneda FOREIGN KEY (moneda_id) REFERENCES public.monedas(id)
+  CONSTRAINT fk_moneda FOREIGN KEY (moneda_id) REFERENCES public.monedas(id),
+  CONSTRAINT presupuestos_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES public.personal(id),
+  CONSTRAINT presupuestos_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.personal(id)
 );
 CREATE TABLE public.procedimiento_precios (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -490,50 +509,87 @@ CREATE TABLE public.recetas (
   CONSTRAINT recetas_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
   CONSTRAINT recetas_prescriptor_id_fkey FOREIGN KEY (prescriptor_id) REFERENCES public.personal(id)
 );
+CREATE TABLE public.seguimiento_audit_log (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  seguimiento_id uuid NOT NULL,
+  action text NOT NULL CHECK (action = ANY (ARRAY['create'::text, 'update'::text, 'delete'::text, 'pago_registrado'::text])),
+  changed_by uuid,
+  changed_at timestamp with time zone NOT NULL DEFAULT now(),
+  old_value jsonb,
+  new_value jsonb,
+  details text,
+  CONSTRAINT seguimiento_audit_log_pkey PRIMARY KEY (id),
+  CONSTRAINT seguimiento_audit_log_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES public.personal(id)
+);
 CREATE TABLE public.seguimiento_imagenes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  seguimiento_id uuid,
-  ruta text NOT NULL,
+  seguimiento_id uuid NOT NULL,
+  imagen_url text NOT NULL,
+  public_id character varying,
+  tipo character varying DEFAULT 'general'::character varying CHECK (tipo::text = ANY (ARRAY['antes'::character varying, 'durante'::character varying, 'despues'::character varying, 'evidencia'::character varying, 'general'::character varying]::text[])),
   descripcion text,
-  uploaded_at timestamp with time zone DEFAULT now(),
-  caso_id uuid,
-  public_id text,
-  titulo text,
-  tipo text DEFAULT 'general'::text,
-  fecha_captura date,
-  url text,
+  fecha_captura timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT seguimiento_imagenes_pkey PRIMARY KEY (id),
-  CONSTRAINT seguimiento_imagenes_seguimiento_id_fkey FOREIGN KEY (seguimiento_id) REFERENCES public.seguimientos(id),
-  CONSTRAINT seguimiento_imagenes_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id)
+  CONSTRAINT seguimiento_imagenes_seguimiento_id_fkey FOREIGN KEY (seguimiento_id) REFERENCES public.seguimientos(id)
 );
 CREATE TABLE public.seguimientos (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
+  caso_id uuid NOT NULL,
   paciente_id uuid NOT NULL,
-  odontologo_id uuid NOT NULL,
+  profesional_id uuid,
+  tipo character varying NOT NULL DEFAULT 'control'::character varying,
+  titulo character varying NOT NULL,
+  descripcion text,
+  fecha timestamp with time zone NOT NULL DEFAULT now(),
+  procedimientos_realizados jsonb DEFAULT '[]'::jsonb,
+  monto_pagado numeric,
+  metodo_pago character varying,
+  comprobante_numero character varying,
+  pago_id uuid,
   cita_id uuid,
-  fecha_seguimiento date NOT NULL DEFAULT CURRENT_DATE,
+  proxima_cita_id uuid,
+  creador_personal_id uuid,
+  creador_nombre character varying,
+  creador_rol character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  deleted_at timestamp with time zone,
+  deleted_by uuid,
+  CONSTRAINT seguimientos_pkey PRIMARY KEY (id),
+  CONSTRAINT seguimientos_profesional_id_fkey FOREIGN KEY (profesional_id) REFERENCES public.personal(id),
+  CONSTRAINT seguimientos_cita_id_fkey FOREIGN KEY (cita_id) REFERENCES public.citas(id),
+  CONSTRAINT seguimientos_proxima_cita_id_fkey FOREIGN KEY (proxima_cita_id) REFERENCES public.citas(id),
+  CONSTRAINT seguimientos_pago_id_fkey FOREIGN KEY (pago_id) REFERENCES public.pagos(id)
+);
+CREATE TABLE public.seguimientos_backup_antes_migracion (
+  id uuid,
+  paciente_id uuid,
+  odontologo_id uuid,
+  cita_id uuid,
+  fecha_seguimiento date,
   procedimiento_id uuid,
   observaciones text,
   fecha_proxima_cita date,
   caso_id uuid,
-  CONSTRAINT seguimientos_pkey PRIMARY KEY (id),
-  CONSTRAINT seguimientos_paciente_id_fkey FOREIGN KEY (paciente_id) REFERENCES public.pacientes(id),
-  CONSTRAINT seguimientos_odontologo_id_fkey FOREIGN KEY (odontologo_id) REFERENCES public.personal(id),
-  CONSTRAINT seguimientos_cita_id_fkey FOREIGN KEY (cita_id) REFERENCES public.citas(id),
-  CONSTRAINT seguimientos_procedimiento_id_fkey FOREIGN KEY (procedimiento_id) REFERENCES public.procedimientos(id),
-  CONSTRAINT seguimientos_caso_id_fkey FOREIGN KEY (caso_id) REFERENCES public.casos_clinicos(id)
-);
-CREATE TABLE public.transacciones_financieras (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  cita_id uuid,
-  monto numeric NOT NULL,
-  moneda_id uuid NOT NULL,
-  tipo text NOT NULL,
+  fecha_inicio timestamp with time zone,
+  fecha_fin timestamp with time zone,
+  titulo text,
   descripcion text,
-  fecha_transaccion timestamp with time zone DEFAULT now(),
-  CONSTRAINT transacciones_financieras_pkey PRIMARY KEY (id),
-  CONSTRAINT transacciones_financieras_cita_id_fkey FOREIGN KEY (cita_id) REFERENCES public.citas(id),
-  CONSTRAINT transacciones_financieras_moneda_id_fkey FOREIGN KEY (moneda_id) REFERENCES public.monedas(id)
+  estado text,
+  notas_evolucion text,
+  procedimientos_realizados jsonb,
+  monto_pagado numeric,
+  metodo_pago text,
+  comprobante_numero text,
+  google_calendar_event_id text,
+  created_at timestamp with time zone,
+  created_by uuid,
+  updated_at timestamp with time zone,
+  updated_by uuid,
+  deleted_at timestamp with time zone,
+  deleted_by uuid,
+  profesional_id uuid
 );
 CREATE TABLE public.unidades (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
