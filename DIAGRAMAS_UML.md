@@ -91,6 +91,7 @@ Odontologo --> UC7
 
 ' Relaciones Admin
 Admin --> UC1
+Admin --> UC2
 Admin --> UC3
 Admin --> UC4
 Admin --> UC6
@@ -112,7 +113,9 @@ UC4 ..> UC5 : <<include>>
 UC6 ..> UC7 : <<include>>
 
 @enduml
-```---
+```
+
+---
 
 ## 2. Diagrama de Clases
 
@@ -306,21 +309,6 @@ class ChatbotContexto {
     +generarEmbedding(): void
 }
 
-class ChatbotCola {
-    +id: UUID
-    +session_id: Text
-    +mensaje: Text
-    +intentos: Integer
-    +max_intentos: Integer
-    +estado: Text
-    +error_mensaje: Text
-    +created_at: Timestamp
-    +processed_at: Timestamp
-    --
-    +encolar(): void
-    +procesar(): void
-}
-
 class ChatbotRateLimit {
     +id: UUID
     +ip_hash: Text
@@ -333,6 +321,13 @@ class ChatbotRateLimit {
 }
 
 ' ========== RELACIONES ==========
+
+Personal "1" -- "*" CodigoInvitacion : crea >
+Personal "1" -- "*" CMSSeccion : actualiza >
+Personal "1" -- "*" CMSServicio : gestiona >
+Personal "1" -- "*" CMSEquipo : gestiona >
+Personal "1" -- "*" ChatbotFAQ : gestiona >
+Personal "1" -- "*" AjustesAplicacion : configura >
 
 CMSServicio "1" -- "*" CMSServicioImagen : tiene >
 
@@ -524,6 +519,11 @@ entity "config_seguridad" as config_seg {
     descripcion : TEXT
     updated_at : TIMESTAMP
 }
+note bottom of config_seg
+  También almacena:
+  secuencia_historia_{año}
+  para generación de HC
+end note
 
 entity "ajustes_aplicacion" as ajustes {
     *id : UUID <<PK>>
@@ -650,19 +650,6 @@ entity "chatbot_contexto" as contexto {
     embedding_updated_at : TIMESTAMP
 }
 
-entity "chatbot_cola" as cola {
-    *id : UUID <<PK>>
-    --
-    session_id : TEXT
-    mensaje : TEXT
-    intentos : INTEGER
-    max_intentos : INTEGER
-    estado : TEXT
-    error_mensaje : TEXT
-    created_at : TIMESTAMP
-    processed_at : TIMESTAMP
-}
-
 entity "chatbot_rate_limit" as rate_limit {
     *id : UUID <<PK>>
     --
@@ -742,7 +729,7 @@ cloud "Google AI" {
 
 ### Herramientas Utilizadas
 
-- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS, shadcn/ui
+- **Frontend:** Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend:** Next.js API Routes, Server Actions
 - **Base de Datos:** PostgreSQL (Supabase)
 - **Autenticación:** Supabase Auth con JWT

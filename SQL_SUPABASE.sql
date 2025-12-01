@@ -38,18 +38,7 @@ CREATE TABLE public.casos_clinicos (
   CONSTRAINT casos_clinicos_historia_id_fkey FOREIGN KEY (historia_id) REFERENCES public.historias_clinicas(id),
   CONSTRAINT casos_clinicos_presupuesto_id_fkey FOREIGN KEY (presupuesto_id) REFERENCES public.planes_procedimiento(id)
 );
-CREATE TABLE public.chatbot_cola (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  session_id text NOT NULL,
-  mensaje text NOT NULL,
-  intentos integer DEFAULT 0,
-  max_intentos integer DEFAULT 3,
-  estado text DEFAULT 'pendiente'::text CHECK (estado = ANY (ARRAY['pendiente'::text, 'procesando'::text, 'completado'::text, 'fallido'::text])),
-  error_mensaje text,
-  created_at timestamp with time zone DEFAULT now(),
-  processed_at timestamp with time zone,
-  CONSTRAINT chatbot_cola_pkey PRIMARY KEY (id)
-);
+
 CREATE TABLE public.chatbot_contexto (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   titulo text NOT NULL,
@@ -62,21 +51,7 @@ CREATE TABLE public.chatbot_contexto (
   embedding_updated_at timestamp with time zone,
   CONSTRAINT chatbot_contexto_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.chatbot_conversaciones (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  session_id text NOT NULL,
-  pregunta text NOT NULL,
-  respuesta text,
-  modelo text,
-  tokens_usados integer,
-  tiempo_respuesta_ms integer,
-  error_tipo text,
-  ip_hash text,
-  user_agent text,
-  created_at timestamp with time zone DEFAULT now(),
-  expires_at timestamp with time zone DEFAULT (now() + '30 days'::interval),
-  CONSTRAINT chatbot_conversaciones_pkey PRIMARY KEY (id)
-);
+
 CREATE TABLE public.chatbot_faqs (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   pregunta text NOT NULL,
@@ -303,11 +278,7 @@ CREATE TABLE public.monedas (
   simbolo text NOT NULL,
   CONSTRAINT monedas_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.numero_historia_secuencia (
-  año integer NOT NULL,
-  ultimo_numero integer NOT NULL DEFAULT 0,
-  CONSTRAINT numero_historia_secuencia_pkey PRIMARY KEY (año)
-);
+
 CREATE TABLE public.odontogramas (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   paciente_id uuid NOT NULL,

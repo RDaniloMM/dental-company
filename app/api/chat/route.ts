@@ -10,69 +10,13 @@ import {
   generateRAGContext,
   isRelevantForFAQ,
 } from "@/lib/rag-utils";
-import { createClient } from "@/lib/supabase/server";
-import crypto from "crypto";
 
 // Configuración para Node.js runtime (mejor para problemas de IP con Google Cloud)
 export const runtime = "nodejs";
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
-// Tasa de muestreo para logging (10% de las conversaciones)
-const SAMPLE_RATE = 0.1;
-
-// Función para generar hash de IP (privacidad)
-function hashIP(ip: string): string {
-  return crypto.createHash("sha256").update(ip).digest("hex").substring(0, 16);
-}
-
-// Función para logging con muestreo
-async function logConversation(
-  sessionId: string,
-  pregunta: string,
-  respuesta: string | null,
-  modelo: string,
-  tiempoMs: number,
-  error: string | null,
-  ipHash: string,
-  userAgent: string | null
-) {
-  // Aplicar muestreo
-  if (Math.random() > SAMPLE_RATE && !error) {
-    return; // No loguear esta conversación
-  }
-
-  try {
-    const supabase = await createClient();
-
-    await supabase.from("chatbot_conversaciones").insert({
-      session_id: sessionId,
-      pregunta: pregunta.substring(0, 1000), // Limitar longitud
-      respuesta: respuesta?.substring(0, 2000),
-      modelo,
-      tiempo_respuesta_ms: tiempoMs,
-      error_tipo: error,
-      ip_hash: ipHash,
-      user_agent: userAgent?.substring(0, 500),
-    });
-  } catch (e) {
-    console.error("Error logging conversation:", e);
-  }
-}
-
 export async function POST(req: Request) {
-  const startTime = Date.now();
-  const sessionId = crypto.randomUUID();
-
-  // Obtener headers para logging
-  const forwarded = req.headers.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0] : "unknown";
-  const ipHash = hashIP(ip);
-  const userAgent = req.headers.get("user-agent");
-
-  let userQuery = "";
-  let modelo = "";
-
   try {
     // Verificar API key
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -100,8 +44,6 @@ export async function POST(req: Request) {
       useFAQ?: boolean;
     } = await req.json();
 
-    modelo = model;
-
     // Validar input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Mensajes inválidos" }), {
@@ -114,7 +56,7 @@ export async function POST(req: Request) {
 
     // Obtener la última pregunta del usuario
     const lastMessage = messages[messages.length - 1];
-    userQuery = lastMessage.parts
+    const userQuery = lastMessage.parts
       .filter((part) => part.type === "text")
       .map((part) => part.text)
       .join(" ");
@@ -190,18 +132,6 @@ IMPORTANTE:
       system: systemPrompt,
     });
 
-    // Logging asíncrono (no bloquea la respuesta)
-    logConversation(
-      sessionId,
-      userQuery,
-      null, // No tenemos la respuesta completa en streaming
-      modelo,
-      Date.now() - startTime,
-      null,
-      ipHash,
-      userAgent
-    );
-
     // NO enviar sources ni reasoning al cliente para proteger el system prompt
     return result.toUIMessageStreamResponse({
       sendSources: false,
@@ -209,7 +139,6 @@ IMPORTANTE:
     });
   } catch (error: unknown) {
     const err = error as Error & { statusCode?: number; status?: number };
-    const tiempoTotal = Date.now() - startTime;
 
     // Log detallado del error
     console.error("Error en chatbot API:", {
@@ -219,9 +148,6 @@ IMPORTANTE:
       timestamp: new Date().toISOString(),
       stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
-
-    // Determinar tipo de error para logging
-    let errorTipo = "INTERNAL_ERROR";
 
     // Rate limit / Quota exceeded (Google Cloud)
     if (
@@ -234,19 +160,6 @@ IMPORTANTE:
       err.status === 429
     ) {
       console.warn("Rate limit hit - Google Cloud quota exceeded");
-      errorTipo = "QUOTA_EXCEEDED";
-
-      // Loguear errores siempre
-      logConversation(
-        sessionId,
-        userQuery,
-        null,
-        modelo,
-        tiempoTotal,
-        errorTipo,
-        ipHash,
-        userAgent
-      );
 
       return new Response(
         JSON.stringify({
@@ -276,18 +189,6 @@ IMPORTANTE:
       err.statusCode === 403
     ) {
       console.warn("Auth error - possible IP block or invalid API key");
-      errorTipo = "AUTH_ERROR";
-
-      logConversation(
-        sessionId,
-        userQuery,
-        null,
-        modelo,
-        tiempoTotal,
-        errorTipo,
-        ipHash,
-        userAgent
-      );
 
       return new Response(
         JSON.stringify({
@@ -307,18 +208,6 @@ IMPORTANTE:
       err.message?.includes("timeout") ||
       err.message?.includes("ETIMEDOUT")
     ) {
-      errorTipo = "TIMEOUT";
-      logConversation(
-        sessionId,
-        userQuery,
-        null,
-        modelo,
-        tiempoTotal,
-        errorTipo,
-        ipHash,
-        userAgent
-      );
-
       return new Response(
         JSON.stringify({
           error:
@@ -331,18 +220,6 @@ IMPORTANTE:
         }
       );
     }
-
-    // Log error genérico
-    logConversation(
-      sessionId,
-      userQuery,
-      null,
-      modelo,
-      tiempoTotal,
-      errorTipo,
-      ipHash,
-      userAgent
-    );
 
     // Error genérico
     return new Response(
