@@ -1,5 +1,6 @@
 ## Dental company Web App
 Hecho con Next.js, React.js, Supabase, Tailwind CSS y demás librerías.
+Elaborado por RDaniloMM (Danilo Moron), SGCOx119009 (Sergio C.) y GloriousEvolution1141 (Alexis )
 
 ### Módulo de Casos Clínicos
 
