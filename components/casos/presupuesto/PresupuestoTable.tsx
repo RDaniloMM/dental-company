@@ -49,21 +49,6 @@ interface Presupuesto {
   creador_rol?: string | null
 }
 
-interface PresupuestoRow {
-  id: string
-  nombre: string
-  costo_total: number | null
-  fecha_creacion: string
-  medico_id: string | null
-  moneda_id: string | null
-  monedas: Array<{ codigo: string }> | null
-  personal: { nombre_completo?: string } | null
-  plan_items: Array<{ estado: string }>
-  creador_personal_id?: string | null
-  creador_nombre?: string | null
-  creador_rol?: string | null
-}
-
 interface PresupuestoTableProps {
   casoId: string
   pacienteId: string
@@ -119,7 +104,7 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
       console.log('[PresupuestoTable] Fetched presupuestos:', data.length, 'for casoId:', casoId)
 
       // Obtener médicos (personal) por separado
-      const medicoIds = Array.from(new Set(data.map((p: any) => p.medico_id).filter(Boolean)))
+      const medicoIds = Array.from(new Set(data.map((p: Presupuesto) => p.medico_id).filter(Boolean)))
       let medicoMap: Record<string, { nombre_completo: string }> = {}
 
       if (medicoIds.length > 0) {
@@ -128,7 +113,7 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
           .select('id, nombre_completo')
           .in('id', medicoIds)
         if (medicosData) {
-          medicoMap = medicosData.reduce((acc: Record<string, any>, m: any) => {
+          medicoMap = medicosData.reduce((acc: Record<string, { nombre_completo: string }>, m: { id: string; nombre_completo: string }) => {
             acc[m.id] = { nombre_completo: m.nombre_completo }
             return acc
           }, {})
@@ -136,7 +121,7 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
       }
 
       // Obtener monedas por separado
-      const monedaIds = Array.from(new Set(data.map((p: any) => p.moneda_id).filter(Boolean)))
+      const monedaIds = Array.from(new Set(data.map((p: Presupuesto) => p.moneda_id).filter(Boolean)))
       let monedaMap: Record<string, string> = {}
 
       if (monedaIds.length > 0) {
@@ -145,14 +130,14 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
           .select('id, codigo')
           .in('id', monedaIds)
         if (monedasData) {
-          monedaMap = monedasData.reduce((acc: Record<string, string>, m: any) => {
+          monedaMap = monedasData.reduce((acc: Record<string, string>, m: { id: string; codigo: string }) => {
             acc[m.id] = m.codigo
             return acc
           }, {})
         }
       }
 
-      const transformed = data.map((item: any) => ({
+      const transformed = data.map((item: Presupuesto) => ({
         id: item.id,
         nombre: item.nombre,
         costo_total: item.costo_total,

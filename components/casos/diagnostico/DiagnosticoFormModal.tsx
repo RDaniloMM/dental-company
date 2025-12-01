@@ -138,7 +138,7 @@ export default function DiagnosticoFormModal({
       }
     }
     resolver()
-  }, [])
+  }, [odontologoId])
 
   useEffect(() => {
     const searchCie10 = async () => {

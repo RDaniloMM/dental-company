@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -35,7 +36,6 @@ interface ProcedimientosModalProps {
     procedimientos: Array<{ id: string; nombre: string; precioDefault: number; cantidad: number }>
   ) => void
   monedaId: string
-  pacienteId?: string
 }
 
 export function ProcedimientosModal({
@@ -43,12 +43,13 @@ export function ProcedimientosModal({
   onClose,
   onSelectProcedimientos,
   monedaId,
-  pacienteId,
 }: ProcedimientosModalProps) {
   const supabase = createClient()
   const [procedimientos, setProcedimientos] = useState<Procedimiento[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [grupos, setGrupos] = useState<Array<{id: string; nombre: string}>>([])
+  const [selectedGrupoId, setSelectedGrupoId] = useState<string | null>(null)
   const [missingMoneda, setMissingMoneda] = useState(false)
   const [cantidades, setCantidades] = useState<Record<string, number>>({})
   const [currentPage, setCurrentPage] = useState(1)
@@ -65,6 +66,22 @@ export function ProcedimientosModal({
 
   useEffect(() => {
     if (!isOpen) return
+
+    // Load grupos when modal opens
+    const loadGrupos = async () => {
+      try {
+        const { data: gruposData } = await supabase
+          .from('grupos_procedimiento')
+          .select('id, nombre')
+          .order('nombre', { ascending: true })
+
+        if (gruposData) setGrupos(gruposData)
+      } catch (e) {
+        console.error('Error loading grupos:', e)
+      }
+    }
+
+    loadGrupos()
 
     const loadProcedimientos = async () => {
       setLoading(true)
@@ -85,12 +102,17 @@ export function ProcedimientosModal({
             id,
             nombre,
             descripcion,
+            grupo_id,
             procedimiento_precios!inner(precio)
           `,
             { count: 'exact' }
           )
           .eq('activo', true)
           .eq('procedimiento_precios.moneda_id', monedaId)
+
+        if (selectedGrupoId) {
+          query = query.eq('grupo_id', selectedGrupoId)
+        }
 
         if (searchTerm.trim()) {
           query = query.or(`nombre.ilike.%${searchTerm}%,descripcion.ilike.%${searchTerm}%`)
@@ -122,7 +144,14 @@ export function ProcedimientosModal({
     }
 
     loadProcedimientos()
-  }, [isOpen, monedaId, searchTerm, currentPage, supabase, missingMoneda])
+  }, [isOpen, monedaId, searchTerm, currentPage, supabase, missingMoneda, selectedGrupoId])
+
+  // Reset selected grupo when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedGrupoId(null)
+    }
+  }, [isOpen])
 
   useEffect(() => {
     const loadMoneda = async () => {
@@ -170,6 +199,18 @@ export function ProcedimientosModal({
           {/* Sección izquierda: Tabla de procedimientos */}
           <div className="md:col-span-3 flex flex-col overflow-hidden">
             <div className="flex gap-2 mb-4">
+              <Select value={selectedGrupoId ?? '__all__'} onValueChange={(value) => { setSelectedGrupoId(value === '__all__' ? null : value); setCurrentPage(1) }}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Todos los grupos..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">Todos los grupos</SelectItem>
+                  {grupos.map(g => (
+                    <SelectItem key={g.id} value={g.id}>{g.nombre}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Input
                 placeholder="Buscar por código o nombre..."
                 value={searchTerm}

@@ -29,6 +29,22 @@ import { format } from 'date-fns'
 import { upsertPresupuesto } from '@/app/admin/(protected)/ficha-odontologica/[numero_historia]/casos/[casoId]/presupuesto/actions'
 import { ProcedimientosModal } from './ProcedimientosModal'
 
+// Especialidades odontológicas comunes
+const ESPECIALIDADES_COMUNES = [
+  'Endodoncia',
+  'Periodoncia',
+  'Ortodoncia',
+  'Prostodoncia',
+  'Odontología Pediátrica',
+  'Odontología General',
+  'Cirugía Oral',
+  'Implantología',
+  'Estética Dental',
+  'Operatoria Dental',
+  'Radiología Odontológica',
+  'Patología Oral',
+]
+
 interface PlanItem {
   procedimiento_id: string
   procedimiento_nombre: string
@@ -59,6 +75,7 @@ interface PresupuestoFormProps {
     nombre: string
     medico_id: string | null
     observacion: string | null
+    especialidad?: string | null
     costo_total: number | null
     moneda_id: string | null
     items_json?: Array<{
@@ -81,12 +98,6 @@ interface PresupuestoFormProps {
   }
 }
 
-interface Medico {
-  id: string
-  nombre_completo: string
-  especialidad?: string | null
-}
-
 export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuesto }: PresupuestoFormProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -95,12 +106,13 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
   const [fecha, setFecha] = useState(presupuesto ? new Date(presupuesto.costo_total || 0).toISOString().split('T')[0] : format(new Date(), 'yyyy-MM-dd'))
   const [medicId, setMedicId] = useState(presupuesto?.medico_id || '')
   const [asunto, setAsunto] = useState(presupuesto?.nombre || '')
+  const [especialidad, setEspecialidad] = useState(presupuesto?.especialidad || '')
   const [observacion, setObservacion] = useState(presupuesto?.observacion || '')
   const [monedaId, setMonedaId] = useState(presupuesto?.moneda_id || '')
   const [items, setItems] = useState<PlanItem[]>(
     presupuesto?.items_json?.map((item) => ({
       procedimiento_id: item.procedimiento_id,
-      procedimiento_nombre: item.procedimiento_nombre || `Procedimiento ${item.procedimiento_id.slice(0, 8)}`,
+      procedimiento_nombre: item.procedimiento_nombre || `Procedimiento ${item.procedimiento_id.slice(0, 8)}`, 
       moneda_id: presupuesto.moneda_id || '',
       costo: item.costo,
       cantidad: item.cantidad,
@@ -121,10 +133,8 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
   )
 
   // UI State
-  const [medicos, setMedicos] = useState<Medico[]>([])
   const [monedas, setMonedas] = useState<Array<{ id: string; nombre: string; codigo: string }>>([])
   const [currencySymbol, setCurrencySymbol] = useState<string>('S/')
-  const [medicoEspecialidad, setMedicoEspecialidad] = useState<string | null>(null)
   const [currentPersonal, setCurrentPersonal] = useState<{ id: string; nombre_completo: string; rol?: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -133,10 +143,19 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
   // Sincronizar items cuando presupuesto cambia (modo editar)
   useEffect(() => {
     if (presupuesto?.items_json && Array.isArray(presupuesto.items_json)) {
-      const loadedItems: PlanItem[] = presupuesto.items_json.map((item: any) => ({
+      interface StoredItem {
+        procedimiento_id: string
+        procedimiento_nombre?: string
+        moneda_id?: string
+        costo?: number
+        cantidad?: number
+        pieza_dental?: string | null
+        protocolo?: string | null
+      }
+      const loadedItems: PlanItem[] = presupuesto.items_json.map((item: StoredItem) => ({
         procedimiento_id: item.procedimiento_id,
         procedimiento_nombre: item.procedimiento_nombre,
-        moneda_id: presupuesto.moneda_id || '',
+        moneda_id: presupuesto.moneda_id || '', 
         costo: item.costo,
         cantidad: item.cantidad,
         pieza_dental: item.pieza_dental || '',
@@ -145,18 +164,17 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
       }))
       setItems(loadedItems)
     }
-  }, [presupuesto?.id]) // Solo cuando el ID del presupuesto cambia (edit mode)
+  }, [presupuesto?.id, presupuesto?.items_json, presupuesto?.moneda_id]) // Solo cuando el ID del presupuesto cambia (edit mode)
 
   // Load initial data (medicos, monedas)
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [medicosData, monedasData] = await Promise.all([
+        const [, monedasData] = await Promise.all([
           supabase.from('personal').select('id, nombre_completo').eq('activo', true),
           supabase.from('monedas').select('id, nombre, codigo'),
         ])
 
-        if (medicosData.data) setMedicos(medicosData.data as Array<{id: string; nombre_completo: string}>)
         if (monedasData.data) setMonedas(monedasData.data as Array<{id: string; nombre: string; codigo: string}>)
         // Si hay moneda por defecto en el presupuesto, setear símbolo
         if (presupuesto?.moneda_id && monedasData.data) {
@@ -197,7 +215,7 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
     }
 
     resolveCurrentPersonal()
-  }, [supabase])
+  }, [supabase, medicId])
 
   // Helper para símbolos
   const getCurrencySymbol = (code: string | undefined) => {
@@ -241,8 +259,9 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
           return
         }
 
+        interface PrecioData { procedimiento_id: string; precio: number }
         const priceMap: Record<string, number> = {}
-        ;(preciosData || []).forEach((p: any) => {
+        ;(preciosData || []).forEach((p: PrecioData) => {
           if (p && p.procedimiento_id) priceMap[p.procedimiento_id] = Number(p.precio)
         })
 
@@ -266,13 +285,7 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
 
     // Ejecutar conversión solo cuando monedaId cambie
     if (monedaId) convertPrices(monedaId)
-  }, [monedaId, supabase])
-
-  const handleMedicoChange = (newMedicoId: string) => {
-    setMedicId(newMedicoId)
-    const med = medicos.find((m) => m.id === newMedicoId)
-    setMedicoEspecialidad(med?.especialidad || null)
-  }
+  }, [monedaId, supabase, items])
 
   const subtotal = items.reduce((sum, item) => sum + item.total, 0)
 
@@ -354,6 +367,7 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
       nombre: asunto,
       medico_id: medicId,
       observacion: observacion || null,
+      especialidad: especialidad || null,
       costo_total: subtotal,
       moneda_id: monedaId,
       estado: 'Propuesto',
@@ -447,6 +461,22 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
                     {monedas.map((m) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.codigo} - {m.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="especialidad">Especialidad</Label>
+                <Select value={especialidad} onValueChange={setEspecialidad}>
+                  <SelectTrigger id="especialidad" className="mt-1">
+                    <SelectValue placeholder="Seleccionar especialidad..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESPECIALIDADES_COMUNES.map((esp) => (
+                      <SelectItem key={esp} value={esp}>
+                        {esp}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -611,7 +641,6 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
           onClose={() => setIsModalOpen(false)}
           onSelectProcedimientos={handleAddProcedimiento}
           monedaId={monedaId}
-          pacienteId={pacienteId}
         />
       )}
     </div>

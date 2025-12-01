@@ -11,6 +11,7 @@ const presupuestoSchema = z.object({
   nombre: z.string().min(1, 'El asunto es requerido.'),
   medico_id: z.string().uuid().optional().nullable(),
   observacion: z.string().optional().nullable(),
+  especialidad: z.string().optional().nullable(),
   costo_total: z.number().positive('El costo debe ser mayor a 0'),
   moneda_id: z.string().uuid().optional().nullable(),
   estado: z.string().default('Propuesto'),
@@ -85,7 +86,7 @@ export async function upsertPresupuesto(formData: unknown, items: unknown) {
     const itemsJson = parsedItems.data.map((item, index) => ({
       procedimiento_id: item.procedimiento_id,
       procedimiento_nombre: item.procedimiento_nombre,
-      moneda_id: (item as any).moneda_id || parsedData.data.moneda_id || null,
+      moneda_id: (item as { moneda_id?: string }).moneda_id || parsedData.data.moneda_id || null,
       costo: item.costo,
       cantidad: item.cantidad,
       pieza_dental: item.pieza_dental || null,
@@ -101,6 +102,7 @@ export async function upsertPresupuesto(formData: unknown, items: unknown) {
       nombre: parsedData.data.nombre,
       medico_id: parsedData.data.medico_id || null,
       observacion: parsedData.data.observacion || null,
+      especialidad: parsedData.data.especialidad || null,
       costo_total: parsedData.data.costo_total,
       estado: parsedData.data.estado,
       moneda_id: parsedData.data.moneda_id || null,
@@ -151,7 +153,7 @@ export async function deletePresupuesto(id: string) {
     }
 
     // Resolver personal del usuario actual
-    let currentPersonal: any = null
+    let currentPersonal: { id: string; nombre_completo: string; rol?: string } | null = null
     if (user.email) {
       const { data: personalMatch } = await supabase
         .from('personal')
@@ -199,5 +201,74 @@ export async function getPresupuestoById(id: string) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
     return { error: { message: `Error al obtener el presupuesto: ${errorMessage}` } }
+  }
+}
+
+/**
+ * Actualiza los totales (total_pagado, saldo_pendiente, estado) del presupuesto
+ * basándose en los pagos registrados. Se llama automáticamente después de crear/eliminar pagos.
+ */
+export async function updatePresupuestoTotals(presupuestoId: string) {
+  const supabase = await createClient()
+
+  try {
+    // 1. Obtener todos los pagos del presupuesto
+    const { data: pagos, error: pagosError } = await supabase
+      .from('pagos')
+      .select('monto')
+      .eq('presupuesto_id', presupuestoId)
+      .is('deleted_at', null)
+
+    if (pagosError) throw pagosError
+
+    // 2. Sumar total pagado
+    const totalPagado = (pagos || []).reduce((sum, p) => sum + Number(p.monto || 0), 0)
+
+    // 3. Obtener costo_total del presupuesto
+    const { data: presupuesto, error: presupuestoError } = await supabase
+      .from('presupuestos')
+      .select('costo_total')
+      .eq('id', presupuestoId)
+      .is('deleted_at', null)
+      .single()
+
+    if (presupuestoError || !presupuesto) {
+      throw presupuestoError || new Error('Presupuesto no encontrado')
+    }
+
+    // 4. Calcular saldo pendiente
+    const saldoPendiente = Math.max(0, Number(presupuesto.costo_total || 0) - totalPagado)
+
+    // 5. Determinar estado basado en pagos
+    let estado = 'Por Cobrar'
+    if (totalPagado > 0 && totalPagado < Number(presupuesto.costo_total || 0)) {
+      estado = 'Abonado'
+    } else if (totalPagado >= Number(presupuesto.costo_total || 0)) {
+      estado = 'Pagado'
+    }
+
+    // 6. Actualizar presupuesto con nuevos valores
+    const { error: updateError } = await supabase
+      .from('presupuestos')
+      .update({
+        total_pagado: totalPagado,
+        saldo_pendiente: saldoPendiente,
+        estado,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', presupuestoId)
+
+    if (updateError) throw updateError
+
+    console.log(`[updatePresupuestoTotals] ✓ Presupuesto ${presupuestoId} actualizado: total_pagado=${totalPagado}, saldo=${saldoPendiente}, estado=${estado}`)
+
+    // 7. Revalidar rutas relevantes
+    revalidatePath('/admin/ficha-odontologica')
+
+    return { success: true, totalPagado, saldoPendiente, estado }
+  } catch (error) {
+    console.error('[updatePresupuestoTotals] ✗ Error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+    return { error: { message: `Error actualizando totales: ${errorMessage}` } }
   }
 }
