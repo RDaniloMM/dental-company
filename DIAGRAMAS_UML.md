@@ -19,7 +19,7 @@ Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [Pla
 
 ### 1.1 Casos de Uso: Administración y Landing Page
 
-```plantuml
+````plantuml
 @startuml Casos_de_Uso_Admin_Landing
 !theme plain
 left to right direction
@@ -33,7 +33,7 @@ actor "Odontólogo" as Odontologo
 actor "Visitante Web" as Visitante
 
 rectangle "Sistema Dental Company Web" {
-    
+
     package "Autenticación y Cuenta" {
         usecase "Iniciar Sesión" as UC1
         usecase "Registrarse (Invitación)" as UC2
@@ -41,33 +41,33 @@ rectangle "Sistema Dental Company Web" {
         usecase "Configurar Cuenta" as UC4
         usecase "Gestionar Email Recuperación" as UC5
     }
-    
+
     package "Dashboard y Métricas" {
         usecase "Ver Dashboard Principal" as UC6
         usecase "Visualizar KPIs" as UC7
     }
-    
+
     package "Administración de Usuarios" <<Admin>> {
         usecase "Listar Usuarios" as UC8
         usecase "Crear/Invitar Usuario" as UC9
         usecase "Desactivar Usuario" as UC10
         usecase "Asignar Roles" as UC11
     }
-    
+
     package "Gestión de Contenidos (CMS)" <<Admin>> {
         usecase "Editar Información Clínica" as UC12
         usecase "Gestionar Servicios" as UC13
         usecase "Gestionar Equipo Médico" as UC14
         usecase "Personalizar Tema Visual" as UC15
     }
-    
+
     package "Chatbot IA" {
         usecase "Consultar Chatbot" as UC16
         usecase "Configurar FAQs" as UC17
         usecase "Configurar Contexto" as UC18
         usecase "Sincronizar Base de Conocimiento" as UC19
     }
-    
+
     package "Landing Page Pública" {
         usecase "Ver Servicios" as UC20
         usecase "Ver Equipo" as UC21
@@ -337,7 +337,7 @@ class ChatbotRateLimit {
 CMSServicio "1" -- "*" CMSServicioImagen : tiene >
 
 @enduml
-```
+````
 
 ---
 
