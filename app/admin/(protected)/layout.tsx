@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import ToasterClient from "@/components/ui/toasteClient";
 import PatientSearch from "@/components/patient-search";
 import { createClient } from "@/lib/supabase/server";
 
@@ -57,7 +56,6 @@ export default async function ProtectedLayout({
               </div>
             </div>
           </main>
-          <ToasterClient />
         </SidebarInset>
       </SidebarProvider>
     </div>

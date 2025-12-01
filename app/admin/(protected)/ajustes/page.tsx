@@ -29,11 +29,14 @@ export default function AjustesPage() {
   const [isSavingEmail, setIsSavingEmail] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
+
   // Datos del usuario
   const [userId, setUserId] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
+
+
 
   // Cambio de contraseña
   const [currentPassword, setCurrentPassword] = useState("");
@@ -50,11 +53,13 @@ export default function AjustesPage() {
     text: string;
   } | null>(null);
 
-  // Cargar datos del usuario
+
+  // Cargar datos del usuario y notificaciones
   useEffect(() => {
-    const loadUserData = async () => {
+    const loadData = async () => {
       const supabase = createClient();
 
+      // 1. Cargar usuario
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -62,12 +67,12 @@ export default function AjustesPage() {
 
       setUserId(user.id);
 
-      // Extraer username del email de auth
+      // Extraer username
       const authEmail = user.email || "";
       const extractedUsername = authEmail.replace("@dental.company", "");
       setUsername(extractedUsername);
 
-      // Obtener email real de la tabla personal
+      // Obtener email real
       const { data: personal } = await supabase
         .from("personal")
         .select("email")
@@ -79,10 +84,12 @@ export default function AjustesPage() {
         setNewEmail(personal.email);
       }
 
+
+
       setIsLoading(false);
     };
 
-    loadUserData();
+    loadData();
   }, []);
 
   // Guardar email de recuperación
@@ -108,10 +115,7 @@ export default function AjustesPage() {
         .eq("id", userId)
         .select();
 
-      if (error) {
-        console.error("Error Supabase:", error);
-        throw new Error(error.message || "Error de base de datos");
-      }
+      if (error) throw error;
 
       if (!data || data.length === 0) {
         throw new Error("No se encontró el registro para actualizar");
@@ -135,12 +139,13 @@ export default function AjustesPage() {
     }
   };
 
+
+
   // Cambiar contraseña
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordMessage(null);
 
-    // Validaciones
     if (newPassword.length < 6) {
       setPasswordMessage({
         type: "error",
@@ -162,7 +167,6 @@ export default function AjustesPage() {
     try {
       const supabase = createClient();
 
-      // Verificar contraseña actual haciendo login
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: `${username}@dental.company`,
         password: currentPassword,
@@ -177,14 +181,12 @@ export default function AjustesPage() {
         return;
       }
 
-      // Actualizar contraseña
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (updateError) throw updateError;
 
-      // Limpiar campos
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -222,7 +224,7 @@ export default function AjustesPage() {
           Ajustes de Cuenta
         </h1>
         <p className='text-muted-foreground'>
-          Configura tu email de recuperación y contraseña
+          Configura tu email de recuperación, notificaciones y contraseña
         </p>
       </div>
 
@@ -262,10 +264,7 @@ export default function AjustesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form
-              onSubmit={handleSaveEmail}
-              className='space-y-4'
-            >
+            <form onSubmit={handleSaveEmail} className='space-y-4'>
               <div className='space-y-2'>
                 <Label htmlFor='recovery-email'>Email personal</Label>
                 <Input
@@ -285,11 +284,10 @@ export default function AjustesPage() {
 
               {emailMessage && (
                 <div
-                  className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
-                    emailMessage.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
+                  className={`flex items-center gap-2 p-3 rounded-lg text-sm ${emailMessage.type === "success"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
                 >
                   {emailMessage.type === "success" ? (
                     <CheckCircle className='h-4 w-4' />
@@ -333,10 +331,7 @@ export default function AjustesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form
-              onSubmit={handleChangePassword}
-              className='space-y-4'
-            >
+            <form onSubmit={handleChangePassword} className='space-y-4'>
               <div className='space-y-2'>
                 <Label htmlFor='current-password'>Contraseña actual</Label>
                 <Input
@@ -382,11 +377,10 @@ export default function AjustesPage() {
 
               {passwordMessage && (
                 <div
-                  className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
-                    passwordMessage.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
+                  className={`flex items-center gap-2 p-3 rounded-lg text-sm ${passwordMessage.type === "success"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
                 >
                   {passwordMessage.type === "success" ? (
                     <CheckCircle className='h-4 w-4' />
@@ -422,7 +416,7 @@ export default function AjustesPage() {
             </form>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

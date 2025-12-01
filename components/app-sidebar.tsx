@@ -13,6 +13,7 @@ import {
   FolderOpen,
   UserCog,
   HelpCircle,
+  Bell,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -62,6 +63,11 @@ const navBase = [
     title: "Reportes",
     url: "/admin/reportes",
     icon: BarChart3,
+  },
+  {
+    title: "Notificaciones",
+    url: "/admin/notificaciones",
+    icon: Bell,
   },
 ];
 
