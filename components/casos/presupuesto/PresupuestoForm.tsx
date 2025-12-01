@@ -183,9 +183,9 @@ export function PresupuestoForm({
 
         if (monedasData.data) setMonedas(monedasData.data as Array<{id: string; nombre: string; codigo: string}>)
         // Si hay moneda por defecto en el presupuesto, setear símbolo
-        if (presupuesto?.moneda_id && monedasData) {
+        if (presupuesto?.moneda_id && monedasData.data) {
           const found = (
-            monedasData as Array<{ id: string; nombre: string; codigo: string }>
+            monedasData.data as Array<{ id: string; nombre: string; codigo: string }>
           ).find((m) => m.id === presupuesto.moneda_id);
           if (found) setCurrencySymbol(getCurrencySymbol(found.codigo));
         }

@@ -118,7 +118,7 @@ export function PresupuestoTable({
         casoId
       );
 
-      const presupuestosRaw = data as PresupuestoRaw[];
+      const presupuestosRaw = data as Presupuesto[];
 
       // Obtener médicos (personal) por separado
       const medicoIds = Array.from(new Set(data.map((p: Presupuesto) => p.medico_id).filter(Boolean)))
