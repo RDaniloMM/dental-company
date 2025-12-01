@@ -17,8 +17,9 @@ import { cn } from "@/lib/utils";
 interface NavItem {
   title: string;
   url?: string;
-  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // 👈 FIX
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   items?: NavItem[];
+  badge?: React.ReactNode; // 👈 New prop for badge
 }
 
 interface NavMainProps {
@@ -46,7 +47,7 @@ export function NavMain({ items }: NavMainProps) {
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) setOpenSection(saved);
-    } catch {}
+    } catch { }
     initializedRef.current = true;
   }, []);
 
@@ -129,9 +130,14 @@ export function NavMain({ items }: NavMainProps) {
                     )}
                   >
                     {section.icon && <section.icon className='h-4 w-4' />}
-                    <span className='group-data-[collapsible=icon]:hidden'>
+                    <span className='group-data-[collapsible=icon]:hidden flex-1'>
                       {labelMap[section.url || ""] || section.title}
                     </span>
+                    {section.badge && (
+                      <span className='group-data-[collapsible=icon]:hidden ml-auto'>
+                        {section.badge}
+                      </span>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               )}
