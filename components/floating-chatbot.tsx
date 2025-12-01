@@ -19,22 +19,14 @@ import { Actions, Action } from "@/components/ai-elements/actions";
 import { useState, Fragment } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Response } from "@/components/ai-elements/response";
-import { CopyIcon, MessageCircle, X, BookOpenIcon } from "lucide-react";
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningTrigger,
-} from "@/components/ai-elements/reasoning";
+import { CopyIcon, X, BookOpenIcon } from "lucide-react";
+import Image from "next/image";
 import { Loader } from "@/components/ai-elements/loader";
 
 const models = [
   {
-    name: "Gemini 2.0 Flash",
-    value: "gemini-2.0-flash-exp",
-  },
-  {
-    name: "Gemini 1.5 Pro",
-    value: "gemini-1.5-pro-latest",
+    name: "Gemini 2.0 Flash-Lite",
+    value: "gemini-2.0-flash-lite",
   },
   {
     name: "Gemini 1.5 Flash",
@@ -52,6 +44,7 @@ export const FloatingChatbot = () => {
       console.error("Chat error:", error);
     },
   });
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -77,27 +70,60 @@ export const FloatingChatbot = () => {
 
   return (
     <>
-      {/* Botón flotante - Más grande */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className='fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-5 shadow-2xl transition-all duration-300 hover:scale-110 flex items-center gap-3 group'
-          aria-label='Abrir chat de ayuda'
+        <div
+          className='fixed bottom-6 right-6 z-50'
+          style={{ minWidth: 80, minHeight: 80 }}
         >
-          <MessageCircle className='w-8 h-8' />
-          <span className='max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap text-base font-medium'>
-            ¿Necesitas ayuda?
-          </span>
-        </button>
+          <div
+            className='relative flex items-center'
+            style={{ minWidth: 80, minHeight: 80 }}
+          >
+            <button
+              onClick={() => setIsOpen(true)}
+              className='rounded-full p-0 shadow-2xl transition-all duration-300 hover:scale-110 bg-transparent border-none relative'
+              aria-label='Abrir chat de ayuda'
+              style={{ width: 80, height: 80 }}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <span className='absolute inset-0 w-full h-full rounded-full overflow-hidden'>
+                <Image
+                  src='/logo-chatbot.png'
+                  alt='Chatbot'
+                  fill
+                  className='object-cover w-full h-full rounded-full'
+                  priority
+                />
+              </span>
+            </button>
+            {/* Mensaje tipo diálogo encima del icono */}
+            <span
+              className={`pointer-events-none select-none transition-all duration-300 whitespace-nowrap text-base font-medium bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg absolute left-1/2 -translate-x-[70%] bottom-[90px] ${
+                isHovered ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              }`}
+              style={{ minWidth: 120 }}
+            >
+              ¿Necesitas ayuda?
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Ventana del chat */}
       {isOpen && (
-        <div className='fixed bottom-6 right-6 z-50 w-[90vw] sm:w-96 h-[600px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col overflow-hidden border border-gray-200'>
+        <div className='fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[420px] h-[85vh] sm:h-[650px] sm:max-h-[85vh] bg-white sm:rounded-lg shadow-2xl flex flex-col overflow-hidden border-t sm:border border-gray-200'>
           {/* Header */}
           <div className='bg-blue-600 text-white p-4 flex justify-between items-center'>
             <div className='flex items-center gap-2'>
-              <MessageCircle className='w-5 h-5' />
+              <Image
+                src='/logo-chatbot.png'
+                alt='Chatbot'
+                width={28}
+                height={28}
+                className='w-7 h-7 rounded-full bg-white'
+                priority
+              />
               <div>
                 <h3 className='font-semibold'>Asistente Virtual</h3>
                 <p className='text-xs text-blue-100 flex items-center gap-1'>
@@ -123,9 +149,9 @@ export const FloatingChatbot = () => {
               </p>
               <ul className='text-xs text-gray-600 mt-2 space-y-1 ml-4'>
                 <li>• Horarios de atención</li>
-                <li>• Agendar citas</li>
+                <li>• Ubicación de la clínica</li>
                 <li>• Información de servicios</li>
-                <li>• Precios y seguros</li>
+                <li>• Proceso para agendar citas</li>
               </ul>
             </div>
           )}
@@ -179,21 +205,6 @@ export const FloatingChatbot = () => {
                                 )}
                             </Fragment>
                           );
-                        case "reasoning":
-                          return (
-                            <Reasoning
-                              key={`${message.id}-${i}`}
-                              className='w-full'
-                              isStreaming={
-                                status === "streaming" &&
-                                i === message.parts.length - 1 &&
-                                message.id === messages.at(-1)?.id
-                              }
-                            >
-                              <ReasoningTrigger />
-                              <ReasoningContent>{part.text}</ReasoningContent>
-                            </Reasoning>
-                          );
                         default:
                           return null;
                       }
@@ -207,13 +218,16 @@ export const FloatingChatbot = () => {
 
             {/* Input area */}
             <div className='border-t border-gray-200 p-3 bg-gray-50'>
-              <PromptInput onSubmit={handleSubmit}>
+              <PromptInput
+                onSubmit={handleSubmit}
+                className='!bg-white'
+              >
                 <PromptInputBody>
                   <PromptInputTextarea
                     onChange={(e) => setInput(e.target.value)}
                     value={input}
                     placeholder='Escribe tu pregunta...'
-                    className='text-sm'
+                    className='text-sm !bg-white text-gray-900 placeholder:text-gray-500'
                   />
                 </PromptInputBody>
                 <PromptInputToolbar>
@@ -232,7 +246,6 @@ export const FloatingChatbot = () => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className='p-2 bg-gray-100 text-center'>
             <p className='text-xs text-gray-500'>
               Asistente con IA • Información general

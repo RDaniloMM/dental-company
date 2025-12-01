@@ -35,6 +35,8 @@ export function getToothType(toothId: string): string {
       "46",
       "47",
       "48",
+      // Temporales (Molares)
+      "54", "55", "64", "65", "74", "75", "84", "85"
     ].includes(toothId)
   )
     return "molar";
@@ -55,6 +57,8 @@ export function getToothType(toothId: string): string {
       "41",
       "42",
       "43",
+      // Temporales (Incisivos)
+      "53", "51", "52", "61", "62", "63", "71", "72", "73", "81", "82", "83", "84"
     ].includes(toothId)
   )
     return "incisivo";

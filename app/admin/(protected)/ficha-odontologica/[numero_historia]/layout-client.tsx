@@ -24,10 +24,13 @@ export default function HistoriaLayoutClient({
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full bg-muted/40">
-      <FichaSidebar key={sidebarKey} patientId={patientId} />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4">{children}</div>
+    <div className='flex min-h-[90vh] w-full bg-muted/40'>
+      <FichaSidebar
+        key={sidebarKey}
+        patientId={patientId}
+      />
+      <main className='flex-1 overflow-y-auto w-full'>
+        <div className='p-4 pt-16 md:pt-4'>{children}</div>
       </main>
     </div>
   );

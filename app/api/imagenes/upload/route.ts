@@ -1,82 +1,138 @@
-import { createClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
-import { uploadImage } from '@/lib/cloudinary';
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { uploadImage } from "@/lib/cloudinary";
 
-export const dynamic = 'force-dynamic';
-
-interface UploadResult {
-  public_id: string;
-  secure_url: string;
-}
-
-export async function POST(request: Request) {
-  const formData = await request.formData();
-  const file = formData.get('file') as File;
-  const paciente_id = formData.get('paciente_id') as string;
-  const tipo = formData.get('tipo') as string;
-  const descripcion = formData.get('descripcion') as string;
-
-  if (!file || !paciente_id || !tipo) {
-    return NextResponse.json({ error: 'Faltan datos requeridos.' }, { status: 400 });
-  }
-
-  if (file.size > 5 * 1024 * 1024) { // 5 MB
-    return NextResponse.json({ error: 'El archivo excede el tamaño máximo de 5 MB.' }, { status: 400 });
-  }
-
-  const supabase = await createClient();
-
+export async function POST(req: Request) {
   try {
-    // 1. Obtener el número de historia del paciente
-    const { data: paciente, error: pacienteError } = await supabase
-      .from('pacientes')
-      .select('numero_historia')
-      .eq('id', paciente_id)
-      .single();
+    const supabase = await createClient();
 
-    if (pacienteError || !paciente) {
-      throw new Error('No se pudo encontrar al paciente.');
+    // Verificar autenticación
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { numero_historia } = paciente;
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    const pacienteId = formData.get("paciente_id") as string;
+    const tipo = formData.get("tipo") as string;
+    const descripcion = formData.get("descripcion") as string | null;
+    const casoId = formData.get("caso_id") as string | null;
+    const etapa = formData.get("etapa") as string | null; // antes, durante, despues, seguimiento
+    const fechaCaptura = formData.get("fecha_captura") as string | null;
+    const esPrincipal = formData.get("es_principal") === "true";
 
-    // 2. Preparar la subida a Cloudinary
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const timestamp = new Date().toISOString(); // Full ISO string for uniqueness
-    
-    const folder = `${numero_historia}/${tipo}`;
-    // Use timestamp to ensure a unique public_id for every upload
-    const publicId = `${numero_historia}_${tipo}_${timestamp}`;
-
-    // 3. Subir imagen a Cloudinary
-    const uploadResult: UploadResult = await uploadImage(buffer, folder, publicId);
-
-    if (!uploadResult || !uploadResult.public_id) {
-        throw new Error('Error al subir la imagen a Cloudinary.');
+    if (!file) {
+      return NextResponse.json(
+        { error: "No se proporcionó archivo" },
+        { status: 400 }
+      );
     }
 
-    // 4. Guardar registro en Supabase
-    const { data: newImageRecord, error: insertError } = await supabase
-      .from('imagenes_pacientes')
-      .insert({
-        paciente_id,
-        tipo,
-        descripcion,
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
-      })
+    if (!pacienteId) {
+      return NextResponse.json(
+        { error: "No se proporcionó ID de paciente" },
+        { status: 400 }
+      );
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "El archivo excede el tamaño máximo de 5MB" },
+        { status: 400 }
+      );
+    }
+
+    // Validar tipo de archivo
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Tipo de archivo no válido. Use JPG, PNG o WebP" },
+        { status: 400 }
+      );
+    }
+
+    // Convertir archivo a buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Generar ID único para la imagen
+    const timestamp = Date.now();
+    const sanitizedName = file.name
+      .replace(/[^a-zA-Z0-9]/g, "_")
+      .substring(0, 20);
+    const publicId = `${sanitizedName}_${timestamp}`;
+
+    // Subir a Cloudinary
+    const folder = `dental_company/pacientes/${pacienteId}`;
+    const result = await uploadImage(buffer, folder, publicId, "paciente");
+
+    // Guardar referencia en la base de datos
+    const insertData: {
+      paciente_id: string;
+      public_id: string;
+      url: string;
+      tipo: string;
+      descripcion?: string;
+      caso_id?: string;
+      etapa?: string;
+      fecha_captura?: string;
+      es_principal?: boolean;
+    } = {
+      paciente_id: pacienteId,
+      public_id: result.public_id,
+      url: result.secure_url,
+      tipo: tipo || "otro",
+    };
+
+    if (descripcion) {
+      insertData.descripcion = descripcion;
+    }
+
+    if (casoId) {
+      insertData.caso_id = casoId;
+    }
+
+    if (etapa) {
+      insertData.etapa = etapa;
+    }
+
+    if (fechaCaptura) {
+      insertData.fecha_captura = fechaCaptura;
+    }
+
+    if (esPrincipal) {
+      insertData.es_principal = esPrincipal;
+    }
+
+    const { data: imagen, error: dbError } = await supabase
+      .from("imagenes_pacientes")
+      .insert(insertData)
       .select()
       .single();
 
-    if (insertError) {
-      console.error('Error al guardar en Supabase:', insertError);
-      throw new Error('Error al guardar la información de la imagen.');
+    if (dbError) {
+      console.error("Error guardando en BD:", dbError);
+      return NextResponse.json(
+        { error: "Error al guardar la imagen en la base de datos" },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json(newImageRecord);
-  } catch (error: unknown) {
-    console.error('Error en el proceso de subida:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({
+      id: imagen.id,
+      secure_url: result.secure_url,
+      public_id: result.public_id,
+    });
+  } catch (error) {
+    console.error("Error subiendo imagen:", error);
+    return NextResponse.json(
+      { error: "Error al subir la imagen" },
+      { status: 500 }
+    );
   }
 }

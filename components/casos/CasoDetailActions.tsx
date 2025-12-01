@@ -51,7 +51,7 @@ export default function CasoDetailActions({
       }
     };
     fetchUserRole();
-  }, [supabase.auth]); // Añadir supabase.auth como dependencia
+  }, [supabase.auth]);
 
   const canEdit = userRole === "odontologo" || userRole === "admin";
 
@@ -73,7 +73,7 @@ export default function CasoDetailActions({
     } else {
       toast.success('El caso clínico ha sido actualizado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
       setIsEditModalOpen(false);
-      router.refresh(); // Refrescar la página para mostrar los cambios
+      router.refresh();
     }
   };
 

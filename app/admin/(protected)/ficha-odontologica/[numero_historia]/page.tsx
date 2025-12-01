@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import FichaOdontologicaContent from "./client-content";
 
 // --- INICIO DE LA CORRECCIÓN ---
@@ -35,9 +35,20 @@ export default async function FichaOdontologicaPage({
     );
   }
 
+  const { data: patient, error } = await supabase
+    .from("pacientes")
+    .select("id")
+    .eq("numero_historia", resolvedParams.numero_historia)
+    .single();
+
+  if (error || !patient) {
+    console.error("Patient not found:", error);
+    return redirect("/admin/dashboard");
+  }
+
   return (
-    <Suspense fallback={<div>Cargando contenido de la ficha...</div>}>
-      <FichaOdontologicaContent patientId={paciente.id} />
-    </Suspense>
+    <div className="w-full h-full">
+      <FichaOdontologicaContent patientId={patient.id} />
+    </div>
   );
 }

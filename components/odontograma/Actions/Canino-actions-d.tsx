@@ -68,32 +68,27 @@ const CaninoActiond: React.FC<CaninoActiondProps> = ({
     {
       name: "vestibular",
       type: "polygon",
-      points: `${outerX},${outerY} ${outerX + outerW},${outerY} ${
-        centerX + centerW
-      },${centerY} ${centerX},${centerY}`,
+      points: `${outerX},${outerY} ${outerX + outerW},${outerY} ${centerX + centerW
+        },${centerY} ${centerX},${centerY}`,
     },
     {
       name: "lingual",
       type: "polygon",
-      points: `${outerX},${outerY + outerH} ${outerX + outerW},${
-        outerY + outerH
-      } ${centerX + centerW},${centerY + centerH} ${centerX},${
-        centerY + centerH
-      }`,
+      points: `${outerX},${outerY + outerH} ${outerX + outerW},${outerY + outerH
+        } ${centerX + centerW},${centerY + centerH} ${centerX},${centerY + centerH
+        }`,
     },
     {
       name: "mesial",
       type: "polygon",
-      points: `${outerX},${outerY} ${centerX},${centerY} ${centerX},${
-        centerY + centerH
-      } ${outerX},${outerY + outerH}`,
+      points: `${outerX},${outerY} ${centerX},${centerY} ${centerX},${centerY + centerH
+        } ${outerX},${outerY + outerH}`,
     },
     {
       name: "distal",
       type: "polygon",
-      points: `${outerX + outerW},${outerY} ${centerX + centerW},${centerY} ${
-        centerX + centerW
-      },${centerY + centerH} ${outerX + outerW},${outerY + outerH}`,
+      points: `${outerX + outerW},${outerY} ${centerX + centerW},${centerY} ${centerX + centerW
+        },${centerY + centerH} ${outerX + outerW},${outerY + outerH}`,
     },
   ];
 
@@ -128,13 +123,20 @@ const CaninoActiond: React.FC<CaninoActiondProps> = ({
           zoneColors[`${toothId}_corona`]
             ? getCoronaStroke()
             : borderColor
-            ? borderColor
-            : "transparent"
+              ? borderColor
+              : "transparent"
         }
         fill="white"
         style={{ pointerEvents: "none" }}
       />
-
+      <path
+        d={`M ${centerX}, ${centerY + centerH / 2} 
+      H ${centerX + centerW}`}
+        stroke="#000"
+        strokeWidth="1.94"
+        fill="none"
+        style={{ pointerEvents: "none" }}
+      />
       {zones.map((zone) =>
         zone.type === "rect" ? (
           <rect

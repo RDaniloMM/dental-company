@@ -62,7 +62,7 @@ export default function CuestionarioForm({
               <Label className="font-semibold">{pregunta}</Label>
               <RadioGroup
                 value={(formData[seccion]?.[pregunta] as { respuesta?: string })?.respuesta}
-                onValueChange={(value) => {
+                onValueChange={(value: string) => {
                   const currentState = formData[seccion]?.[pregunta];
                   const detalle = typeof currentState === "object" ? currentState.detalle : "";
                   handleChange(seccion, pregunta, { respuesta: value, detalle });
@@ -99,7 +99,7 @@ export default function CuestionarioForm({
               <Label className="font-semibold">{pregunta}</Label>
               <RadioGroup
                 value={formData[seccion]?.[pregunta] as string}
-                onValueChange={(value) => handleChange(seccion, pregunta, { respuesta: value })}
+                onValueChange={(value: string) => handleChange(seccion, pregunta, { respuesta: value })}
                 className="mt-2 flex items-center space-x-4"
               >
                 <div className="flex items-center space-x-2">
@@ -135,7 +135,7 @@ export default function CuestionarioForm({
                     <Checkbox
                       id={`${id}-${opcion}`}
                       checked={((formData[seccion]?.[pregunta] as { opciones?: string[] })?.opciones || []).includes(opcion)}
-                      onCheckedChange={(checked) => {
+                      onCheckedChange={(checked: boolean) => {
                         const currentState = formData[seccion]?.[pregunta];
                         const actuales = (typeof currentState === 'object' && currentState.opciones) ? currentState.opciones : [];
                         const nuevos = checked

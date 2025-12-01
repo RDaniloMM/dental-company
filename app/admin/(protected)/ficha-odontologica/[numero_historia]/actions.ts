@@ -132,3 +132,4 @@ export async function getAntecedentesClient(pacienteId: string) {
   "use server";
   return getAntecedentes(pacienteId);
 }
+

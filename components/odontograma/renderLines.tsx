@@ -26,6 +26,8 @@ const dientesSuperiores = [
   "26",
   "27",
   "28",
+  "51", "52", "53", "54", "55",
+  "61", "62", "63", "64", "65",
 ];
 
 const getOffsetY = (
@@ -75,9 +77,9 @@ export const renderAOF = (
         const y1 = Math.max(
           half,
           startBox.top +
-            startBox.height / 2 +
-            lineOffsetYStart -
-            containerEl.top
+          startBox.height / 2 +
+          lineOffsetYStart -
+          containerEl.top
         );
         const x2 = Math.min(
           containerEl.width - half,
@@ -222,6 +224,8 @@ export const renderAOR = (
           "36",
           "37",
           "38",
+          "85", "84", "83", "82", "81", "71", "72", "73", "74", "75",
+          "55", "54", "53", "52", "51", "61", "62", "63", "64", "65",
         ];
 
         const startIndex = teethOrder.indexOf(start);
@@ -480,28 +484,24 @@ export const renderDiastema = (
         const xCentro =
           direccion === "der"
             ? box.right -
-              containerEl.left +
-              separacion / 2 +
-              acercamiento +
-              offsetX
+            containerEl.left +
+            separacion / 2 +
+            acercamiento +
+            offsetX
             : box.left -
-              containerEl.left -
-              separacion / 2 -
-              acercamiento +
-              offsetX;
+            containerEl.left -
+            separacion / 2 -
+            acercamiento +
+            offsetX;
 
         const curvaSuperior = dientesSuperiores.includes(toothId) ? -1 : 1;
-        const pathDerecha = `M ${xCentro + separacion / 2} ${
-          yBase - altura
-        } Q ${xCentro + separacion / 2 - ancho} ${yBase} ${
-          xCentro + separacion / 2
-        } ${yBase + altura}`;
+        const pathDerecha = `M ${xCentro + separacion / 2} ${yBase - altura
+          } Q ${xCentro + separacion / 2 - ancho} ${yBase} ${xCentro + separacion / 2
+          } ${yBase + altura}`;
 
-        const pathIzquierda = `M ${xCentro - separacion / 2} ${
-          yBase - altura
-        } Q ${xCentro - separacion / 2 + ancho} ${yBase} ${
-          xCentro - separacion / 2
-        } ${yBase + altura}`;
+        const pathIzquierda = `M ${xCentro - separacion / 2} ${yBase - altura
+          } Q ${xCentro - separacion / 2 + ancho} ${yBase} ${xCentro - separacion / 2
+          } ${yBase + altura}`;
 
         return (
           <React.Fragment key={`diastema-group-${toothId}-${idx}`}>
@@ -627,7 +627,7 @@ export const renderGeminacion = (
 
         const box = toothEl.getBoundingClientRect();
 
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
         const yCentro =
           box.top +
           box.height / 2 -
@@ -680,7 +680,7 @@ export const renderGiroversion = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const xCentro = box.left + box.width / 2 - containerEl.left;
         let yCentro =
@@ -693,9 +693,8 @@ export const renderGiroversion = (
 
         const dirMultiplier = direccion === "der" ? 1 : -1;
 
-        const pathD = `M ${-box.width / 2} 0 Q 0 ${
-          -curveOffset * (esSuperior ? -1 : 1)
-        } ${box.width / 2} 0`;
+        const pathD = `M ${-box.width / 2} 0 Q 0 ${-curveOffset * (esSuperior ? -1 : 1)
+          } ${box.width / 2} 0`;
 
         return (
           <g
@@ -756,7 +755,7 @@ export const renderPiezaAusente = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const yCentro =
           box.top +
@@ -827,15 +826,15 @@ export const renderPiezaClavija = (
         const h = (Math.sqrt(3) / 2) * size;
         const pointsArray = esSuperior
           ? [
-              [0, -h / 2],
-              [-size / 2, h / 2],
-              [size / 2, h / 2],
-            ]
+            [0, -h / 2],
+            [-size / 2, h / 2],
+            [size / 2, h / 2],
+          ]
           : [
-              [0, h / 2],
-              [-size / 2, -h / 2],
-              [size / 2, -h / 2],
-            ];
+            [0, h / 2],
+            [-size / 2, -h / 2],
+            [size / 2, -h / 2],
+          ];
 
         const pointsStr = pointsArray.map(([x, y]) => `${x},${y}`).join(" ");
 
@@ -855,6 +854,193 @@ export const renderPiezaClavija = (
       })
   );
 };
+
+export const renderEspigaMunon = (
+  odontograma: Record<string, ToothData>,
+  offsetSuperior = 63,
+  offsetInferior = -63,
+  offsetX = 0,
+  offsetY = 0,
+  squareSize = 15
+) => {
+  // 🔹 Configuración para dientes superiores
+  const superior = {
+    lineLengthIzq: 35,
+    angleIzq: 105,
+    lineLengthDer: 35,
+    angleDer: 75,
+    lineLengthCen: 35,
+    angleCen: 90,
+  };
+
+  // 🔹 Configuración para dientes inferiores
+  const inferior = {
+    lineLengthIzq: 35,
+    angleIzq: -105,
+    lineLengthDer: 35,
+    angleDer: -75,
+    lineLengthCen: 35,
+    angleCen: -90,
+  };
+
+  return Object.entries(odontograma).flatMap(([toothId, toothData]) =>
+    (toothData.generales || [])
+      .filter((g) => g.icon?.includes("espiga"))
+      .map((g, idx) => {
+        const color = g.color || "blue";
+        const toothEl = document.getElementById(`tooth-${toothId}`);
+        const containerEl = document
+          .querySelector(".odontograma-container")
+          ?.getBoundingClientRect();
+        if (!toothEl || !containerEl) return null;
+
+        const box = toothEl.getBoundingClientRect();
+        const esSuperior = dientesSuperiores.includes(toothId);
+
+        // 🔸 Centro del cuadrado
+        const xCentro = box.left - containerEl.left + box.width / 2 + offsetX;
+        const yCentro =
+          box.top -
+          containerEl.top +
+          box.height / 2 +
+          (esSuperior ? offsetSuperior : offsetInferior) +
+          offsetY;
+
+        const half = squareSize / 2;
+        const xLeft = xCentro - half;
+        const yTop = yCentro - half;
+
+        const cfg = esSuperior ? superior : inferior;
+
+        const lines: JSX.Element[] = [];
+
+        // 🧮 Calcula un punto en el borde del cuadrado en función del ángulo
+        const calcBorde = (angleDeg: number) => {
+          const angleRad = (angleDeg * Math.PI) / 180;
+          const cos = Math.cos(angleRad);
+          const sin = Math.sin(angleRad);
+          // hallamos el borde del cuadrado en la dirección del ángulo
+          const dx = (squareSize / 2) * cos;
+          const dy = (squareSize / 2) * sin;
+          return {
+            x: xCentro + dx,
+            y: yCentro - dy,
+          };
+        };
+
+        // 🔹 Crea línea que parte del borde hacia afuera
+        const drawLine = (angleDeg: number, length: number, key: string) => {
+          const start = calcBorde(angleDeg);
+          const angleRad = (angleDeg * Math.PI) / 180;
+          const end = {
+            x: start.x + length * Math.cos(angleRad),
+            y: start.y - length * Math.sin(angleRad),
+          };
+          return (
+            <line
+              x1={start.x}
+              y1={start.y}
+              x2={end.x}
+              y2={end.y}
+              stroke={color}
+              strokeWidth={2}
+              key={key}
+            />
+          );
+        };
+
+        // 🔸 Dibujar líneas según íconos
+        if (g.icon.includes("izq"))
+          lines.push(
+            drawLine(
+              cfg.angleIzq,
+              cfg.lineLengthIzq,
+              `espiga-${toothId}-izq-${idx}`
+            )
+          );
+        if (g.icon.includes("der"))
+          lines.push(
+            drawLine(
+              cfg.angleDer,
+              cfg.lineLengthDer,
+              `espiga-${toothId}-der-${idx}`
+            )
+          );
+        if (g.icon.includes("cen"))
+          lines.push(
+            drawLine(
+              cfg.angleCen,
+              cfg.lineLengthCen,
+              `espiga-${toothId}-cen-${idx}`
+            )
+          );
+
+        // 🔷 Cuadrado + líneas
+        return (
+          <g key={`espiga-${toothId}-${idx}`}>
+            <rect
+              x={xLeft}
+              y={yTop}
+              width={squareSize}
+              height={squareSize}
+              stroke={color}
+              fill="none"
+              strokeWidth={2}
+            />
+            {lines}
+          </g>
+        );
+      })
+  );
+};
+
+// ---------- Render TRATAMIENTO DE CONDUCTO (solo línea) ----------
+export const renderTratamientoConducto = (
+  odontograma: Record<string, ToothData>,
+  offsetSuperior = 25,
+  offsetInferior = -25,
+  offsetX = 0,
+  lineLength = 40
+) => {
+  return Object.entries(odontograma).flatMap(([toothId, toothData]) =>
+    toothData.generales
+      .filter((g) => g.icon?.includes("conducto"))
+      .map((g, idx) => {
+        const color = g.color || "blue";
+        const toothEl = document.getElementById(`tooth-${toothId}`);
+        const containerEl = document
+          .querySelector(".odontograma-container")
+          ?.getBoundingClientRect();
+        if (!toothEl || !containerEl) return null;
+
+        const box = toothEl.getBoundingClientRect();
+        const esSuperior = dientesSuperiores.includes(toothId);
+
+        const xCentro = box.left - containerEl.left + box.width / 2 + offsetX;
+        const yInicio =
+          box.top +
+          box.height / 2 -
+          containerEl.top +
+          (esSuperior ? offsetSuperior : offsetInferior);
+
+        const yFin = yInicio + (esSuperior ? lineLength : -lineLength);
+
+        return (
+          <g key={`conducto-${toothId}-${idx}`}>
+            <line
+              x1={xCentro}
+              y1={yInicio}
+              x2={xCentro}
+              y2={yFin}
+              stroke={color}
+              strokeWidth={2}
+            />
+          </g>
+        );
+      })
+  );
+};
+
 // ---------- Render PIEZA DENTARIA EN ERUPCION  ----------
 export const renderPiezaErupcion = (
   odontograma: Record<string, ToothData>,
@@ -1106,6 +1292,70 @@ export const renderPiezaIntruida = (
   );
 };
 
+// ---------- Render PIEZA DENTARIA SUPERNUMERARIA ----------
+export const renderSupernumeraria = (
+  odontograma: Record<string, ToothData>,
+  circleRadius = 10,
+  textSize = 12,
+  offsetSuperior = 50,
+  offsetInferior = -50,
+  lateralOffset = 30 // cuánto desplazar izquierda/derecha
+) => {
+  return Object.entries(odontograma).flatMap(([toothId, toothData]) =>
+    toothData.generales
+      .filter((g) => g.icon.startsWith("supernumeraria"))
+      .map((g, idx) => {
+        const toothEl = document.getElementById(`tooth-${toothId}`);
+        const containerEl = document
+          .querySelector(".odontograma-container")
+          ?.getBoundingClientRect();
+        if (!toothEl || !containerEl) return null;
+
+        const box = toothEl.getBoundingClientRect();
+        const esSuperior = dientesSuperiores.includes(toothId);
+
+        let xCentro = box.left + box.width / 2 - containerEl.left;
+        const yCentro =
+          box.top +
+          box.height / 2 -
+          containerEl.top +
+          (esSuperior ? offsetSuperior : offsetInferior);
+
+        // Extraer dirección y color
+        const parts = g.icon.split("_");
+        const direccion = parts[1]; // "izq" o "der"
+        const color = parts[2] || "blue";
+
+        // Ajuste lateral según dirección
+        if (direccion === "izq") xCentro -= lateralOffset;
+        else if (direccion === "der") xCentro += lateralOffset;
+
+        return (
+          <g key={`supernumerary-${toothId}-${idx}`}>
+            <circle
+              cx={xCentro}
+              cy={yCentro}
+              r={circleRadius}
+              fill="white" // fondo blanco
+              stroke={color} // contorno azul
+              strokeWidth={2}
+            />
+            <text
+              x={xCentro}
+              y={yCentro + textSize / 3} // centrado vertical aproximado
+              fontSize={textSize}
+              fontWeight="bold"
+              textAnchor="middle"
+              fill={color} // letra azul
+            >
+              S
+            </text>
+          </g>
+        );
+      })
+  );
+};
+
 // ---------- Render TRANSPOSICIÓN  ----------
 export const renderTransposicion = (
   odontograma: Record<string, ToothData>,
@@ -1132,7 +1382,7 @@ export const renderTransposicion = (
         if (!toothEl || !containerEl) return null;
 
         const box = toothEl.getBoundingClientRect();
-        const esSuperior = parseInt(toothId) <= 28;
+        const esSuperior = dientesSuperiores.includes(toothId);
 
         const yCentro =
           box.top +
@@ -1144,14 +1394,12 @@ export const renderTransposicion = (
         const curveDir = esSuperior ? -1 : 1;
         const isLeft = direccion === "izq";
 
-        const pathD1 = `M 0 0 Q ${ancho / 2} ${
-          curveOffset * curveDir
-        } ${ancho} 0`;
+        const pathD1 = `M 0 0 Q ${ancho / 2} ${curveOffset * curveDir
+          } ${ancho} 0`;
         const xFirst = xInicio + (isLeft ? -offsetFirst : offsetFirst);
 
-        const pathD2 = `M 0 0 Q ${ancho / 2} ${
-          curveOffset * curveDir
-        } ${ancho} 0`;
+        const pathD2 = `M 0 0 Q ${ancho / 2} ${curveOffset * curveDir
+          } ${ancho} 0`;
         const xSecondBase = isLeft
           ? xInicio - ancho - spacing
           : xInicio + ancho + spacing;
@@ -1274,7 +1522,7 @@ export const renderProtesisParcialFija = (
         const x2 = endBox.left + endBox.width / 2 - containerEl.left;
         const y2 =
           endBox.top + endBox.height / 2 + lineOffsetYEnd - containerEl.top;
-        const esDienteSuperior = parseInt(start) < 30;
+        const esDienteSuperior = dientesSuperiores.includes(start);
         return (
           <g key={`ppf-${start}-${end}-${idx}`}>
             <line

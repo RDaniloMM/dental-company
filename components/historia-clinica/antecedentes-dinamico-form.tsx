@@ -446,9 +446,9 @@ export default function AntecedentesDinamicoForm({
               <div className="rounded-lg border border-border bg-card p-4">
                 <div className="flex justify-between items-center mb-4 border-b pb-3 border-gray-200 dark:border-gray-700">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{category}</h3>
-                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2">
                     <Label htmlFor={`no-refiere-categoria-${category}`} className="text-sm text-gray-600 dark:text-gray-400">No Refiere</Label>
-                    <Switch id={`no-refiere-categoria-${category}`} checked={isCategoryNoRefiere} onCheckedChange={(checked) => handleNoRefiereCategoriaChange(category, checked)} className="data-[state=checked]:bg-gray-900 data-[state=unchecked]:bg-gray-300 dark:data-[state=checked]:bg-gray-100 dark:data-[state=unchecked]:bg-gray-700" />
+                    <Switch id={`no-refiere-categoria-${category}`} checked={isCategoryNoRefiere} onCheckedChange={(checked: boolean) => handleNoRefiereCategoriaChange(category, checked)} className="data-[state=checked]:bg-gray-900 data-[state=unchecked]:bg-gray-300 dark:data-[state=checked]:bg-gray-100 dark:data-[state=unchecked]:bg-gray-700" />
                   </div>
                 </div>
                 <div className={`transition-opacity duration-200 ${isCategoryNoRefiere ? "opacity-50" : ""}`}>

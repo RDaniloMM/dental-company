@@ -144,7 +144,12 @@ const MolarAction: React.FC<MolarActionProps> = ({
         }
         fill="white"
         style={{ pointerEvents: "auto", cursor: "pointer" }}
-        onClick={() => !disabled && onZoneSelect("corona")}
+        onClick={() => {
+          if (!disabled) {
+            console.log(`Diente ${toothId} - Zona corona`);
+            onZoneSelect("corona");
+          }
+        }}
       />
       <path
         d={`M ${centerX + centerW / 2}, ${centerY} V ${centerY + centerH}`}
@@ -174,7 +179,12 @@ const MolarAction: React.FC<MolarActionProps> = ({
             fill={getFillWithOpacity(zone.name)}
             onMouseEnter={() => !disabled && setHoveredPart(zone.name)}
             onMouseLeave={() => !disabled && setHoveredPart(null)}
-            onClick={() => !disabled && onZoneSelect(zone.name)}
+            onClick={() => {
+              if (!disabled) {
+                console.log(`Diente ${toothId} - Zona ${zone.name}`);
+                onZoneSelect(zone.name);
+              }
+            }}
             style={{ cursor: disabled ? "default" : "pointer" }}
           />
         ) : (
@@ -186,7 +196,12 @@ const MolarAction: React.FC<MolarActionProps> = ({
             fill={getFillWithOpacity(zone.name)}
             onMouseEnter={() => !disabled && setHoveredPart(zone.name)}
             onMouseLeave={() => !disabled && setHoveredPart(null)}
-            onClick={() => !disabled && onZoneSelect(zone.name)}
+            onClick={() => {
+              if (!disabled) {
+                console.log(`Diente ${toothId} - Zona ${zone.name}`);
+                onZoneSelect(zone.name);
+              }
+            }}
             style={{ cursor: disabled ? "default" : "pointer" }}
           />
         )

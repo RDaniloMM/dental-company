@@ -80,8 +80,6 @@ export default function DiagnosticoFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [personalOptions, setPersonalOptions] = useState<Array<{ id: string; nombre_completo: string }>>([])
   const [odontologoId, setOdontologoId] = useState<string | null>(diagnostico?.odontologo_id || null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentPersonalName, setCurrentPersonalName] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const cieWrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -118,28 +116,6 @@ export default function DiagnosticoFormModal({
     loadPersonal()
     return () => { mounted = false }
   }, [userId])
-
-  // Resolver usuario auth actual y su nombre en 'personal' para autocompletar
-  useEffect(() => {
-    const resolver = async () => {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user?.id) setCurrentUserId(user.id)
-        if (user?.email) {
-          const { data: personalMatch } = await supabase.from('personal').select('id, nombre_completo').ilike('email', user.email).limit(1)
-          if (personalMatch && personalMatch.length > 0) {
-            setCurrentPersonalName(personalMatch[0].nombre_completo)
-            // si no hay odontologoId y es creación, fijarlo al id auth (para acciones server-side que comparan con auth id)
-            if (!odontologoId) setOdontologoId(user.id)
-          }
-        }
-      } catch (e) {
-        console.error('Error resolving current user for diagnostico:', e)
-      }
-    }
-    resolver()
-  }, [])
 
   useEffect(() => {
     const searchCie10 = async () => {
@@ -209,7 +185,6 @@ export default function DiagnosticoFormModal({
   }, [])
 
   const validate = () => {
-    // Tratar las tres comprobaciones como advertencias que bloquean el guardado
     const newErrors: { odontologoId?: string } = {}
     const newWarnings: { tipo?: string; cie10?: string; odontologo?: string } = {}
 
@@ -220,7 +195,7 @@ export default function DiagnosticoFormModal({
       newWarnings.cie10 = 'Falta seleccionar el código CIE10.'
     }
     if (!odontologoId) {
-      // No requerimos selección manual de odontólogo; se autocompleta con la cuenta actual
+      newWarnings.odontologo = 'Falta seleccionar el odontólogo asignado.'
     } else {
       const exists = personalOptions.some((p) => p.id === odontologoId)
       if (!exists) {
@@ -229,7 +204,6 @@ export default function DiagnosticoFormModal({
     }
 
     setErrors(newErrors)
-    // isValid sólo si no hay errores ni advertencias
     const hasErrors = Object.keys(newErrors).length > 0
     const hasWarnings = Object.keys(newWarnings).length > 0
     return { isValid: !hasErrors && !hasWarnings, errors: newErrors, warnings: newWarnings }
@@ -238,7 +212,6 @@ export default function DiagnosticoFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const validation = validate()
-    // Si hay errores reales (p. ej. odontólogo inválido) mostrar en rojo y bloquear
     if (validation.errors && Object.keys(validation.errors).length > 0) {
       Object.values(validation.errors).forEach((msg) => {
         if (msg) toast.error(msg, { style: { backgroundColor: '#FF0000', color: 'white' } })
@@ -246,7 +219,6 @@ export default function DiagnosticoFormModal({
       return
     }
 
-    // Si hay advertencias (faltan selecciones), mostrar advertencias amarillas y bloquear el guardado
     if (validation.warnings && Object.keys(validation.warnings).length > 0) {
       Object.values(validation.warnings).forEach((msg) => {
         if (msg) toast.warning(msg, { style: { backgroundColor: '#FFA500', color: 'white' }, duration: 4000 })
@@ -258,7 +230,6 @@ export default function DiagnosticoFormModal({
     const formData = {
       id: diagnostico?.id ?? undefined,
       tipo: String(tipo ?? ''),
-      // enviar null en vez de cadena vacía para campos opcionales que no se seleccionaron
       cie10_id: cie10Id ?? null,
       caso_id: String(casoId ?? ''),
       odontologo_id: odontologoId ?? null,
@@ -375,12 +346,16 @@ export default function DiagnosticoFormModal({
 
           <div className="space-y-2">
             <Label htmlFor="odontologo">Odontólogo</Label>
-            <input
-              id="odontologo"
-              value={currentPersonalName || ''}
-              readOnly
-              className="w-full rounded-md border px-3 py-2 bg-background text-sm"
-            />
+            <Select onValueChange={(v) => setOdontologoId(v)} value={odontologoId ?? ''}>
+              <SelectTrigger>
+                <SelectValue placeholder={personalOptions.length > 0 ? 'Seleccione un odontólogo' : 'Cargando...'} />
+              </SelectTrigger>
+              <SelectContent>
+                {personalOptions.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.nombre_completo}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.odontologoId && <p className="text-sm text-red-500">{errors.odontologoId}</p>}
           </div>
 

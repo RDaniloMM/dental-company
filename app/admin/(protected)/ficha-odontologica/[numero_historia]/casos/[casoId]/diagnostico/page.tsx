@@ -12,7 +12,7 @@ interface DiagnosticoPageProps {
 }
 
 export default async function DiagnosticoPage({ params: paramsPromise }: DiagnosticoPageProps) {
-  const params = await paramsPromise; // Resuelve la promesa de los parámetros
+  const params = await paramsPromise;
   const supabase = await createClient()
   const { casoId } = params
 
@@ -21,15 +21,12 @@ export default async function DiagnosticoPage({ params: paramsPromise }: Diagnos
     return notFound()
   }
 
-  // Recopilar información del usuario para depuración rápida
   const email = user.email ?? 'desconocido'
   const meta = (user.user_metadata ?? {}) as Record<string, unknown>
-  // Intentar obtener nombre y rol desde user_metadata primero
   let name =
     (meta['name'] as string) || (meta['full_name'] as string) || (meta['nombre_completo'] as string) || ''
   let role = (meta['role'] as string) || ''
 
-  // Si metadata no contiene información, buscar en la tabla `personal` por email o id
   if (!name || !role) {
     try {
       const { data: personalData, error: personalError } = await supabase
@@ -44,12 +41,10 @@ export default async function DiagnosticoPage({ params: paramsPromise }: Diagnos
           name = personalData.nombre_completo
         }
         if (!role && typeof personalData.rol === 'string') {
-          // Normalizar: en la base aparece 'Admin' o 'Odontólogo' — lo dejamos tal cual
           role = personalData.rol
         }
       }
     } catch {
-      // ignorar errores de consulta; mantener los valores que tengamos
     }
   }
 
@@ -61,7 +56,6 @@ export default async function DiagnosticoPage({ params: paramsPromise }: Diagnos
       <PageHeader title="Diagnósticos del Caso">
         <DiagnosticoHeader />
       </PageHeader>
-      {/* Bloque auxiliar removido: información de sesión ya no se muestra aquí */}
       <DiagnosticoTable
         casoId={casoId}
         userId={user.id}

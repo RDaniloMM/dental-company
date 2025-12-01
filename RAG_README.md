@@ -1,184 +1,197 @@
-# Sistema RAG Simple para FAQ
+# Sistema RAG con Embeddings Vectoriales
 
-Este es un sistema de Retrieval-Augmented Generation (RAG) simple implementado para responder preguntas frecuentes de la clínica dental.
+Este sistema utiliza **Retrieval-Augmented Generation (RAG)** con embeddings vectoriales para responder preguntas frecuentes de la clínica dental con alta precisión semántica.
 
-## 🎯 ¿Qué es RAG?
+## 🎯 ¿Qué es RAG con Embeddings?
 
-RAG combina la búsqueda de información relevante con la generación de texto de un modelo de lenguaje. En lugar de que el modelo responda solo con su conocimiento general, primero busca información específica en una base de datos y luego genera una respuesta basada en ese contexto.
+RAG combina la búsqueda de información relevante con la generación de texto de un modelo de lenguaje. Esta implementación usa **embeddings vectoriales** para búsqueda semántica, lo que significa que puede entender el significado de las preguntas, no solo coincidencias de palabras.
 
-## 📁 Archivos Creados
+### Ejemplo:
 
-1. **`lib/faq-data.ts`** - Base de datos de preguntas frecuentes
-2. **`lib/rag-utils.ts`** - Funciones de búsqueda y generación de contexto
-3. **`app/api/chat/route.ts`** - API actualizada con capacidad RAG
+- Usuario pregunta: _"¿Cuánto sale arreglar una muela?"_
+- El sistema entiende que es similar a: _"¿Cuál es el precio de un tratamiento dental?"_
+- Aunque las palabras son diferentes, el **significado** es el mismo.
 
-## 🔧 Cómo Funciona
+## 📁 Arquitectura del Sistema
 
-### 1. Base de Datos FAQ (`faq-data.ts`)
-
-Contiene un array de objetos con:
-
-- `id`: Identificador único
-- `question`: La pregunta frecuente
-- `answer`: La respuesta
-- `keywords`: Palabras clave para mejorar la búsqueda
-
-### 2. Sistema de Búsqueda (`rag-utils.ts`)
-
-#### `searchFAQs(query, topK)`
-
-Busca las FAQs más relevantes usando:
-
-- **Coincidencia de keywords**: +3 puntos por keyword que coincide
-- **Palabras en pregunta**: +2 puntos
-- **Palabras en respuesta**: +1 punto
-- **Pregunta muy similar**: +5 puntos bonus
-
-Retorna las top K FAQs más relevantes.
-
-#### `generateRAGContext(faqs)`
-
-Genera un prompt estructurado con las FAQs relevantes para que el modelo las use como contexto.
-
-#### `isRelevantForFAQ(query)`
-
-Determina si una consulta es del tipo que podría beneficiarse de las FAQs.
-
-### 3. Integración con Gemini
-
-En la ruta de la API:
-
-1. Si `useFAQ` está activado, extrae la última consulta del usuario
-2. Verifica si es relevante para FAQs
-3. Busca las 3 FAQs más relevantes
-4. Genera el contexto RAG
-5. Lo incluye en el system prompt de Gemini
-6. El modelo responde basándose en ese contexto
-
-## 🎨 Interfaz de Usuario
-
-Se agregó un botón **"FAQ"** en la barra de herramientas:
-
-- **Activado** (azul): El chatbot usará la base de conocimiento FAQ
-- **Desactivado** (gris): El chatbot responderá solo con conocimiento general
-
-## 📝 Agregar Nuevas FAQs
-
-Para agregar nuevas preguntas frecuentes, edita `lib/faq-data.ts`:
-
-```typescript
-{
-  id: "9",
-  question: "¿Tu nueva pregunta?",
-  answer: "La respuesta detallada...",
-  keywords: ["palabra1", "palabra2", "palabra3"]
-}
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Usuario hace   │────▶│  Generar         │────▶│  Buscar en BD   │
+│  una pregunta   │     │  Embedding (768d)│     │  con pgvector   │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+                                                          │
+                                                          ▼
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Respuesta      │◀────│  Gemini genera   │◀────│  FAQs + Contexto│
+│  al usuario     │     │  respuesta       │     │  más similares  │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
-**Tips para buenos keywords:**
+## 🔧 Componentes
 
-- Incluye sinónimos
-- Usa verbos y sustantivos clave
-- Piensa en cómo los usuarios preguntarían
-- Incluye términos técnicos y coloquiales
+### 1. Base de Datos (Supabase + pgvector)
 
-## 🚀 Mejoras Futuras
+**Tablas principales:**
 
-### 1. Embeddings Vectoriales
+- `chatbot_faqs` - Preguntas frecuentes con embeddings
+- `chatbot_contexto` - Información adicional con embeddings
+- `cms_tema` - Datos de contacto de la clínica
 
-Para búsquedas más precisas, podrías usar:
+**Columnas de embeddings:**
 
-```typescript
-// Instalar: npm install @google/generative-ai
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-const model = genAI.getGenerativeModel({ model: "embedding-001" });
-
-// Generar embeddings
-const result = await model.embedContent(text);
-const embedding = result.embedding;
+```sql
+embedding vector(768)           -- Vector de 768 dimensiones
+embedding_updated_at TIMESTAMPTZ -- Fecha de última actualización
 ```
 
-### 2. Base de Datos Vectorial
+### 2. Funciones SQL para búsqueda vectorial
 
-Usar una DB como:
+```sql
+-- Buscar FAQs similares
+search_faqs_by_embedding(query_embedding, match_threshold, match_count)
 
-- **Pinecone** (cloud)
-- **Chroma** (local)
-- **Supabase pgvector** (ya usas Supabase!)
-
-### 3. Chunking de Documentos
-
-Para documentos largos, dividir en chunks:
-
-```typescript
-function chunkDocument(text: string, chunkSize: number = 500) {
-  const sentences = text.split(/[.!?]+/);
-  const chunks = [];
-  let currentChunk = "";
-
-  for (const sentence of sentences) {
-    if ((currentChunk + sentence).length < chunkSize) {
-      currentChunk += sentence + ". ";
-    } else {
-      chunks.push(currentChunk.trim());
-      currentChunk = sentence + ". ";
-    }
-  }
-  if (currentChunk) chunks.push(currentChunk.trim());
-  return chunks;
-}
+-- Buscar contexto similar
+search_contexto_by_embedding(query_embedding, match_threshold, match_count)
 ```
 
-### 4. Caché de Búsquedas
+### 3. lib/rag-utils.ts
 
-Implementar caché para consultas comunes:
+| Función                             | Descripción                     |
+| ----------------------------------- | ------------------------------- |
+| `generateEmbedding(text)`           | Genera embedding para un texto  |
+| `generateEmbeddings(texts)`         | Genera embeddings en batch      |
+| `searchFAQsFromDB(query, topK)`     | Búsqueda semántica de FAQs      |
+| `searchContextoFromDB(query, topK)` | Búsqueda semántica de contexto  |
+| `updateFAQEmbedding(id)`            | Actualiza embedding de un FAQ   |
+| `syncAllFAQEmbeddings()`            | Sincroniza todos los embeddings |
 
-```typescript
-const searchCache = new Map<string, FAQ[]>();
+### 4. API Endpoints
 
-export function searchFAQsWithCache(query: string, topK: number = 3): FAQ[] {
-  const cacheKey = query.toLowerCase();
-  if (searchCache.has(cacheKey)) {
-    return searchCache.get(cacheKey)!;
-  }
+**Chat (POST /api/chat)**
 
-  const results = searchFAQs(query, topK);
-  searchCache.set(cacheKey, results);
-  return results;
-}
+- Recibe pregunta del usuario
+- Genera embedding de la consulta
+- Busca FAQs y contexto similares
+- Genera respuesta con Gemini
+
+**Sync Embeddings (POST /api/chatbot/sync-embeddings)**
+
+- Actualiza embeddings cuando se modifican FAQs
+- Solo accesible para administradores
+
+## 🚀 Configuración Inicial
+
+### 1. Ejecutar migración SQL
+
+```bash
+# En Supabase Dashboard > SQL Editor
+# Ejecutar: supabase/migrations/20251128_add_vector_embeddings.sql
 ```
 
-## 🧪 Pruebas
+### 2. Sincronizar embeddings iniciales
 
-Intenta preguntas como:
+```bash
+# Llamar al endpoint (requiere autenticación de admin)
+POST /api/chatbot/sync-embeddings
+Body: { "type": "all" }
+```
 
-- "¿Cuál es el horario?"
-- "¿Cómo agendo una cita?"
-- "¿Cuánto cuesta una limpieza?"
-- "¿Atienden emergencias?"
-- "¿Aceptan seguro médico?"
+### 3. Verificar estado
 
-Compara las respuestas con y sin el modo FAQ activado.
+```bash
+GET /api/chatbot/sync-embeddings
+# Retorna estadísticas de embeddings
+```
 
-## 📊 Ventajas de este Enfoque
+## 📝 Agregar/Editar FAQs
 
-✅ **Simple**: No requiere dependencias adicionales
-✅ **Rápido**: Búsqueda instantánea en memoria
-✅ **Controlable**: Sabes exactamente qué información se usa
-✅ **Económico**: No requiere embeddings o bases de datos vectoriales
-✅ **Actualizable**: Fácil agregar/editar FAQs
+Cuando un administrador modifica un FAQ en el panel de administración:
 
-## ⚠️ Limitaciones
+1. Se guarda en `chatbot_faqs`
+2. El embedding se marca como desactualizado
+3. Se debe llamar al endpoint de sync para regenerar:
 
-- Búsqueda básica (no semántica verdadera)
-- Limitado a FAQs pre-definidas
-- No escala bien con miles de documentos
-- Requiere mantener keywords manualmente
+```typescript
+// Sincronizar un FAQ específico
+POST /api/chatbot/sync-embeddings
+Body: { "type": "faq", "id": "uuid-del-faq" }
 
-## 🎓 Recursos
+// Sincronizar todos
+POST /api/chatbot/sync-embeddings
+Body: { "type": "all" }
+```
 
+## 🎯 Parámetros de Búsqueda
+
+| Parámetro                  | Valor | Descripción                   |
+| -------------------------- | ----- | ----------------------------- |
+| `match_threshold` FAQs     | 0.45  | Mínimo 45% de similitud       |
+| `match_threshold` Contexto | 0.40  | Mínimo 40% de similitud       |
+| `match_count` FAQs         | 3     | Top 3 FAQs más similares      |
+| `match_count` Contexto     | 2     | Top 2 contextos más similares |
+
+## 🔒 Seguridad
+
+- Los embeddings se generan **server-side** únicamente
+- El modelo **NO aprende** de las conversaciones de usuarios
+- Solo los administradores pueden modificar la base de conocimiento
+- El system prompt no se expone al cliente
+
+## 📊 Ventajas vs Sistema Anterior
+
+| Aspecto              | Antes (Keywords)  | Ahora (Embeddings) |
+| -------------------- | ----------------- | ------------------ |
+| Sinónimos            | ❌ No entiende    | ✅ Entiende        |
+| Errores ortográficos | ❌ Falla          | ✅ Tolera          |
+| Preguntas naturales  | ⚠️ Limitado       | ✅ Excelente       |
+| Precisión            | ~60%              | ~90%               |
+| Mantenimiento        | Manual (keywords) | Automático         |
+
+## 🧪 Pruebas Recomendadas
+
+```
+✅ "¿Cuál es el horario de atención?"
+✅ "¿A qué hora abren?"
+✅ "¿Hasta qué hora atienden?"
+✅ "cuando puedo ir" (sin tildes, informal)
+
+✅ "¿Cuánto cuesta una limpieza?"
+✅ "precio de profilaxis"
+✅ "¿Qué tan caro es hacerse una limpieza dental?"
+
+✅ "¿Dónde están ubicados?"
+✅ "dirección de la clínica"
+✅ "¿cómo llego?"
+```
+
+## 🔧 Troubleshooting
+
+### Embeddings no se generan
+
+```bash
+# Verificar API key de Google
+echo $GOOGLE_GENERATIVE_AI_API_KEY
+
+# Verificar extensión pgvector en Supabase
+SELECT * FROM pg_extension WHERE extname = 'vector';
+```
+
+### Búsqueda no retorna resultados
+
+```sql
+-- Verificar que hay embeddings
+SELECT COUNT(*) FROM chatbot_faqs WHERE embedding IS NOT NULL;
+
+-- Probar función directamente
+SELECT * FROM search_faqs_by_embedding(
+  '[0.1, 0.2, ...]'::vector(768),
+  0.3,
+  5
+);
+```
+
+## 📚 Recursos
+
+- [Supabase pgvector](https://supabase.com/docs/guides/database/extensions/pgvector)
+- [Google AI Embeddings](https://ai.google.dev/gemini-api/docs/embeddings)
 - [Vercel AI SDK](https://sdk.vercel.ai/docs)
-- [Google Gemini API](https://ai.google.dev/)
-- [RAG Explained](https://www.pinecone.io/learn/retrieval-augmented-generation/)

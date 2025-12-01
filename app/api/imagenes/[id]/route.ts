@@ -1,57 +1,66 @@
-import { createClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
-import { deleteImage } from '@/lib/cloudinary';
-
-export const dynamic = 'force-dynamic';
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { deleteImage } from "@/lib/cloudinary";
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: imageId } = await params;
-
-  if (!imageId) {
-    return NextResponse.json(
-      { error: 'El ID de la imagen es requerido.' },
-      { status: 400 },
-    );
-  }
-
-  const supabase = await createClient();
-
   try {
-    // 1. Obtener el public_id de la imagen desde Supabase
-    const { data: imageData, error: fetchError } = await supabase
-      .from('imagenes_pacientes')
-      .select('public_id')
-      .eq('id', imageId)
+    const { id } = await params;
+    const supabase = await createClient();
+
+    // Verificar autenticación
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    // Obtener la imagen para conseguir el public_id
+    const { data: imagen, error: fetchError } = await supabase
+      .from("imagenes_pacientes")
+      .select("public_id")
+      .eq("id", id)
       .single();
 
-    if (fetchError || !imageData) {
-      throw new Error('No se encontró la imagen en la base de datos.');
+    if (fetchError || !imagen) {
+      return NextResponse.json(
+        { error: "Imagen no encontrada" },
+        { status: 404 }
+      );
     }
 
-    // 2. Eliminar la imagen de Cloudinary
-    const deleteResult = await deleteImage(imageData.public_id);
-
-    if (deleteResult.result !== 'ok') {
-      // Aún si falla en Cloudinary, intentamos borrar de Supabase
-      console.warn(`No se pudo eliminar la imagen de Cloudinary: ${imageData.public_id}`);
+    // Eliminar de Cloudinary
+    try {
+      await deleteImage(imagen.public_id);
+    } catch (cloudinaryError) {
+      console.error("Error eliminando de Cloudinary:", cloudinaryError);
+      // Continuar aunque falle en Cloudinary
     }
 
-    // 3. Eliminar el registro de Supabase
+    // Eliminar de la base de datos
     const { error: deleteError } = await supabase
-      .from('imagenes_pacientes')
+      .from("imagenes_pacientes")
       .delete()
-      .eq('id', imageId);
+      .eq("id", id);
 
     if (deleteError) {
-      throw new Error('Error al eliminar el registro de la imagen en la base de datos.');
+      console.error("Error eliminando de BD:", deleteError);
+      return NextResponse.json(
+        { error: "Error al eliminar la imagen" },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ message: 'Imagen eliminada correctamente.' });
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }

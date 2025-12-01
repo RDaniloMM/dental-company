@@ -56,14 +56,47 @@ export async function updateSession (request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/admin/login') &&
-    request.nextUrl.pathname.startsWith('/admin')
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/admin/login'
-    return NextResponse.redirect(url)
+  const pathname = request.nextUrl.pathname;
+
+  // Rutas públicas que no requieren autenticación
+  const publicRoutes = [
+    "/",
+    "/admin/login",
+    "/admin/sign-up",
+    "/admin/forgot-password",
+  ];
+
+  // Verificar si es una ruta pública
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith("/api/")
+  );
+
+  // Rutas de admin protegidas (excepto auth)
+  const isAdminRoute =
+    pathname.startsWith("/admin") &&
+    !pathname.startsWith("/admin/login") &&
+    !pathname.startsWith("/admin/sign-up") &&
+    !pathname.startsWith("/admin/forgot-password");
+
+  // Si es ruta de admin y no hay usuario, redirigir al login
+  if (isAdminRoute && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Si hay usuario y está en página de login/signup, redirigir al dashboard
+  if (user && (pathname === "/admin/login" || pathname === "/admin/sign-up")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  // Para otras rutas no públicas sin usuario, redirigir
+  if (!isPublicRoute && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
   }
 
   return response

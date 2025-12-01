@@ -9,7 +9,6 @@ const diagnosticoSchema = z.object({
   caso_id: z.string().uuid(),
   odontologo_id: z.string().uuid().optional().nullable(),
   tipo: z.string().min(1, 'El tipo es requerido.'),
-  // cie10_id puede venir como string (del cliente), número (id entero) o null
   cie10_id: z.union([z.string(), z.number()]).optional().nullable(),
 })
 
@@ -23,10 +22,7 @@ export async function upsertDiagnostico(formData: unknown) {
   }
 
   const { id, ...dataToUpsert } = parsedData.data
-
-  // Normalizar valores para evitar enviar cadenas vacías a columnas numéricas/uuid
   const normalized: Record<string, unknown> = { ...dataToUpsert }
-  // cie10_id en la DB es integer; si recibimos cadena vacía -> null, si recibimos string numérica -> convertir a integer
   if (typeof normalized.cie10_id === 'string') {
     const raw = (normalized.cie10_id as string).trim()
     if (raw === '') normalized.cie10_id = null
@@ -35,7 +31,6 @@ export async function upsertDiagnostico(formData: unknown) {
       normalized.cie10_id = Number.isNaN(asInt) ? null : asInt
     }
   }
-  // odontologo_id debe ser uuid o null; convertir cadena vacía a null
   if (typeof normalized.odontologo_id === 'string' && (normalized.odontologo_id as string).trim() === '') {
     normalized.odontologo_id = null
   }
@@ -43,8 +38,6 @@ export async function upsertDiagnostico(formData: unknown) {
   const { data: { user } } = await supabase.auth.getUser()
   const currentUserId = user?.id ?? null
   let currentUserRole = ((user?.user_metadata as unknown) as Record<string, unknown>)?.role as string | undefined
-
-  // Si el role no está en user_metadata, intentar obtenerlo de la tabla `personal` (por id o email)
   async function fetchRoleFromPersonal() {
     try {
       if (currentUserId) {
@@ -129,7 +122,6 @@ export async function deleteDiagnostico(id: string) {
     const currentUserId = user?.id ?? null
     let currentUserRole = ((user?.user_metadata as unknown) as Record<string, unknown>)?.role as string | undefined
 
-    // Intentar obtener role desde tabla `personal` si no está en metadata
     async function fetchRoleFromPersonalLocal() {
       try {
         if (currentUserId) {

@@ -69,9 +69,8 @@ export default function CasosList({
 }: CasosListProps) {
   const router = useRouter();
   const supabase = createClient();
-  // using sonner toast to match antecedentes notification mechanic
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Estado de carga
+  const [isLoading, setIsLoading] = useState(true);
 
   React.useEffect(() => {
     const fetchUserRole = async () => {
@@ -82,7 +81,7 @@ export default function CasosList({
         if (userRole === "odontologo" || userRole === "admin") {
           setUserRole(userRole);
         } else {
-          setUserRole("odontologo"); // Asignar rol por defecto si no es admin u odontólogo
+          setUserRole("odontologo");
         }
       }
       setIsLoading(false);
@@ -98,7 +97,7 @@ export default function CasosList({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("Todos");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Definir el número de elementos por página
+  const itemsPerPage = 10;
 
   const filteredCasos = casos.filter((caso) => {
     const matchesSearch =
@@ -109,7 +108,6 @@ export default function CasosList({
     return matchesSearch && matchesStatus;
   });
 
-  // Aplicar paginación
   const totalPages = Math.ceil(filteredCasos.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -125,7 +123,6 @@ export default function CasosList({
 
   const handleCreateOrUpdateCaso = async (payload: CasoFormData) => {
     if (editingCaso) {
-      // Actualizar caso
       const { error } = await supabase
         .from("casos_clinicos")
         .update(payload)
@@ -140,7 +137,6 @@ export default function CasosList({
         toast.success('El caso clínico ha sido actualizado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
       }
     } else {
-      // Crear caso
       const { data, error } = await supabase
         .from("casos_clinicos")
         .insert([{ ...payload, historia_id: historiaId }])
@@ -179,17 +175,16 @@ export default function CasosList({
   };
 
   const handleDeleteCaso = async (casoId: string) => {
-    // Implementar soft-delete
     const { error } = await supabase
       .from("casos_clinicos")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("id", casoId);
 
     if (error) {
-      toast.error(error.message || 'Error al eliminar caso', { style: { backgroundColor: '#FF0000', color: 'white' } })
+      toast.error('Error al eliminar el caso clínico.');
     } else {
       setCasos(casos.filter((c) => c.id !== casoId));
-      toast.success('El caso clínico ha sido eliminado exitosamente (soft-delete).', { style: { backgroundColor: '#008000', color: 'white' } })
+      toast.success('El caso clínico ha sido eliminado permanentemente.', { style: { backgroundColor: '#008000', color: 'white' } })
     }
   };
 

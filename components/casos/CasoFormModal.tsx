@@ -34,7 +34,7 @@ type CasoFormProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CasoFormData) => void;
-  initialData?: CasoFormData & { id?: string }; // Permitir id para edición
+  initialData?: CasoFormData & { id?: string }; 
 };
 
 export default function CasoFormModal({
@@ -160,7 +160,7 @@ export default function CasoFormModal({
               value={fechaInicio}
               onChange={(e) => setFechaInicio(e.target.value)}
               className="col-span-3"
-              disabled={!!initialData} // Deshabilitar si es edición
+              disabled={!!initialData}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
