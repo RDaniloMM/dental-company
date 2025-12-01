@@ -112,13 +112,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     avatar: "",
   });
   const [userRole, setUserRole] = React.useState<string | null>(null);
+  const [birthdayCount, setBirthdayCount] = React.useState(0);
   const { toggleSidebar, isMobile } = useSidebar();
 
   React.useEffect(() => {
     setMounted(true);
 
     // Obtener usuario real de Supabase y su rol
-    const fetchUser = async () => {
+    const fetchUserAndBirthdays = async () => {
       const supabase = createClient();
       const {
         data: { user: authUser },
@@ -145,17 +146,53 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           setUserRole(personalData.rol);
         }
       }
+
+      // Obtener cumpleaños de hoy
+      const { data: patients } = await supabase
+        .from("pacientes")
+        .select("fecha_nacimiento")
+        .not("fecha_nacimiento", "is", null);
+
+      if (patients) {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentDay = today.getDate();
+
+        const count = patients.filter((p) => {
+          if (!p.fecha_nacimiento) return false;
+          const [, month, day] = p.fecha_nacimiento.split("-").map(Number);
+          return month - 1 === currentMonth && day === currentDay;
+        }).length;
+
+        setBirthdayCount(count);
+      }
     };
 
-    fetchUser();
+    fetchUserAndBirthdays();
   }, []);
 
-  // Construir navegación basada en el rol
+  // Construir navegación basada en el rol y notificaciones
   const navMain = React.useMemo(() => {
     const isAdmin = userRole === "Admin" || userRole === "Administrador";
     const adminItems = isAdmin ? navAdmin : [];
-    return [...navBase, ...adminItems, ...navFooter];
-  }, [userRole]);
+
+    // Inyectar badge en Notificaciones
+    const updatedNavBase = navBase.map((item) => {
+      if (item.title === "Notificaciones" && birthdayCount > 0) {
+        return {
+          ...item,
+          badge: (
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-pink-500 text-[10px] font-bold text-white">
+              {birthdayCount}
+            </span>
+          ),
+        };
+      }
+      return item;
+    });
+
+    return [...updatedNavBase, ...adminItems, ...navFooter];
+  }, [userRole, birthdayCount]);
 
   if (!mounted) {
     return null;
