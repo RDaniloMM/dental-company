@@ -1329,5 +1329,5 @@ export default function PresupuestoPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

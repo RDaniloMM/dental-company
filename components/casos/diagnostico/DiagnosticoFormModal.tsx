@@ -80,6 +80,8 @@ export default function DiagnosticoFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [personalOptions, setPersonalOptions] = useState<Array<{ id: string; nombre_completo: string }>>([])
   const [odontologoId, setOdontologoId] = useState<string | null>(diagnostico?.odontologo_id || null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentPersonalName, setCurrentPersonalName] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const cieWrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -116,6 +118,28 @@ export default function DiagnosticoFormModal({
     loadPersonal()
     return () => { mounted = false }
   }, [userId])
+
+  // Resolver usuario auth actual y su nombre en 'personal' para autocompletar
+  useEffect(() => {
+    const resolver = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.id) setCurrentUserId(user.id)
+        if (user?.email) {
+          const { data: personalMatch } = await supabase.from('personal').select('id, nombre_completo').ilike('email', user.email).limit(1)
+          if (personalMatch && personalMatch.length > 0) {
+            setCurrentPersonalName(personalMatch[0].nombre_completo)
+            // si no hay odontologoId y es creación, fijarlo al id auth (para acciones server-side que comparan con auth id)
+            if (!odontologoId) setOdontologoId(user.id)
+          }
+        }
+      } catch (e) {
+        console.error('Error resolving current user for diagnostico:', e)
+      }
+    }
+    resolver()
+  }, [])
 
   useEffect(() => {
     const searchCie10 = async () => {
@@ -195,7 +219,7 @@ export default function DiagnosticoFormModal({
       newWarnings.cie10 = 'Falta seleccionar el código CIE10.'
     }
     if (!odontologoId) {
-      newWarnings.odontologo = 'Falta seleccionar el odontólogo asignado.'
+      // No requerimos selección manual de odontólogo; se autocompleta con la cuenta actual
     } else {
       const exists = personalOptions.some((p) => p.id === odontologoId)
       if (!exists) {
@@ -346,16 +370,12 @@ export default function DiagnosticoFormModal({
 
           <div className="space-y-2">
             <Label htmlFor="odontologo">Odontólogo</Label>
-            <Select onValueChange={(v) => setOdontologoId(v)} value={odontologoId ?? ''}>
-              <SelectTrigger>
-                <SelectValue placeholder={personalOptions.length > 0 ? 'Seleccione un odontólogo' : 'Cargando...'} />
-              </SelectTrigger>
-              <SelectContent>
-                {personalOptions.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.nombre_completo}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <input
+              id="odontologo"
+              value={currentPersonalName || ''}
+              readOnly
+              className="w-full rounded-md border px-3 py-2 bg-background text-sm"
+            />
             {errors.odontologoId && <p className="text-sm text-red-500">{errors.odontologoId}</p>}
           </div>
 

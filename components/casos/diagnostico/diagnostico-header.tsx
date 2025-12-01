@@ -1,13 +1,17 @@
 'use client';
 
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+
 export function DiagnosticoHeader() {
   return (
-    <button
+    <Button
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent('open-diagnostico-modal'))}
-      className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-white"
+      variant="default"
+      size="sm"
     >
-      + Nuevo Diagnóstico
-    </button>
+      <Plus className="mr-2 h-4 w-4" /> Nuevo Diagnóstico
+    </Button>
   );
 }
