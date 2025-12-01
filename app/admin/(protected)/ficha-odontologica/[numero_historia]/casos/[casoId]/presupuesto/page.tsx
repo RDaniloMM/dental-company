@@ -1,14 +1,75 @@
-export default function PresupuestoPage() {
+import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import { PresupuestoTable } from '@/components/casos/presupuesto/PresupuestoTable'
+import { PresupuestoHeader } from '@/components/casos/presupuesto/PresupuestoHeader'
+import { PresupuestoForm } from '@/components/casos/presupuesto/PresupuestoForm'
+import { getPresupuestoById } from './actions'
+import { PageHeader } from '@/components/ui/PageHeader'
+
+interface PresupuestoPageProps {
+  params: Promise<{
+    numero_historia: string
+    casoId: string
+  }>
+  searchParams?: Promise<{
+    action?: string
+    presupuestoId?: string
+  }>
+}
+
+export default async function PresupuestoPage({ params: paramsPromise, searchParams: searchParamsPromise }: PresupuestoPageProps) {
+  const params = await paramsPromise
+  const searchParams = await searchParamsPromise
+  const supabase = await createClient()
+  const { casoId, numero_historia } = params
+  const { action, presupuestoId } = searchParams || {}
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return notFound()
+  }
+
+  const { data: caso, error: casoError } = await supabase
+    .from('casos_clinicos')
+    .select('id, historia_id')
+    .eq('id', casoId)
+    .single()
+
+  if (casoError || !caso) {
+    return notFound()
+  }
+
+  const { data: historia, error: historiaError } = await supabase
+    .from('historias_clinicas')
+    .select('paciente_id')
+    .eq('id', caso.historia_id)
+    .single()
+
+  if (historiaError || !historia) {
+    return notFound()
+  }
+
+  // Modo crear presupuesto
+  if (action === 'crear') {
+    return <PresupuestoForm casoId={casoId} pacienteId={historia.paciente_id} numeroHistoria={numero_historia} />
+  }
+
+  // Modo editar presupuesto
+  if (action === 'editar' && presupuestoId) {
+    const presupuestoResult = await getPresupuestoById(presupuestoId)
+    if (presupuestoResult.error) {
+      return notFound()
+    }
+    return <PresupuestoForm casoId={casoId} pacienteId={historia.paciente_id} numeroHistoria={numero_historia} presupuesto={presupuestoResult.data} />
+  }
+
+  // Modo lista de presupuestos
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-semibold mb-4">Pestaña Presupuesto</h2>
-      <p className="text-muted-foreground">
-        Implementación pendiente. Aquí se gestionarán los presupuestos vinculados a este caso clínico.
-      </p>
-      {/* CTA + Nuevo (disabled o que abra modal vacío) */}
-      <button className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-md cursor-not-allowed opacity-50">
-        + Nuevo Presupuesto (próximamente)
-      </button>
+    <div className="container mx-auto p-4">
+      <PageHeader title="Presupuestos del Caso">
+        <PresupuestoHeader casoId={casoId} numeroHistoria={numero_historia} />
+      </PageHeader>
+      <PresupuestoTable casoId={casoId} pacienteId={historia.paciente_id} numeroHistoria={numero_historia} />
     </div>
-  );
+  )
 }
