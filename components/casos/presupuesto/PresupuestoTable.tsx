@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Printer, Edit, Trash2, Loader2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -76,6 +76,8 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
+  const lastPathnameRef = useRef<string>(pathname)
 
   const getCurrencySymbol = (code?: string | null) => {
     if (!code) return 'S/'
@@ -93,30 +95,47 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
     const supabase = createClient()
     setLoading(true)
 
-    const { data, error } = await supabase
-      .from('presupuestos')
-      .select(`
-        id,
-        nombre,
-        costo_total,
-        fecha_creacion,
-        medico_id,
-        moneda_id,
-        personal (
-          nombre_completo
-        ),
-        items_json,
-        creador_personal_id,
-        creador_nombre,
-        creador_rol
-      `)
-      .eq('caso_id', casoId)
-      .order('fecha_creacion', { ascending: false })
+    try {
+      // Query simple sin joins para evitar problemas de RLS
+      const { data, error } = await supabase
+        .from('presupuestos')
+        .select('*')
+        .eq('caso_id', casoId)
+        .order('fecha_creacion', { ascending: false })
 
-    if (error) {
-      setPresupuestos([])
-    } else if (data) {
-      // Get all unique moneda_ids and fetch their codigos
+      if (error) {
+        console.error('[PresupuestoTable] Error fetching presupuestos:', error)
+        setPresupuestos([])
+        return
+      }
+
+      if (!data || data.length === 0) {
+        console.log('[PresupuestoTable] No presupuestos found for casoId:', casoId)
+        setPresupuestos([])
+        setLoading(false)
+        return
+      }
+
+      console.log('[PresupuestoTable] Fetched presupuestos:', data.length, 'for casoId:', casoId)
+
+      // Obtener médicos (personal) por separado
+      const medicoIds = Array.from(new Set(data.map((p: any) => p.medico_id).filter(Boolean)))
+      let medicoMap: Record<string, { nombre_completo: string }> = {}
+
+      if (medicoIds.length > 0) {
+        const { data: medicosData } = await supabase
+          .from('personal')
+          .select('id, nombre_completo')
+          .in('id', medicoIds)
+        if (medicosData) {
+          medicoMap = medicosData.reduce((acc: Record<string, any>, m: any) => {
+            acc[m.id] = { nombre_completo: m.nombre_completo }
+            return acc
+          }, {})
+        }
+      }
+
+      // Obtener monedas por separado
       const monedaIds = Array.from(new Set(data.map((p: any) => p.moneda_id).filter(Boolean)))
       let monedaMap: Record<string, string> = {}
 
@@ -133,33 +152,44 @@ export function PresupuestoTable({ casoId, numeroHistoria }: PresupuestoTablePro
         }
       }
 
-      const transformed = data.map((item: Record<string, unknown>) => {
-        const row = item as unknown as PresupuestoRow
-        return {
-          id: row.id,
-          nombre: row.nombre,
-          costo_total: row.costo_total,
-          fecha_creacion: row.fecha_creacion,
-          medico_id: row.medico_id,
-          moneda_id: row.moneda_id,
-          moneda_codigo: row.moneda_id ? monedaMap[row.moneda_id as string] || null : null,
-          personal: row.personal,
-          plan_items: [], // No longer used; items are now in items_json
-          creador_personal_id: (item as any).creador_personal_id || null,
-          creador_nombre: (item as any).creador_nombre || null,
-          creador_rol: (item as any).creador_rol || null,
-        }
-      })
+      const transformed = data.map((item: any) => ({
+        id: item.id,
+        nombre: item.nombre,
+        costo_total: item.costo_total,
+        fecha_creacion: item.fecha_creacion,
+        medico_id: item.medico_id,
+        moneda_id: item.moneda_id,
+        moneda_codigo: item.moneda_id ? monedaMap[item.moneda_id] || null : null,
+        personal: item.medico_id ? medicoMap[item.medico_id] || null : null,
+        plan_items: [],
+        creador_personal_id: item.creador_personal_id || null,
+        creador_nombre: item.creador_nombre || null,
+        creador_rol: item.creador_rol || null,
+      }))
+
       setPresupuestos(transformed)
-    } else {
+    } catch (err) {
+      console.error('[PresupuestoTable] Exception:', err)
       setPresupuestos([])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [casoId])
 
   useEffect(() => {
     fetchPresupuestos()
   }, [fetchPresupuestos])
+
+  // Refetch cuando volvemos a esta ruta (detectar cambio de pathname)
+  useEffect(() => {
+    if (pathname.includes('presupuesto') && lastPathnameRef.current !== pathname) {
+      // Solo refetch si la ruta actual es presupuesto pero la anterior NO era (volvimos)
+      if (!lastPathnameRef.current.includes('presupuesto')) {
+        fetchPresupuestos()
+      }
+    }
+    lastPathnameRef.current = pathname
+  }, [pathname, fetchPresupuestos])
 
   // Resolver usuario actual para controlar permisos (borrado)
   useEffect(() => {

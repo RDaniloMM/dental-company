@@ -8,11 +8,8 @@ interface VistaCalendarioProps {
   casoId?: string;
 }
 
-export default function VistaCalendario({
-  pacienteId,
-  casoId,
-  calendarKey, // <-- La recibimos
-}: VistaCalendarioProps) {
+export default function VistaCalendario(props: VistaCalendarioProps) {
+  const { calendarKey } = props
   return (
     <section className='h-full w-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-white rounded-none sm:rounded-xl shadow-none sm:shadow overflow-hidden'>
       <iframe

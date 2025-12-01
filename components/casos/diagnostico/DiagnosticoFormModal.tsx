@@ -80,7 +80,6 @@ export default function DiagnosticoFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [personalOptions, setPersonalOptions] = useState<Array<{ id: string; nombre_completo: string }>>([])
   const [odontologoId, setOdontologoId] = useState<string | null>(diagnostico?.odontologo_id || null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentPersonalName, setCurrentPersonalName] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const cieWrapperRef = useRef<HTMLDivElement | null>(null)
@@ -125,7 +124,7 @@ export default function DiagnosticoFormModal({
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (user?.id) setCurrentUserId(user.id)
+        // usuario actual resuelto para autocompletar nombre en el formulario
         if (user?.email) {
           const { data: personalMatch } = await supabase.from('personal').select('id, nombre_completo').ilike('email', user.email).limit(1)
           if (personalMatch && personalMatch.length > 0) {

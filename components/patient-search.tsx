@@ -46,20 +46,7 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
     setSelectedPatient(patient);
     setSearchTerm(`${patient.nombres} ${patient.apellidos}`);
   };
-
-  const filteredPatients = useMemo(() => {
-    if (!searchTerm) {
-      return [];
-    }
-    return patients.filter(patient =>
-      `${patient.nombres} ${patient.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, patients]);
-
-  const handleSelectPatient = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setSearchTerm(`${patient.nombres} ${patient.apellidos}`);
-  };
+ 
 
   const handleGoToHistory = () => {
     if (selectedPatient) {

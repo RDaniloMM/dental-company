@@ -374,6 +374,8 @@ export function PresupuestoForm({ casoId, pacienteId, numeroHistoria, presupuest
 
     if (result.success) {
       toast.success('Presupuesto guardado exitosamente.', { style: { backgroundColor: '#008000', color: 'white' } })
+      // Refrescar el servidor y volver a la lista
+      router.refresh()
       router.push(`/admin/ficha-odontologica/${numeroHistoria}/casos/${casoId}/presupuesto`)
     } else {
       toast.error(result.error?.message || 'Error al guardar', { style: { backgroundColor: '#FF0000', color: 'white' } })

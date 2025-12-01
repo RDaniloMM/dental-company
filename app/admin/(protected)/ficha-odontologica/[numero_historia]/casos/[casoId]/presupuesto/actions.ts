@@ -125,7 +125,8 @@ export async function upsertPresupuesto(formData: unknown, items: unknown) {
 
     console.log('[presupuesto] ✓ SUCCESS - Presupuesto guardado con ID:', presupuestoId)
 
-    revalidatePath('/admin/ficha-odontologica')
+    // Revalidar la ruta de presupuestos para refrescar datos en la tabla
+    revalidatePath('/admin/ficha-odontologica/[numero_historia]/casos/[casoId]/presupuesto', 'layout')
     return { success: true, planId: presupuestoId }
   } catch (error) {
     console.error('[presupuesto] ✗ FATAL Error:', error)
