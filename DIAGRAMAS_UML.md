@@ -36,7 +36,7 @@ actor "Odontólogo" as Odontologo
 actor "Visitante Web" as Visitante
 
 rectangle "Sistema Dental Company Web" {
-    
+
     package "Gestión de Pacientes" {
         usecase "Registrar Paciente" as UC1
         usecase "Buscar Paciente" as UC2
@@ -46,7 +46,7 @@ rectangle "Sistema Dental Company Web" {
         usecase "Gestionar Odontograma" as UC6
         usecase "Subir Imágenes" as UC7
     }
-    
+
     package "Gestión de Casos Clínicos" {
         usecase "Crear Caso Clínico" as UC8
         usecase "Registrar Diagnóstico" as UC9
@@ -55,26 +55,26 @@ rectangle "Sistema Dental Company Web" {
         usecase "Generar Receta" as UC12
         usecase "Gestionar Consentimientos" as UC13
     }
-    
+
     package "Gestión de Citas" {
         usecase "Agendar Cita" as UC14
         usecase "Ver Calendario" as UC15
         usecase "Modificar Estado Cita" as UC16
         usecase "Sincronizar Google Calendar" as UC17
     }
-    
+
     package "Gestión de Tratamientos" {
         usecase "Administrar Procedimientos" as UC18
         usecase "Gestionar Grupos" as UC19
         usecase "Configurar Precios" as UC20
     }
-    
+
     package "Reportes" {
         usecase "Generar PDF Ficha" as UC21
         usecase "Ver KPIs Dashboard" as UC22
         usecase "Exportar Reportes" as UC23
     }
-    
+
     package "Administración" <<Admin>> {
         usecase "Gestionar Personal" as UC24
         usecase "Generar Códigos Invitación" as UC25
@@ -82,7 +82,7 @@ rectangle "Sistema Dental Company Web" {
         usecase "Administrar Chatbot" as UC27
         usecase "Sincronizar IA" as UC28
     }
-    
+
     package "Página Web Pública" {
         usecase "Ver Información Clínica" as UC29
         usecase "Consultar Servicios" as UC30
@@ -156,25 +156,25 @@ rectangle "Gestión de Pacientes" {
     usecase "Registrar Paciente" as UC1
     usecase "Validar DNI Único" as UC1a
     usecase "Generar Número Historia" as UC1b
-    
+
     usecase "Buscar Paciente" as UC2
     usecase "Filtrar por DNI" as UC2a
     usecase "Filtrar por Nombre" as UC2b
     usecase "Filtrar por N° Historia" as UC2c
-    
+
     usecase "Gestionar Filiación" as UC3
     usecase "Registrar Contacto Emergencia" as UC3a
-    
+
     usecase "Gestionar Historia Clínica" as UC4
     usecase "Registrar Antecedentes" as UC4a
     usecase "Registrar Cuestionario" as UC4b
     usecase "Registrar Examen Clínico" as UC4c
-    
+
     usecase "Gestionar Odontograma" as UC5
     usecase "Crear Nueva Versión" as UC5a
     usecase "Marcar Condición Dental" as UC5b
     usecase "Cambiar Tipo Odontograma" as UC5c
-    
+
     usecase "Gestionar Imágenes" as UC6
     usecase "Subir Imagen" as UC6a
     usecase "Clasificar Imagen" as UC6b
@@ -497,7 +497,7 @@ package "Módulo CMS" {
         --
         +actualizar(): void
     }
-    
+
     class CMSServicio {
         +id: UUID
         +nombre: String
@@ -512,7 +512,7 @@ package "Módulo CMS" {
         +crear(): void
         +actualizar(): void
     }
-    
+
     class CMSServicioImagen {
         +id: UUID
         +servicio_id: UUID
@@ -524,7 +524,7 @@ package "Módulo CMS" {
         +subir(): void
         +eliminar(): void
     }
-    
+
     class CMSEquipo {
         +id: UUID
         +nombre: String
@@ -537,7 +537,7 @@ package "Módulo CMS" {
         +crear(): void
         +actualizar(): void
     }
-    
+
     class CMSTema {
         +id: UUID
         +clave: String
@@ -564,7 +564,7 @@ package "Módulo Chatbot" {
         +actualizar(): void
         +generarEmbedding(): void
     }
-    
+
     class ChatbotContexto {
         +id: UUID
         +titulo: String
@@ -576,7 +576,7 @@ package "Módulo Chatbot" {
         +crear(): void
         +generarEmbedding(): void
     }
-    
+
     class ChatbotConversacion {
         +id: UUID
         +session_id: String
@@ -589,7 +589,7 @@ package "Módulo Chatbot" {
         --
         +registrar(): void
     }
-    
+
     class ChatbotCola {
         +id: UUID
         +session_id: String
@@ -601,7 +601,7 @@ package "Módulo Chatbot" {
         +encolar(): void
         +procesar(): void
     }
-    
+
     class ChatbotRateLimit {
         +id: UUID
         +ip_hash: String
@@ -663,7 +663,7 @@ alt Datos inválidos
 else Datos válidos
     Frontend -> API: POST /api/pacientes\n{datos_paciente}
     activate API
-    
+
     API -> Supabase: Verificar DNI único
     activate Supabase
     Supabase -> DB: SELECT * FROM pacientes WHERE dni = ?
@@ -672,7 +672,7 @@ else Datos válidos
     deactivate DB
     Supabase --> API: {exists: boolean}
     deactivate Supabase
-    
+
     alt DNI ya existe
         API --> Frontend: {error: "DNI ya registrado"}
         Frontend --> User: Mostrar error DNI duplicado
@@ -685,7 +685,7 @@ else Datos válidos
         deactivate DB
         Supabase --> API: numero_historia
         deactivate Supabase
-        
+
         API -> Supabase: INSERT paciente
         activate Supabase
         Supabase -> DB: INSERT INTO pacientes (...)
@@ -694,7 +694,7 @@ else Datos válidos
         deactivate DB
         Supabase --> API: {data: paciente}
         deactivate Supabase
-        
+
         API -> Supabase: Crear historia clínica
         activate Supabase
         Supabase -> DB: INSERT INTO historias_clinicas (...)
@@ -703,7 +703,7 @@ else Datos válidos
         deactivate DB
         Supabase --> API: {data: historia}
         deactivate Supabase
-        
+
         API --> Frontend: {success: true, paciente}
         deactivate API
         Frontend --> User: Redirigir a ficha paciente
@@ -862,7 +862,7 @@ else Horario disponible
     activate Google
     Google --> API: {eventId: "google_event_123"}
     deactivate Google
-    
+
     API -> Supabase: INSERT cita
     activate Supabase
     Supabase -> DB: INSERT INTO citas (\n  ...,\n  google_calendar_event_id\n)
@@ -871,10 +871,10 @@ else Horario disponible
     deactivate DB
     Supabase --> API: {data: cita}
     deactivate Supabase
-    
+
     API --> Frontend: {success: true, cita}
     deactivate API
-    
+
     Frontend -> Frontend: Actualizar calendario
     Frontend --> User: Toast "Cita agendada"
 end
@@ -1465,7 +1465,7 @@ package "Servidor Next.js" {
         [Server Actions\n(actions.ts)] as ServerActions
         [Middleware\n(auth)] as Middleware
     }
-    
+
     package "Componentes Servidor" {
         [React Server\nComponents] as RSC
         [Data Fetching] as DataFetch
@@ -1479,17 +1479,17 @@ package "Servicios Externos" {
         [Storage] as SupaStorage
         [Realtime] as SupaRealtime
     }
-    
+
     cloud "Cloudinary" {
         [Image CDN] as CloudinaryCDN
         [Image Transform] as CloudinaryTransform
     }
-    
+
     cloud "Google" {
         [Calendar API] as GoogleCal
         [OAuth 2.0] as GoogleOAuth
     }
-    
+
     cloud "OpenAI" {
         [GPT-4 API] as GPT4
         [Embeddings API] as Embeddings
@@ -1757,7 +1757,7 @@ endif
 
 if (¿Requiere tratamiento?) then (Sí)
     :Crear caso clínico;
-    
+
     fork
         :Registrar diagnósticos\n(CIE-10);
     fork again
@@ -1765,30 +1765,30 @@ if (¿Requiere tratamiento?) then (Sí)
     fork again
         :Solicitar radiografías\n(si aplica);
     end fork
-    
+
     :Crear presupuesto;
     :Agregar procedimientos;
     :Calcular costo total;
-    
+
     :Presentar presupuesto al paciente;
-    
+
     if (¿Paciente acepta?) then (Sí)
         :Aprobar presupuesto;
-        
+
         if (¿Pago inicial?) then (Sí)
             :Registrar pago;
             :Emitir comprobante;
         else (No)
         endif
-        
+
         :Agendar próxima cita;
         :Sincronizar con Google Calendar;
-        
+
         if (¿Tratamiento inmediato?) then (Sí)
             :Realizar procedimiento;
             :Actualizar odontograma;
             :Registrar notas clínicas;
-            
+
             if (¿Requiere medicación?) then (Sí)
                 :Generar receta;
                 :Imprimir PDF;
@@ -1796,12 +1796,12 @@ if (¿Requiere tratamiento?) then (Sí)
             endif
         else (No)
         endif
-        
+
     else (No)
         :Registrar rechazo;
         :Ofrecer alternativas;
     endif
-    
+
 else (No)
     :Registrar consulta informativa;
     :Dar recomendaciones;
@@ -1830,18 +1830,18 @@ start
 
 if (¿Nueva cita?) then (Sí)
     :Buscar paciente;
-    
+
     if (¿Paciente encontrado?) then (Sí)
         :Seleccionar paciente;
     else (No)
         :Registrar nuevo paciente;
     endif
-    
+
     :Seleccionar fecha y hora;
-    
+
     |Sistema|
     :Verificar disponibilidad\nodontólogo;
-    
+
     if (¿Horario disponible?) then (Sí)
         :Mostrar slot disponible;
     else (No)
@@ -1850,30 +1850,30 @@ if (¿Nueva cita?) then (Sí)
         :Seleccionar otro horario;
         |Sistema|
     endif
-    
+
     |Recepcionista/Odontólogo|
     :Seleccionar odontólogo;
     :Ingresar motivo de cita;
     :Seleccionar duración;
-    
+
     if (¿Vincular a caso?) then (Sí)
         :Seleccionar caso clínico;
     else (No)
     endif
-    
+
     :Confirmar cita;
-    
+
     |Sistema|
     :Guardar cita en BD;
     :Crear evento Google Calendar;
     :Enviar confirmación;
-    
+
 else (No)
     |Recepcionista/Odontólogo|
-    
+
     if (¿Modificar cita?) then (Sí)
         :Seleccionar cita existente;
-        
+
         switch (Acción)
         case (Confirmar)
             :Cambiar estado a Confirmada;
@@ -1892,7 +1892,7 @@ else (No)
             |Sistema|
             :Cambiar estado a Completada;
         endswitch
-        
+
     else (No)
         :Ver historial de citas;
         :Filtrar por estado/fecha;
@@ -1931,13 +1931,13 @@ node "Vercel Edge Network" as Vercel {
     node "Edge Functions" as Edge {
         artifact "Middleware\n(Auth)" as AuthMiddleware
     }
-    
+
     node "Serverless Functions" as Serverless {
         artifact "API Routes\n(/api/*)" as APIRoutes
         artifact "Server Actions" as Actions
         artifact "React Server\nComponents" as RSC
     }
-    
+
     database "Edge Cache" as EdgeCache
 }
 
@@ -1946,7 +1946,7 @@ cloud "Supabase Cloud" as Supabase {
         artifact "JWT Provider" as JWT
         artifact "OAuth Providers" as OAuth
     }
-    
+
     node "PostgreSQL 15" as SupaDB {
         database "dental_company_db" as DB {
             artifact "Tables" as Tables
@@ -1954,12 +1954,12 @@ cloud "Supabase Cloud" as Supabase {
             artifact "Triggers" as Triggers
             artifact "RLS Policies" as RLS
         }
-        
+
         database "pgvector" as Vector {
             artifact "Embeddings\nStorage" as EmbeddingsStore
         }
     }
-    
+
     node "Realtime" as Realtime {
         artifact "WebSocket\nServer" as WS
     }
@@ -1969,7 +1969,7 @@ cloud "Cloudinary CDN" as Cloudinary {
     node "Media Storage" as MediaStorage {
         artifact "Images\nRepository" as Images
     }
-    
+
     node "Transform API" as Transform {
         artifact "Image\nOptimization" as Optimize
     }
@@ -1979,7 +1979,7 @@ cloud "Google Cloud" as Google {
     node "Calendar API" as CalAPI {
         artifact "Events\nManagement" as Events
     }
-    
+
     node "OAuth 2.0" as GoogleOAuth {
         artifact "Token\nService" as Tokens
     }
@@ -1989,7 +1989,7 @@ cloud "OpenAI API" as OpenAI {
     node "GPT-4" as GPT {
         artifact "Chat\nCompletions" as Chat
     }
-    
+
     node "Embeddings" as EmbAPI {
         artifact "text-embedding-\nada-002" as Ada
     }
@@ -2040,6 +2040,7 @@ end note
 ## 📝 Notas de Implementación
 
 ### Herramientas Utilizadas
+
 - **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend:** Next.js API Routes, Server Actions
 - **Base de Datos:** PostgreSQL (Supabase)
@@ -2049,6 +2050,7 @@ end note
 - **Calendario:** Google Calendar API
 
 ### Convenciones de Diagramas
+
 - Los colores en diagramas de estado indican el nivel de actividad
 - Las relaciones con líneas punteadas indican dependencias opcionales
 - Los estereotipos `<<include>>` y `<<extend>>` siguen la notación UML estándar
