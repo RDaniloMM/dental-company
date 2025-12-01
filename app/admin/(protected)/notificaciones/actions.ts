@@ -37,7 +37,7 @@ export async function sendBirthdayEmail(
         const { data, error } = await resend.emails.send({
             from: `${fromName} <onboarding@resend.dev>`, // Forzado para pruebas
             to: [email],
-            subject: `¡Feliz Cumpleaños ${name}! - Dental Company`,
+            subject: `¡Feliz Cumpleaños ${name}! Te desea Dental Company Tacna`,
             html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
           <div style="text-align: center;">
