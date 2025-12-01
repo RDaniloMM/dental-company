@@ -1,0 +1,763 @@
+# 📊 Diagramas UML - Sistema Dental Company Web
+
+Este documento contiene los diagramas UML enfocados en los módulos de Landing Page, Administración de Usuarios, Gestión de Contenidos (CMS), Chatbot y Autenticación.
+Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [PlantText](https://www.planttext.com/).
+
+---
+
+## 📑 Índice
+
+1. [Diagrama de Casos de Uso](#1-diagrama-de-casos-de-uso)
+2. [Diagrama de Clases](#2-diagrama-de-clases)
+3. [Diagramas de Secuencia](#3-diagramas-de-secuencia)
+4. [Modelo Relacional de Base de Datos](#4-modelo-relacional-de-base-de-datos)
+5. [Diagrama de Despliegue](#5-diagrama-de-despliegue)
+
+---
+
+## 1. Diagrama de Casos de Uso
+
+### 1.1 Casos de Uso: Administración y Landing Page
+
+```plantuml
+@startuml Casos_de_Uso_Admin_Landing
+!theme plain
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Diagrama de Casos de Uso - Módulos Administrativos y Públicos
+
+actor "Administrador" as Admin
+actor "Odontólogo" as Odontologo
+actor "Visitante Web" as Visitante
+
+rectangle "Sistema Dental Company Web" {
+    
+    package "Autenticación y Cuenta" {
+        usecase "Iniciar Sesión" as UC1
+        usecase "Registrarse (Invitación)" as UC2
+        usecase "Recuperar Contraseña" as UC3
+        usecase "Configurar Cuenta" as UC4
+        usecase "Gestionar Email Recuperación" as UC5
+    }
+    
+    package "Dashboard y Métricas" {
+        usecase "Ver Dashboard Principal" as UC6
+        usecase "Visualizar KPIs" as UC7
+    }
+    
+    package "Administración de Usuarios" <<Admin>> {
+        usecase "Listar Usuarios" as UC8
+        usecase "Crear/Invitar Usuario" as UC9
+        usecase "Desactivar Usuario" as UC10
+        usecase "Asignar Roles" as UC11
+    }
+    
+    package "Gestión de Contenidos (CMS)" <<Admin>> {
+        usecase "Editar Información Clínica" as UC12
+        usecase "Gestionar Servicios" as UC13
+        usecase "Gestionar Equipo Médico" as UC14
+        usecase "Personalizar Tema Visual" as UC15
+    }
+    
+    package "Chatbot IA" {
+        usecase "Consultar Chatbot" as UC16
+        usecase "Configurar FAQs" as UC17
+        usecase "Configurar Contexto" as UC18
+        usecase "Sincronizar Base de Conocimiento" as UC19
+    }
+    
+    package "Landing Page Pública" {
+        usecase "Ver Servicios" as UC20
+        usecase "Ver Equipo" as UC21
+        usecase "Ver Información Contacto" as UC22
+    }
+}
+
+' Relaciones Visitante
+Visitante --> UC16
+Visitante --> UC20
+Visitante --> UC21
+Visitante --> UC22
+
+' Relaciones Odontólogo
+Odontologo --> UC1
+Odontologo --> UC2
+Odontologo --> UC3
+Odontologo --> UC4
+Odontologo --> UC6
+Odontologo --> UC7
+
+' Relaciones Admin
+Admin --> UC1
+Admin --> UC3
+Admin --> UC4
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+
+' Inclusiones y Extensiones
+UC4 ..> UC5 : <<include>>
+UC6 ..> UC7 : <<include>>
+
+@enduml
+```---
+
+## 2. Diagrama de Clases
+
+### 2.1 Clases de Autenticación, CMS y Chatbot
+
+```plantuml
+@startuml Diagrama_Clases_Core
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+
+title Diagrama de Clases - Core Administrativo y CMS (Basado en Esquema SQL)
+
+' ========== AUTENTICACIÓN Y USUARIOS ==========
+
+class Personal {
+    +id: UUID
+    +nombre_completo: Text
+    +rol: USER-DEFINED
+    +especialidad: Text
+    +telefono: Text
+    +email: Text
+    +activo: Boolean
+    +created_at: Timestamp
+    --
+    +actualizarPerfil(): void
+}
+
+class CodigoInvitacion {
+    +id: UUID
+    +codigo: Text
+    +creado_por: UUID
+    +usado_por: UUID
+    +rol_asignado: Text
+    +usos_maximos: Integer
+    +usos_actuales: Integer
+    +activo: Boolean
+    +expira_at: Timestamp
+    +created_at: Timestamp
+    +used_at: Timestamp
+    --
+    +generar(): void
+    +validar(): Boolean
+}
+
+class ConfigSeguridad {
+    +id: UUID
+    +clave: Text
+    +valor: Text
+    +descripcion: Text
+    +updated_at: Timestamp
+    --
+    +actualizar(): void
+}
+
+class AjustesAplicacion {
+    +id: UUID
+    +clave: Text
+    +valor: Text
+    +grupo: Text
+    +tipo: USER-DEFINED
+    +descripcion: Text
+    +orden: Integer
+    +resend_api_key: Text
+    +updated_at: Timestamp
+    +created_at: Timestamp
+    --
+    +actualizar(): void
+}
+
+' ========== CMS (GESTIÓN DE CONTENIDOS) ==========
+
+class CMSSeccion {
+    +id: UUID
+    +seccion: Text
+    +titulo: Text
+    +subtitulo: Text
+    +contenido: JSONB
+    +orden: Integer
+    +visible: Boolean
+    +updated_at: Timestamp
+    +updated_by: UUID
+    --
+    +actualizar(): void
+}
+
+class CMSServicio {
+    +id: UUID
+    +nombre: Text
+    +descripcion: Text
+    +icono: Text
+    +orden: Integer
+    +visible: Boolean
+    +detalle_completo: Text
+    +beneficios: Array
+    +duracion: Varchar
+    +recomendaciones: Text
+    +created_at: Timestamp
+    +updated_at: Timestamp
+    --
+    +crear(): void
+    +editar(): void
+}
+
+class CMSServicioImagen {
+    +id: UUID
+    +servicio_id: UUID
+    +imagen_url: Text
+    +public_id: Text
+    +descripcion: Text
+    +alt_text: Text
+    +orden: Integer
+    +visible: Boolean
+    +created_at: Timestamp
+    +updated_at: Timestamp
+    --
+    +subir(): void
+}
+
+class CMSEquipo {
+    +id: UUID
+    +nombre: Text
+    +cargo: Text
+    +especialidad: Text
+    +foto_url: Text
+    +foto_public_id: Text
+    +curriculum: JSONB
+    +orden: Integer
+    +visible: Boolean
+    +created_at: Timestamp
+    +updated_at: Timestamp
+    --
+    +crear(): void
+    +editar(): void
+}
+
+class CMSTema {
+    +id: UUID
+    +clave: Text
+    +valor: Text
+    +tipo: Text
+    +descripcion: Text
+    +grupo: Text
+    +updated_at: Timestamp
+    --
+    +actualizar(): void
+}
+
+class CMSCarrusel {
+    +id: UUID
+    +imagen_url: Text
+    +alt_text: Text
+    +orden: Integer
+    +visible: Boolean
+    +created_at: Timestamp
+    --
+    +subir(): void
+}
+
+' ========== CHATBOT IA ==========
+
+class ChatbotFAQ {
+    +id: UUID
+    +pregunta: Text
+    +respuesta: Text
+    +keywords: Array
+    +categoria: Text
+    +prioridad: Integer
+    +activo: Boolean
+    +embedding: USER-DEFINED
+    +created_at: Timestamp
+    +updated_at: Timestamp
+    +embedding_updated_at: Timestamp
+    --
+    +crear(): void
+    +generarEmbedding(): void
+}
+
+class ChatbotContexto {
+    +id: UUID
+    +titulo: Text
+    +contenido: Text
+    +tipo: Text
+    +activo: Boolean
+    +embedding: USER-DEFINED
+    +created_at: Timestamp
+    +updated_at: Timestamp
+    +embedding_updated_at: Timestamp
+    --
+    +crear(): void
+    +generarEmbedding(): void
+}
+
+class ChatbotCola {
+    +id: UUID
+    +session_id: Text
+    +mensaje: Text
+    +intentos: Integer
+    +max_intentos: Integer
+    +estado: Text
+    +error_mensaje: Text
+    +created_at: Timestamp
+    +processed_at: Timestamp
+    --
+    +encolar(): void
+    +procesar(): void
+}
+
+class ChatbotRateLimit {
+    +id: UUID
+    +ip_hash: Text
+    +requests_count: Integer
+    +first_request_at: Timestamp
+    +last_request_at: Timestamp
+    +blocked_until: Timestamp
+    --
+    +verificar(): Boolean
+}
+
+' ========== RELACIONES ==========
+
+CMSServicio "1" -- "*" CMSServicioImagen : tiene >
+
+@enduml
+```
+
+---
+
+## 3. Diagramas de Secuencia
+
+### 3.1 Autenticación: Recuperación de Contraseña
+
+```plantuml
+@startuml Secuencia_Recuperar_Password
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Recuperación de Contraseña
+
+actor "Usuario" as User
+participant "Frontend\n(Forgot Password)" as Frontend
+participant "Supabase Auth" as Auth
+participant "Servicio Email" as Email
+database "Base de Datos" as DB
+
+User -> Frontend: Clic en "¿Olvidaste tu contraseña?"
+Frontend -> User: Solicitar correo electrónico
+
+User -> Frontend: Ingresa email (ej: usuario@dental.com)
+Frontend -> Auth: resetPasswordForEmail(email)
+activate Auth
+
+Auth -> DB: Buscar usuario por email
+activate DB
+DB --> Auth: Usuario encontrado
+deactivate DB
+
+Auth -> Email: Enviar correo con token de recuperación
+activate Email
+Email --> User: Correo con enlace de reset
+deactivate Email
+
+Auth --> Frontend: {success: true}
+deactivate Auth
+
+Frontend --> User: Mostrar mensaje "Correo enviado"
+
+User -> Frontend: Clic en enlace del correo
+Frontend -> User: Mostrar formulario "Nueva Contraseña"
+
+User -> Frontend: Ingresa nueva contraseña
+Frontend -> Auth: updateUser({ password: newPassword })
+activate Auth
+
+Auth -> DB: Actualizar hash de contraseña
+activate DB
+DB --> Auth: OK
+deactivate DB
+
+Auth --> Frontend: {success: true}
+deactivate Auth
+
+Frontend --> User: Redirigir a Login
+Frontend --> User: Toast "Contraseña actualizada"
+
+@enduml
+```
+
+### 3.2 Interacción con Chatbot (Gemini 2.0 Flash Lite)
+
+```plantuml
+@startuml Secuencia_Chatbot_Gemini
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Chatbot con Gemini 2.0 Flash Lite
+
+actor "Visitante" as User
+participant "Widget Chat" as Widget
+participant "API Route\n(/api/chat)" as API
+participant "RAG Service" as RAG
+participant "Google Gemini API" as Gemini
+database "PostgreSQL\n(pgvector)" as DB
+
+User -> Widget: Envía pregunta
+activate Widget
+
+Widget -> API: POST /api/chat { mensaje }
+activate API
+
+API -> RAG: buscarContexto(mensaje)
+activate RAG
+
+RAG -> Gemini: Generar embedding (text-embedding-004)
+activate Gemini
+Gemini --> RAG: vector[768]
+deactivate Gemini
+
+RAG -> DB: Búsqueda semántica (FAQs + Contexto)
+activate DB
+DB --> RAG: Fragmentos relevantes
+deactivate DB
+
+RAG --> API: Contexto enriquecido
+deactivate RAG
+
+API -> Gemini: Generar respuesta (gemini-2.0-flash-lite)
+note right
+  Prompt incluye:
+  - Rol del sistema
+  - Contexto recuperado
+  - Pregunta del usuario
+end note
+activate Gemini
+
+Gemini --> API: Respuesta generada
+deactivate Gemini
+
+API --> Widget: { respuesta }
+deactivate API
+
+Widget --> User: Muestra respuesta
+deactivate Widget
+
+note bottom
+  No se guarda historial de
+  conversaciones en base de datos
+end note
+
+@enduml
+```
+
+---
+
+## 4. Modelo Relacional de Base de Datos
+
+### 4.1 Modelo ER - Módulos Administrativos y CMS
+
+```plantuml
+@startuml Modelo_ER_Admin_CMS
+!theme plain
+skinparam linetype ortho
+
+title Modelo ER - Administración, CMS y Chatbot (Basado en Esquema SQL)
+
+' ========== AUTENTICACIÓN Y USUARIOS ==========
+
+entity "auth.users" as users {
+    *id : UUID <<PK>>
+    --
+    email : VARCHAR
+    encrypted_password : VARCHAR
+    email_confirmed_at : TIMESTAMP
+    last_sign_in_at : TIMESTAMP
+}
+
+entity "personal" as personal {
+    *id : UUID <<PK>> <<FK>>
+    --
+    nombre_completo : TEXT
+    rol : USER-DEFINED
+    especialidad : TEXT
+    telefono : TEXT
+    email : TEXT <<UK>>
+    activo : BOOLEAN
+    created_at : TIMESTAMP
+}
+
+entity "codigos_invitacion" as codigos {
+    *id : UUID <<PK>>
+    --
+    codigo : TEXT <<UK>>
+    creado_por : UUID <<FK>>
+    usado_por : UUID <<FK>>
+    rol_asignado : TEXT
+    usos_maximos : INTEGER
+    usos_actuales : INTEGER
+    activo : BOOLEAN
+    expira_at : TIMESTAMP
+    created_at : TIMESTAMP
+    used_at : TIMESTAMP
+}
+
+entity "config_seguridad" as config_seg {
+    *id : UUID <<PK>>
+    --
+    clave : TEXT <<UK>>
+    valor : TEXT
+    descripcion : TEXT
+    updated_at : TIMESTAMP
+}
+
+entity "ajustes_aplicacion" as ajustes {
+    *id : UUID <<PK>>
+    --
+    clave : TEXT <<UK>>
+    valor : TEXT
+    grupo : TEXT
+    tipo : USER-DEFINED
+    descripcion : TEXT
+    orden : INTEGER
+    resend_api_key : TEXT
+    updated_at : TIMESTAMP
+    created_at : TIMESTAMP
+}
+
+' ========== CMS (CONTENIDOS) ==========
+
+entity "cms_secciones" as secciones {
+    *id : UUID <<PK>>
+    --
+    seccion : TEXT <<UK>>
+    titulo : TEXT
+    subtitulo : TEXT
+    contenido : JSONB
+    orden : INTEGER
+    visible : BOOLEAN
+    updated_at : TIMESTAMP
+    updated_by : UUID <<FK>>
+}
+
+entity "cms_servicios" as servicios {
+    *id : UUID <<PK>>
+    --
+    nombre : TEXT
+    descripcion : TEXT
+    icono : TEXT
+    orden : INTEGER
+    visible : BOOLEAN
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    detalle_completo : TEXT
+    beneficios : ARRAY
+    duracion : VARCHAR
+    recomendaciones : TEXT
+}
+
+entity "cms_servicio_imagenes" as serv_img {
+    *id : UUID <<PK>>
+    --
+    servicio_id : UUID <<FK>>
+    imagen_url : TEXT
+    public_id : TEXT
+    descripcion : TEXT
+    alt_text : TEXT
+    orden : INTEGER
+    visible : BOOLEAN
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+entity "cms_equipo" as equipo {
+    *id : UUID <<PK>>
+    --
+    nombre : TEXT
+    cargo : TEXT
+    especialidad : TEXT
+    foto_url : TEXT
+    orden : INTEGER
+    visible : BOOLEAN
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    foto_public_id : TEXT
+    curriculum : JSONB
+}
+
+entity "cms_tema" as tema {
+    *id : UUID <<PK>>
+    --
+    clave : TEXT <<UK>>
+    valor : TEXT
+    tipo : TEXT
+    descripcion : TEXT
+    grupo : TEXT
+    updated_at : TIMESTAMP
+}
+
+entity "cms_carrusel" as carrusel {
+    *id : UUID <<PK>>
+    --
+    imagen_url : TEXT
+    alt_text : TEXT
+    orden : INTEGER
+    visible : BOOLEAN
+    created_at : TIMESTAMP
+}
+
+' ========== CHATBOT (RAG) ==========
+
+entity "chatbot_faqs" as faqs {
+    *id : UUID <<PK>>
+    --
+    pregunta : TEXT
+    respuesta : TEXT
+    keywords : ARRAY
+    categoria : TEXT
+    prioridad : INTEGER
+    activo : BOOLEAN
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    embedding : USER-DEFINED
+    embedding_updated_at : TIMESTAMP
+}
+
+entity "chatbot_contexto" as contexto {
+    *id : UUID <<PK>>
+    --
+    titulo : TEXT
+    contenido : TEXT
+    tipo : TEXT
+    activo : BOOLEAN
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    embedding : USER-DEFINED
+    embedding_updated_at : TIMESTAMP
+}
+
+entity "chatbot_cola" as cola {
+    *id : UUID <<PK>>
+    --
+    session_id : TEXT
+    mensaje : TEXT
+    intentos : INTEGER
+    max_intentos : INTEGER
+    estado : TEXT
+    error_mensaje : TEXT
+    created_at : TIMESTAMP
+    processed_at : TIMESTAMP
+}
+
+entity "chatbot_rate_limit" as rate_limit {
+    *id : UUID <<PK>>
+    --
+    ip_hash : TEXT <<UK>>
+    requests_count : INTEGER
+    first_request_at : TIMESTAMP
+    last_request_at : TIMESTAMP
+    blocked_until : TIMESTAMP
+}
+
+' ========== RELACIONES ==========
+
+users ||--|| personal : "perfil"
+personal ||--o{ codigos : "crea"
+users ||--o{ codigos : "usa"
+users ||--o{ secciones : "actualiza"
+servicios ||--o{ serv_img : "tiene"
+
+@enduml
+```
+
+---
+
+## 5. Diagrama de Despliegue
+
+````plantuml
+@startuml Diagrama_Despliegue_Lite
+!theme plain
+skinparam nodeStyle rectangle
+
+title Diagrama de Despliegue - Arquitectura Web y Servicios IA
+
+node "Cliente" {
+    node "Navegador Web" {
+        artifact "Landing Page"
+        artifact "Panel Admin"
+        artifact "Widget Chatbot"
+    }
+}
+
+cloud "Vercel (Frontend & API)" {
+    node "Next.js App Router" {
+        artifact "Auth Pages"
+        artifact "Dashboard"
+        artifact "CMS Admin"
+        artifact "API Routes"
+    }
+}
+
+cloud "Supabase (Backend as a Service)" {
+    node "Auth Service" {
+        artifact "Gestión Usuarios"
+    }
+    node "PostgreSQL DB" {
+        artifact "Tablas CMS"
+        artifact "Vectores (pgvector)"
+    }
+}
+
+cloud "Google AI" {
+    node "Gemini API" {
+        artifact "Gemini 2.0 Flash Lite\n(Inferencia)"
+        artifact "Text Embedding 004\n(Vectores)"
+    }
+}
+
+' Conexiones
+"Navegador Web" --> "Next.js App Router" : HTTPS
+"Next.js App Router" --> "Auth Service" : Auth SDK
+"Next.js App Router" --> "PostgreSQL DB" : Data Query
+"Next.js App Router" --> "Gemini API" : Generación Texto/Embeddings
+
+@enduml
+```---
+
+## 📝 Notas de Implementación
+
+### Herramientas Utilizadas
+
+- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Next.js API Routes, Server Actions
+- **Base de Datos:** PostgreSQL (Supabase)
+- **Autenticación:** Supabase Auth con JWT
+- **Almacenamiento de Imágenes:** Cloudinary
+- **IA/Chatbot:** Gemini 2.0 flash lite, pgvector para embeddings
+- **Calendario:** Google Calendar API
+
+### Convenciones de Diagramas
+
+- Los colores en diagramas de estado indican el nivel de actividad
+- Las relaciones con líneas punteadas indican dependencias opcionales
+- Los estereotipos `<<include>>` y `<<extend>>` siguen la notación UML estándar
+
+---
+
+**Documento generado:** Diciembre 2025
+**Sistema:** Dental Company Web v1.0
+````
