@@ -66,17 +66,32 @@ export default function AyudaPage() {
                     ¿Cómo empezar?
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
                   <p>
-                    Bienvenido al sistema de gestión de la clínica dental. Aquí
-                    podrás:
+                    <strong>Dental Company Web</strong> es un sistema integral
+                    de gestión para clínicas dentales. Aquí podrás:
                   </p>
                   <ul className='list-disc pl-5 space-y-1'>
-                    <li>Gestionar historias clínicas de pacientes</li>
-                    <li>Programar y administrar citas</li>
-                    <li>Registrar tratamientos y procedimientos</li>
-                    <li>Generar reportes de la clínica</li>
+                    <li>
+                      👤 Gestionar pacientes e historias clínicas completas
+                    </li>
+                    <li>🦷 Utilizar odontogramas digitales interactivos</li>
+                    <li>
+                      📋 Administrar casos clínicos con presupuestos y pagos
+                    </li>
+                    <li>
+                      📅 Programar citas con integración a Google Calendar
+                    </li>
+                    <li>📊 Visualizar KPIs y estadísticas en tiempo real</li>
+                    <li>🤖 Configurar el chatbot inteligente con IA</li>
                   </ul>
+                  <div className='bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md p-3 mt-2'>
+                    <p className='text-blue-700 dark:text-blue-300 text-xs'>
+                      💡 <strong>Tip:</strong> Usa el menú lateral para navegar
+                      entre las secciones. Los administradores tienen acceso a
+                      módulos adicionales como Personal, CMS y Chatbot.
+                    </p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -84,12 +99,12 @@ export default function AyudaPage() {
                 <AccordionTrigger className='text-sm'>
                   <div className='flex items-center gap-2'>
                     <FolderOpen className='h-4 w-4' />
-                    Historias Clínicas
+                    Historias Clínicas y Fichas
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
                   <p>
-                    <strong>Registrar un nuevo paciente:</strong>
+                    <strong>📋 Registrar nuevo paciente:</strong>
                   </p>
                   <ol className='list-decimal pl-5 space-y-1'>
                     <li>
@@ -97,30 +112,52 @@ export default function AyudaPage() {
                     </li>
                     <li>Haz clic en &quot;Nuevo Paciente&quot;</li>
                     <li>
-                      Completa los datos básicos (nombre, DNI, fecha de
-                      nacimiento)
+                      Completa los datos obligatorios: nombres, apellidos, DNI,
+                      fecha de nacimiento y sexo
                     </li>
                     <li>
-                      Puedes hacer &quot;Registro Rápido&quot; o &quot;Registrar
+                      Elige entre &quot;Registro Rápido&quot; o &quot;Registrar
                       y Completar Ficha&quot;
                     </li>
                   </ol>
-                  <p className='mt-2'>
-                    <strong>Ver ficha de paciente:</strong>
+
+                  <p className='mt-3'>
+                    <strong>📁 Ficha Odontológica completa:</strong>
+                  </p>
+                  <p>
+                    Cada paciente tiene una ficha con las siguientes secciones:
                   </p>
                   <ul className='list-disc pl-5 space-y-1'>
                     <li>
-                      Busca al paciente por nombre, DNI o número de historia
+                      <strong>Filiación:</strong> Datos personales, contacto de
+                      emergencia (obligatorio), ubicación
                     </li>
                     <li>
-                      Haz clic en &quot;Ver Ficha&quot; para acceder a toda su
-                      información
+                      <strong>Historia Clínica:</strong> Antecedentes
+                      patológicos organizados por sistemas, cuestionario de
+                      hábitos, examen clínico (talla, peso, IMC, presión
+                      arterial)
                     </li>
                     <li>
-                      En la ficha encontrarás: datos personales, odontograma,
-                      historial de citas e imágenes
+                      <strong>Imágenes:</strong> Galería de radiografías, fotos
+                      intraorales, panorámicas, etc.
+                    </li>
+                    <li>
+                      <strong>Odontograma:</strong> Diagrama interactivo de
+                      piezas dentales
+                    </li>
+                    <li>
+                      <strong>Casos:</strong> Gestión de tratamientos con
+                      presupuestos y pagos
                     </li>
                   </ul>
+
+                  <div className='bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-md p-3 mt-2'>
+                    <p className='text-amber-700 dark:text-amber-300 text-xs'>
+                      💡 <strong>Tip:</strong> Usa el buscador para encontrar
+                      pacientes por nombre, DNI o número de historia clínica.
+                    </p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -131,36 +168,68 @@ export default function AyudaPage() {
                     Gestión de Citas
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
                   <p>
-                    <strong>Agendar una cita:</strong>
-                  </p>
-                  <ol className='list-decimal pl-5 space-y-1'>
-                    <li>Accede a &quot;Citas&quot; desde el menú lateral</li>
-                    <li>En el calendario, haz clic en el día y hora deseada</li>
-                    <li>Selecciona el paciente y el odontólogo</li>
-                    <li>Indica el motivo de la consulta y guarda</li>
-                  </ol>
-                  <p className='mt-2'>
-                    <strong>Estados de citas:</strong>
+                    <strong>📅 Vista del Calendario:</strong>
                   </p>
                   <ul className='list-disc pl-5 space-y-1'>
                     <li>
-                      <strong>Programada:</strong> Cita agendada pendiente de
+                      <strong>Vista Día:</strong> Detalle de todas las citas del
+                      día seleccionado
+                    </li>
+                    <li>
+                      <strong>Vista Semana:</strong> Vista semanal con franjas
+                      horarias
+                    </li>
+                    <li>
+                      <strong>Vista Mes:</strong> Vista mensual con indicadores
+                      de citas
+                    </li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>➕ Agendar nueva cita:</strong>
+                  </p>
+                  <ol className='list-decimal pl-5 space-y-1'>
+                    <li>
+                      Haz clic en &quot;Nueva Cita&quot; o directamente en el
+                      calendario
+                    </li>
+                    <li>Busca y selecciona el paciente</li>
+                    <li>Asigna el odontólogo responsable</li>
+                    <li>Selecciona fecha, hora y duración estimada</li>
+                    <li>Indica el motivo de la consulta</li>
+                    <li>Opcionalmente, vincula a un caso clínico existente</li>
+                  </ol>
+
+                  <p className='mt-3'>
+                    <strong>🏷️ Estados de citas (código de colores):</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      🔵 <strong>Programada:</strong> Cita agendada pendiente de
                       confirmar
                     </li>
                     <li>
-                      <strong>Confirmada:</strong> El paciente confirmó su
+                      🟢 <strong>Confirmada:</strong> El paciente confirmó su
                       asistencia
                     </li>
                     <li>
-                      <strong>Completada:</strong> Cita realizada exitosamente
+                      ⚫ <strong>Completada:</strong> Cita realizada
+                      exitosamente
                     </li>
                     <li>
-                      <strong>Cancelada:</strong> Cita cancelada por el paciente
-                      o la clínica
+                      🔴 <strong>Cancelada:</strong> Cita cancelada
                     </li>
                   </ul>
+
+                  <div className='bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-md p-3 mt-2'>
+                    <p className='text-green-700 dark:text-green-300 text-xs'>
+                      🔗 <strong>Integración:</strong> Las citas se sincronizan
+                      automáticamente con Google Calendar si has autorizado la
+                      conexión.
+                    </p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -168,35 +237,124 @@ export default function AyudaPage() {
                 <AccordionTrigger className='text-sm'>
                   <div className='flex items-center gap-2'>
                     <Stethoscope className='h-4 w-4' />
-                    Tratamientos
+                    Tratamientos y Procedimientos
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
                   <p>
-                    <strong>Administrar procedimientos:</strong>
+                    <strong>📋 Catálogo de procedimientos:</strong>
                   </p>
                   <ul className='list-disc pl-5 space-y-1'>
                     <li>
-                      En &quot;Tratamientos&quot; puedes ver todos los
-                      procedimientos disponibles
+                      Vista completa de todos los procedimientos dentales
+                      disponibles
                     </li>
                     <li>
-                      Cada procedimiento tiene precios configurados en
-                      diferentes monedas
+                      Precios configurados en múltiples monedas (PEN, CLP, USD)
                     </li>
                     <li>
-                      Puedes organizar los procedimientos por grupos
-                      (Ortodoncia, Endodoncia, etc.)
+                      Organización por grupos: Ortodoncia, Endodoncia,
+                      Periodoncia, Cirugía, etc.
                     </li>
+                    <li>Activar/desactivar procedimientos según necesidad</li>
                   </ul>
-                  <p className='mt-2'>
-                    <strong>Agregar un tratamiento al paciente:</strong>
+
+                  <p className='mt-3'>
+                    <strong>💰 Presupuestos y Pagos:</strong>
                   </p>
                   <ol className='list-decimal pl-5 space-y-1'>
-                    <li>Accede a la ficha del paciente</li>
-                    <li>Ve al odontograma y selecciona el diente</li>
-                    <li>Agrega el procedimiento realizado o planificado</li>
+                    <li>
+                      Crea presupuestos dentro de cada caso clínico del paciente
+                    </li>
+                    <li>Agrega procedimientos del catálogo o personalizados</li>
+                    <li>Aplica descuentos opcionales por item</li>
+                    <li>Registra pagos parciales o totales</li>
+                    <li>
+                      El sistema calcula automáticamente el saldo pendiente
+                    </li>
                   </ol>
+
+                  <p className='mt-3'>
+                    <strong>💳 Métodos de pago soportados:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>💵 Efectivo</li>
+                    <li>💳 Tarjeta de crédito/débito</li>
+                    <li>🏦 Transferencia bancaria</li>
+                    <li>📱 Yape / Plin</li>
+                  </ul>
+
+                  <div className='bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 rounded-md p-3 mt-2'>
+                    <p className='text-purple-700 dark:text-purple-300 text-xs'>
+                      📊 <strong>Estados del presupuesto:</strong> Por cobrar →
+                      Parcial → Pagado. La barra de progreso muestra visualmente
+                      el avance de los pagos.
+                    </p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value='odontograma'>
+                <AccordionTrigger className='text-sm'>
+                  <div className='flex items-center gap-2'>
+                    <Stethoscope className='h-4 w-4' />
+                    Odontograma Digital
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
+                  <p>
+                    <strong>🦷 Tipos de Odontograma:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      <strong>Adulto:</strong> 32 piezas dentales (dentición
+                      permanente)
+                    </li>
+                    <li>
+                      <strong>Infantil:</strong> 20 piezas dentales (dentición
+                      decidua/de leche)
+                    </li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>📍 Zonas por diente:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      Mesial • Distal • Oclusal/Incisal • Vestibular •
+                      Palatino/Lingual
+                    </li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>🏷️ Condiciones registrables:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      Caries, Restauraciones (resina, amalgama), Ausencias
+                    </li>
+                    <li>Fracturas, Endodoncia, Prótesis, y más...</li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>✏️ Cómo usar:</strong>
+                  </p>
+                  <ol className='list-decimal pl-5 space-y-1'>
+                    <li>Selecciona el tipo de odontograma (adulto/infantil)</li>
+                    <li>Haz clic en el diente a editar</li>
+                    <li>Selecciona la zona afectada</li>
+                    <li>Elige la condición del menú</li>
+                    <li>Los cambios se guardan automáticamente</li>
+                  </ol>
+
+                  <div className='bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md p-3 mt-2'>
+                    <p className='text-blue-700 dark:text-blue-300 text-xs'>
+                      📜 <strong>Historial:</strong> Usa &quot;Nueva
+                      versión&quot; para crear un registro histórico. Puedes ver
+                      las versiones anteriores del odontograma en cualquier
+                      momento.
+                    </p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -204,17 +362,51 @@ export default function AyudaPage() {
                 <AccordionTrigger className='text-sm'>
                   <div className='flex items-center gap-2'>
                     <BarChart3 className='h-4 w-4' />
-                    Reportes
+                    Reportes y PDFs
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
-                  <p>En la sección de reportes puedes:</p>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
+                  <p>
+                    <strong>📊 Dashboard (Inicio):</strong>
+                  </p>
                   <ul className='list-disc pl-5 space-y-1'>
-                    <li>Ver estadísticas de pacientes y citas</li>
-                    <li>Consultar los tratamientos más realizados</li>
-                    <li>Analizar ingresos por período</li>
-                    <li>Exportar datos para análisis externo</li>
+                    <li>
+                      KPIs en tiempo real: pacientes, citas, ingresos,
+                      tratamientos activos
+                    </li>
+                    <li>Gráficos de estado de citas y tratamientos</li>
+                    <li>Top procedimientos más realizados</li>
+                    <li>Comparativas con períodos anteriores</li>
                   </ul>
+
+                  <p className='mt-3'>
+                    <strong>📄 Generación de PDFs:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      <strong>Ficha Odontológica Completa:</strong> Datos de
+                      filiación, historia clínica, odontograma y antecedentes
+                    </li>
+                    <li>
+                      <strong>Historial de Citas:</strong> Lista de todas las
+                      citas del paciente con estados y resultados
+                    </li>
+                    <li>
+                      <strong>Resumen de Tratamientos:</strong> Casos clínicos,
+                      procedimientos realizados y pagos efectuados
+                    </li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>📥 Cómo generar un reporte:</strong>
+                  </p>
+                  <ol className='list-decimal pl-5 space-y-1'>
+                    <li>Ve a &quot;Reportes&quot; en el menú</li>
+                    <li>Busca y selecciona el paciente</li>
+                    <li>Elige el tipo de reporte</li>
+                    <li>Haz clic en &quot;Generar PDF&quot;</li>
+                    <li>Descarga o imprime el documento</li>
+                  </ol>
                 </AccordionContent>
               </AccordionItem>
 
@@ -222,20 +414,56 @@ export default function AyudaPage() {
                 <AccordionTrigger className='text-sm'>
                   <div className='flex items-center gap-2'>
                     <Bot className='h-4 w-4' />
-                    Asistente Chatbot
+                    Chatbot con IA
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
-                  <p>El chatbot es tu asistente virtual para:</p>
-                  <ul className='list-disc pl-5 space-y-1'>
-                    <li>Consultar información rápida sobre pacientes</li>
-                    <li>Obtener ayuda sobre el uso del sistema</li>
-                    <li>Resolver dudas sobre procedimientos</li>
-                  </ul>
-                  <p className='mt-2 text-xs'>
-                    Puedes acceder al chatbot desde el ícono flotante en la
-                    esquina inferior derecha.
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
+                  <p>
+                    <strong>🤖 Asistente Virtual Inteligente:</strong>
                   </p>
+                  <p>
+                    El chatbot utiliza inteligencia artificial para responder
+                    consultas de usuarios y pacientes potenciales.
+                  </p>
+
+                  <p className='mt-3'>
+                    <strong>⚙️ Configuración (Solo Administradores):</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      <strong>System Prompt:</strong> Define la personalidad y
+                      comportamiento del chatbot
+                    </li>
+                    <li>
+                      <strong>FAQs:</strong> Preguntas frecuentes con respuestas
+                      predefinidas y palabras clave
+                    </li>
+                    <li>
+                      <strong>Contextos:</strong> Información extensa que el
+                      chatbot puede usar (políticas, promociones, etc.)
+                    </li>
+                    <li>
+                      <strong>Fuentes CMS:</strong> Activa/desactiva info de la
+                      clínica, servicios y equipo médico
+                    </li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>🔄 Sincronización IA:</strong>
+                  </p>
+                  <p>
+                    Después de agregar o modificar FAQs y Contextos, recuerda
+                    hacer clic en &quot;Sync IA&quot; para que el chatbot use la
+                    información actualizada.
+                  </p>
+
+                  <div className='bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 rounded-md p-3 mt-2'>
+                    <p className='text-indigo-700 dark:text-indigo-300 text-xs'>
+                      💬 <strong>Acceso:</strong> Los usuarios pueden acceder al
+                      chatbot desde el ícono flotante en la esquina inferior
+                      derecha de la página pública.
+                    </p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -246,38 +474,110 @@ export default function AyudaPage() {
                     Administración (Solo Admins)
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
-                  <p>Si eres administrador, tienes acceso adicional a:</p>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
+                  <p>
+                    Si eres administrador, tienes acceso a módulos adicionales:
+                  </p>
+
+                  <p className='mt-2'>
+                    <strong>👥 Personal de la Clínica:</strong>
+                  </p>
                   <ul className='list-disc pl-5 space-y-1'>
                     <li>
-                      <strong>Personal de la Clínica:</strong> Gestionar
-                      usuarios, crear códigos de invitación
+                      Gestionar usuarios del sistema (odontólogos y admins)
                     </li>
-                    <li>
-                      <strong>Gestor CMS:</strong> Administrar contenido del
-                      sistema
-                    </li>
-                    <li>
-                      <strong>Chatbot:</strong> Configurar el asistente virtual
-                    </li>
+                    <li>Ver especialidad, teléfono y estado de cada usuario</li>
+                    <li>Activar/desactivar cuentas de usuario</li>
                   </ul>
-                  <p className='mt-2'>
-                    <strong>Crear códigos de invitación:</strong>
+
+                  <p className='mt-3'>
+                    <strong>🔑 Códigos de Invitación:</strong>
                   </p>
                   <ol className='list-decimal pl-5 space-y-1'>
-                    <li>Ve a &quot;Personal de la Clínica&quot;</li>
                     <li>
-                      En la pestaña &quot;Códigos de Invitación&quot;, crea un
-                      nuevo código
+                      Ve a &quot;Personal de la Clínica&quot; → pestaña
+                      &quot;Códigos&quot;
                     </li>
+                    <li>Haz clic en &quot;Nuevo Código&quot;</li>
                     <li>
-                      Selecciona el rol (Admin u Odontólogo) y usos máximos
+                      Selecciona el rol (Admin/Odontólogo), usos máximos y días
+                      de expiración
                     </li>
-                    <li>
-                      Comparte el código con el nuevo usuario para que se
-                      registre
-                    </li>
+                    <li>Copia y comparte el código con el nuevo usuario</li>
                   </ol>
+
+                  <p className='mt-3'>
+                    <strong>📋 Gestor CMS:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      <strong>Info General:</strong> Nombre, slogan, teléfono,
+                      WhatsApp, email, dirección, horarios
+                    </li>
+                    <li>
+                      <strong>Servicios:</strong> Lista de servicios con
+                      descripciones, iconos e imágenes
+                    </li>
+                    <li>
+                      <strong>Equipo:</strong> Profesionales con foto,
+                      especialidad y currículum
+                    </li>
+                    <li>
+                      <strong>Tema Visual:</strong> Colores primario, secundario
+                      y de acento
+                    </li>
+                  </ul>
+
+                  <div className='bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-800 rounded-md p-3 mt-2'>
+                    <p className='text-orange-700 dark:text-orange-300 text-xs'>
+                      ⚠️ <strong>Importante:</strong> Si desactivas
+                      &quot;Registro Público&quot;, solo usuarios con código de
+                      invitación podrán crear cuentas.
+                    </p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value='imagenes'>
+                <AccordionTrigger className='text-sm'>
+                  <div className='flex items-center gap-2'>
+                    <FolderOpen className='h-4 w-4' />
+                    Visor de Imágenes
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
+                  <p>
+                    <strong>🔍 Visor en Pantalla Completa:</strong>
+                  </p>
+                  <p>
+                    Al hacer clic en el ícono de lupa en cualquier imagen, se
+                    abre el visor fullscreen con:
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>Vista ampliada de la imagen</li>
+                    <li>
+                      Información del tipo de imagen y etapa del tratamiento
+                    </li>
+                    <li>Botón de descarga con nombre descriptivo</li>
+                    <li>Controles táctiles optimizados para móviles</li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>📥 Descarga con nombre descriptivo:</strong>
+                  </p>
+                  <p>Al descargar, el archivo incluye información relevante:</p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>Número de ficha del paciente</li>
+                    <li>Nombre del caso clínico</li>
+                    <li>Tipo de imagen (Radiografía, Intraoral, etc.)</li>
+                    <li>Etapa del tratamiento (Antes, Durante, Después)</li>
+                    <li>Fecha de captura</li>
+                  </ul>
+
+                  <div className='bg-slate-100 dark:bg-slate-800 rounded-md p-2 mt-2 font-mono text-xs'>
+                    Ejemplo:
+                    Ficha_00123_Rehabilitacion_Radiografia_Antes_2025-11-30.jpg
+                  </div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -285,20 +585,58 @@ export default function AyudaPage() {
                 <AccordionTrigger className='text-sm'>
                   <div className='flex items-center gap-2'>
                     <Settings className='h-4 w-4' />
-                    Soporte Técnico
+                    Soporte y Solución de Problemas
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='text-sm text-muted-foreground space-y-2'>
-                  <p>Si tienes problemas técnicos:</p>
-                  <ul className='list-disc pl-5 space-y-1'>
-                    <li>Intenta refrescar la página (F5)</li>
-                    <li>Cierra sesión y vuelve a iniciar</li>
-                    <li>Limpia el caché del navegador</li>
-                  </ul>
-                  <p className='mt-2'>
-                    Para soporte adicional, contacta al administrador del
-                    sistema.
+                <AccordionContent className='text-sm text-muted-foreground space-y-3'>
+                  <p>
+                    <strong>🔧 Solución de problemas comunes:</strong>
                   </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      <strong>Página no carga:</strong> Presiona F5 para
+                      refrescar o Ctrl+Shift+R para forzar recarga
+                    </li>
+                    <li>
+                      <strong>Sesión expirada:</strong> Cierra sesión y vuelve a
+                      iniciar
+                    </li>
+                    <li>
+                      <strong>Datos no actualizados:</strong> Limpia el caché
+                      del navegador (Ctrl+Shift+Delete)
+                    </li>
+                    <li>
+                      <strong>Problemas de conexión:</strong> Verifica tu
+                      conexión a internet
+                    </li>
+                  </ul>
+
+                  <p className='mt-3'>
+                    <strong>❓ Preguntas Frecuentes:</strong>
+                  </p>
+                  <ul className='list-disc pl-5 space-y-1'>
+                    <li>
+                      <strong>¿Puedo acceder desde mi celular?</strong> Sí, el
+                      sistema es responsive y funciona en todos los
+                      dispositivos.
+                    </li>
+                    <li>
+                      <strong>¿Cómo sincronizo con Google Calendar?</strong> La
+                      integración es automática una vez autorizada en
+                      configuración.
+                    </li>
+                    <li>
+                      <strong>¿El chatbot no responde bien?</strong> Ve a
+                      Chatbot → Sync IA después de modificar FAQs o Contextos.
+                    </li>
+                  </ul>
+
+                  <div className='bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-md p-3 mt-2'>
+                    <p className='text-red-700 dark:text-red-300 text-xs'>
+                      🆘 <strong>¿Problemas persistentes?</strong> Contacta al
+                      administrador del sistema o al equipo de soporte técnico.
+                    </p>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

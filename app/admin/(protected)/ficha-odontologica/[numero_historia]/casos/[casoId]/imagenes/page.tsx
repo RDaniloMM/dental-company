@@ -83,6 +83,7 @@ const tiposImagen = [
 export default function ImagenesCasoPage() {
   const params = useParams();
   const casoId = params.casoId as string;
+  const numeroHistoria = params.numero_historia as string;
   const supabase = createClient();
 
   const [imagenes, setImagenes] = useState<CasoImagen[]>([]);
@@ -486,6 +487,7 @@ export default function ImagenesCasoPage() {
               }
             : null
         }
+        numeroFicha={numeroHistoria}
         tiposConfig={tiposImagen}
       />
     </div>

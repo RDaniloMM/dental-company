@@ -56,16 +56,19 @@ export async function GET() {
       })
     );
 
-    // Obtener datos históricos de ingresos por mes
+    // Obtener datos históricos de ingresos por mes (de pagos)
     const ingresosPorMes = await Promise.all(
       historicoMeses.map(async (mes) => {
-        const { data } = await supabase
-          .from("transacciones_financieras")
+        // Ingresos de pagos (presupuestos)
+        const { data: pagos } = await supabase
+          .from("pagos")
           .select("monto")
-          .gte("fecha_transaccion", mes.inicio)
-          .lte("fecha_transaccion", mes.fin);
-        const total = data?.reduce((acc, t) => acc + Number(t.monto), 0) || 0;
-        return { mes: mes.mes, ingresos: total };
+          .gte("fecha_pago", mes.inicio)
+          .lte("fecha_pago", mes.fin);
+        const totalPagos =
+          pagos?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
+
+        return { mes: mes.mes, ingresos: totalPagos };
       })
     );
 
@@ -155,56 +158,61 @@ export async function GET() {
       .gte("fecha_inicio", todayStart.toISOString())
       .lte("fecha_inicio", todayEnd.toISOString());
 
-    // 8. Ingresos del mes actual
-    const { data: transaccionesMes } = await supabase
-      .from("transacciones_financieras")
+    // 8. Ingresos del mes actual (de pagos)
+    const { data: pagosMes } = await supabase
+      .from("pagos")
       .select("monto")
-      .gte("fecha_transaccion", startOfMonth);
+      .gte("fecha_pago", startOfMonth);
 
     const ingresosMes =
-      transaccionesMes?.reduce((acc, t) => acc + Number(t.monto), 0) || 0;
+      pagosMes?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
 
-    // 9. Ingresos del mes anterior
-    const { data: transaccionesAnterior } = await supabase
-      .from("transacciones_financieras")
+    // 9. Ingresos del mes anterior (de pagos)
+    const { data: pagosAnterior } = await supabase
+      .from("pagos")
       .select("monto")
-      .gte("fecha_transaccion", startOfLastMonth)
-      .lte("fecha_transaccion", endOfLastMonth);
+      .gte("fecha_pago", startOfLastMonth)
+      .lte("fecha_pago", endOfLastMonth);
 
     const ingresosMesAnterior =
-      transaccionesAnterior?.reduce((acc, t) => acc + Number(t.monto), 0) || 0;
+      pagosAnterior?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
 
-    // 10. Planes de tratamiento por estado
-    const { data: planesPorEstado } = await supabase
-      .from("planes_procedimiento")
-      .select("estado, costo_total");
+    // 10. Presupuestos/Tratamientos por estado (usando tabla presupuestos)
+    const { data: presupuestosPorEstado } = await supabase
+      .from("presupuestos")
+      .select("estado, costo_total, total_pagado, saldo_pendiente");
 
-    const estadosPlanes = {
-      pendiente: 0,
-      enProgreso: 0,
-      completado: 0,
-      cancelado: 0,
+    const estadosPresupuestos = {
+      porCobrar: 0, // Estado inicial - sin pagos
+      parcial: 0, // Con pagos parciales
+      pagado: 0, // Totalmente pagado
+      cancelado: 0, // Cancelado
     };
 
-    let valorTotalPlanes = 0;
-    let valorPlanesCompletados = 0;
+    let valorTotalPresupuestos = 0;
+    let valorCobrado = 0;
+    let valorPendiente = 0;
 
-    planesPorEstado?.forEach((plan) => {
-      valorTotalPlanes += Number(plan.costo_total) || 0;
-      switch (plan.estado) {
-        case "Pendiente":
-          estadosPlanes.pendiente++;
+    presupuestosPorEstado?.forEach((presupuesto) => {
+      const costoTotal = Number(presupuesto.costo_total) || 0;
+      const totalPagado = Number(presupuesto.total_pagado) || 0;
+
+      valorTotalPresupuestos += costoTotal;
+      valorCobrado += totalPagado;
+      valorPendiente += Number(presupuesto.saldo_pendiente) || 0;
+
+      switch (presupuesto.estado) {
+        case "Por Cobrar":
+          estadosPresupuestos.porCobrar++;
           break;
-        case "En Progreso":
-          estadosPlanes.enProgreso++;
-          valorPlanesCompletados += Number(plan.costo_total) || 0;
+        case "Parcial":
+          estadosPresupuestos.parcial++;
           break;
-        case "Completado":
-          estadosPlanes.completado++;
-          valorPlanesCompletados += Number(plan.costo_total) || 0;
+        case "Pagado":
+          estadosPresupuestos.pagado++;
           break;
         case "Cancelado":
-          estadosPlanes.cancelado++;
+          estadosPresupuestos.cancelado++;
           break;
       }
     });
@@ -215,32 +223,36 @@ export async function GET() {
       .select("*", { count: "exact", head: true })
       .eq("activo", true);
 
-    // 12. Procedimientos más realizados (últimos 30 días)
+    // 12. Procedimientos más realizados (últimos 30 días) - desde presupuesto_items
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const { data: procedimientosPopulares } = await supabase
-      .from("transacciones_financieras")
+      .from("presupuesto_items")
       .select(
         `
         procedimiento_id,
-        procedimientos(nombre)
+        nombre_procedimiento,
+        cantidad,
+        created_at
       `
       )
-      .gte("fecha_transaccion", thirtyDaysAgo.toISOString());
+      .gte("created_at", thirtyDaysAgo.toISOString())
+      .not("procedimiento_id", "is", null);
 
     // Contar procedimientos
     const conteoProc: Record<string, { nombre: string; count: number }> = {};
-    procedimientosPopulares?.forEach((t) => {
-      const procId = t.procedimiento_id;
-      const procedimiento = t.procedimientos as unknown as {
-        nombre: string;
-      } | null;
-      const procNombre = procedimiento?.nombre || "Sin nombre";
-      if (!conteoProc[procId]) {
-        conteoProc[procId] = { nombre: procNombre, count: 0 };
+    procedimientosPopulares?.forEach((item) => {
+      const procId = item.procedimiento_id;
+      if (procId) {
+        if (!conteoProc[procId]) {
+          conteoProc[procId] = {
+            nombre: item.nombre_procedimiento || "Sin nombre",
+            count: 0,
+          };
+        }
+        conteoProc[procId].count += item.cantidad || 1;
       }
-      conteoProc[procId].count++;
     });
 
     const topProcedimientos = Object.values(conteoProc)
@@ -319,10 +331,11 @@ export async function GET() {
         historico: ingresosPorMes,
       },
       tratamientos: {
-        total: planesPorEstado?.length || 0,
-        porEstado: estadosPlanes,
-        valorTotal: valorTotalPlanes,
-        valorCompletado: valorPlanesCompletados,
+        total: presupuestosPorEstado?.length || 0,
+        porEstado: estadosPresupuestos,
+        valorTotal: valorTotalPresupuestos,
+        valorCobrado: valorCobrado,
+        valorPendiente: valorPendiente,
         topProcedimientos,
       },
       personal: {

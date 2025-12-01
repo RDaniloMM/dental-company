@@ -437,7 +437,7 @@ export default function TratamientosPage() {
 
   return (
     <div className='container mx-auto py-4 sm:py-6 px-4 sm:px-6 space-y-4 sm:space-y-6'>
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <div>
           <h1 className='text-xl sm:text-3xl font-bold'>
             Tratamientos y Procedimientos

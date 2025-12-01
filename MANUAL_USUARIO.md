@@ -293,9 +293,16 @@ Galería para almacenar imágenes clínicas:
 
 Herramienta visual para registrar el estado dental del paciente:
 
+**Tipos de Odontograma:**
+
+- 🦷 **Odontograma Adulto:** Diagrama de 32 piezas dentales (dentición permanente)
+- 👶 **Odontograma Infantil:** Diagrama de 20 piezas dentales (dentición decidua/de leche)
+
+> 💡 **Tip:** Use el selector en la parte superior para cambiar entre odontograma adulto e infantil según el paciente.
+
 **Características:**
 
-- Diagrama interactivo de 32 piezas dentales (dentición permanente)
+- Diagrama interactivo con todas las piezas dentales
 - Sistema de versiones para mantener histórico
 - Registro de condiciones por zona dental
 
@@ -319,11 +326,12 @@ Herramienta visual para registrar el estado dental del paciente:
 
 **Cómo usar:**
 
-1. Seleccione el diente haciendo clic sobre él
-2. Elija la zona a marcar (si aplica)
-3. Seleccione la condición del menú
-4. El sistema guarda automáticamente los cambios
-5. Use "Nueva versión" para crear un nuevo registro histórico
+1. Seleccione el tipo de odontograma (adulto o infantil)
+2. Seleccione el diente haciendo clic sobre él
+3. Elija la zona a marcar (si aplica)
+4. Seleccione la condición del menú
+5. El sistema guarda automáticamente los cambios
+6. Use "Nueva versión" para crear un nuevo registro histórico
 
 ---
 
@@ -711,7 +719,7 @@ Configure el asistente virtual de la clínica.
 
 Define la personalidad y comportamiento del chatbot:
 
-```
+```text
 Ejemplo: "Eres un asistente amable de la clínica dental.
 Responde consultas sobre servicios, horarios y ubicación.
 Siempre sugiere agendar una cita para casos específicos."
@@ -785,20 +793,40 @@ El sistema incluye un visor de imágenes en pantalla completa:
 
 **Funcionalidades:**
 
-- Vista a pantalla completa
-- Información de la imagen (tipo, etapa, fecha)
-- Botón de descarga
+- Vista a pantalla completa (fullscreen)
+- Información de la imagen (tipo, etapa, fecha, caso clínico)
+- Botón de descarga con nombre descriptivo
 - Controles táctiles en móviles
+- Diseño responsive para todos los dispositivos
 
 **Cómo usar:**
 
 1. En cualquier galería de imágenes, haga clic en el ícono de lupa 🔍
 2. La imagen se muestra en pantalla completa
 3. Use los controles en la parte superior para:
-   - Ver información de la imagen
+   - Ver información de la imagen (badges de tipo y etapa)
    - Descargar la imagen
    - Cerrar el visor
 4. En móviles, toque la pantalla para mostrar/ocultar controles
+
+**Descarga de Imágenes:**
+
+Al descargar una imagen, el sistema genera un nombre de archivo descriptivo que incluye:
+
+- Número de ficha del paciente
+- Nombre del caso clínico (si aplica)
+- Tipo de imagen (Radiografía, Intraoral, etc.)
+- Etapa del tratamiento (Antes, Durante, Después)
+- Título o descripción de la imagen
+- Fecha de captura
+
+**Ejemplo de nombre de archivo:**
+
+```text
+Ficha_00123_Rehabilitacion_oral_Radiografia_Antes_2025-11-30.jpg
+```
+
+> 💡 **Tip:** Los nombres descriptivos facilitan la organización de imágenes descargadas en su computadora.
 
 ---
 
@@ -860,6 +888,6 @@ Si tiene problemas o consultas sobre el sistema, contacte a su administrador o a
 
 ---
 
-**Versión del Manual:** 1.0  
+**Versión del Manual:** 1.1  
 **Última actualización:** Noviembre 2025  
 **Sistema:** Dental Company Web

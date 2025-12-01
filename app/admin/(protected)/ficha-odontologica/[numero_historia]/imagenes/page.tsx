@@ -676,6 +676,7 @@ export default function ImagenesPacientePage() {
               }
             : null
         }
+        numeroFicha={numeroHistoria}
         tiposConfig={tiposImagen}
         etapasConfig={etapasImagen}
       />
