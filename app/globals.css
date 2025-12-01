@@ -102,6 +102,18 @@
     -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
     box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
     /* Asegurar que el color del texto sea el correcto */
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+        -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+}
+
+/* Estilos personalizados para Sonner Toast */
+@layer base {
+  [data-sonner-toaster] {
+    --width: 600px;
+  }
+  
+  [data-sonner-toast] {
+    max-width: 600px;
+    width: 100%;
   }
 }

@@ -46,6 +46,7 @@ export default function PatientSearch({ patients }: PatientSearchProps) {
     setSelectedPatient(patient);
     setSearchTerm(`${patient.nombres} ${patient.apellidos}`);
   };
+ 
 
   const handleGoToHistory = () => {
     if (selectedPatient) {

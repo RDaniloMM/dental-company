@@ -1,34 +1,21 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FichaOdontologicaContent from "./client-content";
 
-type FichaOdontologicaPageProps = {
-  params: Promise<{ numero_historia: string }>;
-};
-
-export default async function FichaOdontologicaPage({
-  params,
-}: FichaOdontologicaPageProps) {
-  const resolvedParams = await params;
+export default async function FichaOdontologicaPage({ params }: { params: Promise<{ numero_historia: string }> }) {
+  const { numero_historia } = await params;
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect("/admin/login");
-  }
 
   const { data: patient, error } = await supabase
     .from("pacientes")
     .select("id")
-    .eq("numero_historia", resolvedParams.numero_historia)
+    .eq("numero_historia", numero_historia)
     .single();
 
   if (error || !patient) {
     console.error("Patient not found:", error);
-    return redirect("/admin/dashboard");
+    return (
+      <div className="p-6 text-center text-red-500">No se pudo encontrar al paciente.</div>
+    );
   }
 
   return (

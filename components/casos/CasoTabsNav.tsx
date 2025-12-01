@@ -18,7 +18,7 @@ export default function CasoTabsNav({
   const navTabs = [
     { href: "diagnostico", label: "Diagnóstico" },
     { href: "presupuesto", label: "Presupuesto" },
-    { href: "citas", label: "Citas / Evolución" },
+    { href: "seguimiento", label: "Seguimiento" },
     { href: "imagenes", label: "Imágenes del caso" },
     { href: "consentimientos", label: "Consentimientos" },
     { href: "recetas", label: "Recetas" },

@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 // Usar service role para poder buscar en auth.users
@@ -33,8 +33,11 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verificar que tenemos usuarios
+    const users: User[] = authUsers?.users || [];
+
     // Encontrar el usuario por email
-    const authUser = authUsers.users.find((u) => u.email === authEmail);
+    const authUser = users.find((u) => u.email === authEmail);
 
     if (!authUser) {
       // No revelar si el usuario existe o no por seguridad
