@@ -19,7 +19,7 @@ Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [Pla
 
 ### 1.1 Casos de Uso: Administración y Landing Page
 
-````plantuml
+`````plantuml
 @startuml Casos_de_Uso_Admin_Landing
 !theme plain
 left to right direction
@@ -126,202 +126,224 @@ UC6 ..> UC7 : <<include>>
 !theme plain
 skinparam classAttributeIconSize 0
 skinparam classFontStyle bold
-
-title Diagrama de Clases - Core Administrativo y CMS (Basado en Esquema SQL)
-
-' ========== AUTENTICACIÓN Y USUARIOS ==========
-
-class Personal {
-    +id: UUID
-    +nombre_completo: Text
-    +rol: USER-DEFINED
-    +especialidad: Text
-    +telefono: Text
-    +email: Text
-    +activo: Boolean
-    +created_at: Timestamp
-    --
-    +actualizarPerfil(): void
+skinparam packageStyle frame
+skinparam package {
+    BackgroundColor<<auth>> #E8F5E9
+    BackgroundColor<<config>> #FFF3E0
+    BackgroundColor<<cms>> #E3F2FD
+    BackgroundColor<<chatbot>> #F3E5F5
 }
 
-class CodigoInvitacion {
-    +id: UUID
-    +codigo: Text
-    +creado_por: UUID
-    +usado_por: UUID
-    +rol_asignado: Text
-    +usos_maximos: Integer
-    +usos_actuales: Integer
-    +activo: Boolean
-    +expira_at: Timestamp
-    +created_at: Timestamp
-    +used_at: Timestamp
-    --
-    +generar(): void
-    +validar(): Boolean
+title Diagrama de Clases - Core Administrativo y CMS\n(Organizado por Secciones)
+
+' ========================================
+' SECCIÓN 1: AUTENTICACIÓN Y USUARIOS
+' ========================================
+package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
+    class Personal {
+        +id: UUID
+        +nombre_completo: Text
+        +rol: USER-DEFINED
+        +especialidad: Text
+        +telefono: Text
+        +email: Text
+        +activo: Boolean
+        +created_at: Timestamp
+        --
+        +actualizarPerfil(): void
+    }
+
+    class CodigoInvitacion {
+        +id: UUID
+        +codigo: Text
+        +creado_por: UUID
+        +usado_por: UUID
+        +rol_asignado: Text
+        +usos_maximos: Integer
+        +usos_actuales: Integer
+        +activo: Boolean
+        +expira_at: Timestamp
+        +created_at: Timestamp
+        +used_at: Timestamp
+        --
+        +generar(): void
+        +validar(): Boolean
+    }
 }
 
-class ConfigSeguridad {
-    +id: UUID
-    +clave: Text
-    +valor: Text
-    +descripcion: Text
-    +updated_at: Timestamp
-    --
-    +actualizar(): void
+' ========================================
+' SECCIÓN 2: CONFIGURACIÓN DEL SISTEMA
+' ========================================
+package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
+    class ConfigSeguridad {
+        +id: UUID
+        +clave: Text
+        +valor: Text
+        +descripcion: Text
+        +updated_at: Timestamp
+        --
+        +actualizar(): void
+    }
+
+    class AjustesAplicacion {
+        +id: UUID
+        +clave: Text
+        +valor: Text
+        +grupo: Text
+        +tipo: USER-DEFINED
+        +descripcion: Text
+        +orden: Integer
+        +resend_api_key: Text
+        +updated_at: Timestamp
+        +created_at: Timestamp
+        --
+        +actualizar(): void
+    }
 }
 
-class AjustesAplicacion {
-    +id: UUID
-    +clave: Text
-    +valor: Text
-    +grupo: Text
-    +tipo: USER-DEFINED
-    +descripcion: Text
-    +orden: Integer
-    +resend_api_key: Text
-    +updated_at: Timestamp
-    +created_at: Timestamp
-    --
-    +actualizar(): void
+' ========================================
+' SECCIÓN 3: CMS (GESTIÓN DE CONTENIDOS)
+' ========================================
+package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
+    class CMSSeccion {
+        +id: UUID
+        +seccion: Text
+        +titulo: Text
+        +subtitulo: Text
+        +contenido: JSONB
+        +orden: Integer
+        +visible: Boolean
+        +updated_at: Timestamp
+        +updated_by: UUID
+        --
+        +actualizar(): void
+    }
+
+    class CMSServicio {
+        +id: UUID
+        +nombre: Text
+        +descripcion: Text
+        +icono: Text
+        +orden: Integer
+        +visible: Boolean
+        +detalle_completo: Text
+        +beneficios: Array
+        +duracion: Varchar
+        +recomendaciones: Text
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        --
+        +crear(): void
+        +editar(): void
+    }
+
+    class CMSServicioImagen {
+        +id: UUID
+        +servicio_id: UUID
+        +imagen_url: Text
+        +public_id: Text
+        +descripcion: Text
+        +alt_text: Text
+        +orden: Integer
+        +visible: Boolean
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        --
+        +subir(): void
+    }
+
+    class CMSEquipo {
+        +id: UUID
+        +nombre: Text
+        +cargo: Text
+        +especialidad: Text
+        +foto_url: Text
+        +foto_public_id: Text
+        +curriculum: JSONB
+        +orden: Integer
+        +visible: Boolean
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        --
+        +crear(): void
+        +editar(): void
+    }
+
+    class CMSTema {
+        +id: UUID
+        +clave: Text
+        +valor: Text
+        +tipo: Text
+        +descripcion: Text
+        +grupo: Text
+        +updated_at: Timestamp
+        --
+        +actualizar(): void
+    }
+
+    class CMSCarrusel {
+        +id: UUID
+        +imagen_url: Text
+        +alt_text: Text
+        +orden: Integer
+        +visible: Boolean
+        +created_at: Timestamp
+        --
+        +subir(): void
+    }
 }
 
-' ========== CMS (GESTIÓN DE CONTENIDOS) ==========
+' ========================================
+' SECCIÓN 4: CHATBOT (IA con RAG)
+' ========================================
+package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
+    class ChatbotFAQ {
+        +id: UUID
+        +pregunta: Text
+        +respuesta: Text
+        +keywords: Array
+        +categoria: Text
+        +prioridad: Integer
+        +activo: Boolean
+        +embedding: Vector(768)
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        +embedding_updated_at: Timestamp
+        --
+        +crear(): void
+        +generarEmbedding(): void
+    }
 
-class CMSSeccion {
-    +id: UUID
-    +seccion: Text
-    +titulo: Text
-    +subtitulo: Text
-    +contenido: JSONB
-    +orden: Integer
-    +visible: Boolean
-    +updated_at: Timestamp
-    +updated_by: UUID
-    --
-    +actualizar(): void
+    class ChatbotContexto {
+        +id: UUID
+        +titulo: Text
+        +contenido: Text
+        +tipo: Text
+        +activo: Boolean
+        +embedding: Vector(768)
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        +embedding_updated_at: Timestamp
+        --
+        +crear(): void
+        +generarEmbedding(): void
+    }
+
+    class ChatbotRateLimit {
+        +id: UUID
+        +ip_hash: Text
+        +requests_count: Integer
+        +first_request_at: Timestamp
+        +last_request_at: Timestamp
+        +blocked_until: Timestamp
+        --
+        +verificar(): Boolean
+    }
 }
 
-class CMSServicio {
-    +id: UUID
-    +nombre: Text
-    +descripcion: Text
-    +icono: Text
-    +orden: Integer
-    +visible: Boolean
-    +detalle_completo: Text
-    +beneficios: Array
-    +duracion: Varchar
-    +recomendaciones: Text
-    +created_at: Timestamp
-    +updated_at: Timestamp
-    --
-    +crear(): void
-    +editar(): void
-}
-
-class CMSServicioImagen {
-    +id: UUID
-    +servicio_id: UUID
-    +imagen_url: Text
-    +public_id: Text
-    +descripcion: Text
-    +alt_text: Text
-    +orden: Integer
-    +visible: Boolean
-    +created_at: Timestamp
-    +updated_at: Timestamp
-    --
-    +subir(): void
-}
-
-class CMSEquipo {
-    +id: UUID
-    +nombre: Text
-    +cargo: Text
-    +especialidad: Text
-    +foto_url: Text
-    +foto_public_id: Text
-    +curriculum: JSONB
-    +orden: Integer
-    +visible: Boolean
-    +created_at: Timestamp
-    +updated_at: Timestamp
-    --
-    +crear(): void
-    +editar(): void
-}
-
-class CMSTema {
-    +id: UUID
-    +clave: Text
-    +valor: Text
-    +tipo: Text
-    +descripcion: Text
-    +grupo: Text
-    +updated_at: Timestamp
-    --
-    +actualizar(): void
-}
-
-class CMSCarrusel {
-    +id: UUID
-    +imagen_url: Text
-    +alt_text: Text
-    +orden: Integer
-    +visible: Boolean
-    +created_at: Timestamp
-    --
-    +subir(): void
-}
-
-' ========== CHATBOT IA ==========
-
-class ChatbotFAQ {
-    +id: UUID
-    +pregunta: Text
-    +respuesta: Text
-    +keywords: Array
-    +categoria: Text
-    +prioridad: Integer
-    +activo: Boolean
-    +embedding: USER-DEFINED
-    +created_at: Timestamp
-    +updated_at: Timestamp
-    +embedding_updated_at: Timestamp
-    --
-    +crear(): void
-    +generarEmbedding(): void
-}
-
-class ChatbotContexto {
-    +id: UUID
-    +titulo: Text
-    +contenido: Text
-    +tipo: Text
-    +activo: Boolean
-    +embedding: USER-DEFINED
-    +created_at: Timestamp
-    +updated_at: Timestamp
-    +embedding_updated_at: Timestamp
-    --
-    +crear(): void
-    +generarEmbedding(): void
-}
-
-class ChatbotRateLimit {
-    +id: UUID
-    +ip_hash: Text
-    +requests_count: Integer
-    +first_request_at: Timestamp
-    +last_request_at: Timestamp
-    +blocked_until: Timestamp
-    --
-    +verificar(): Boolean
-}
-
-' ========== RELACIONES ==========
-
+' ========================================
+' RELACIONES ENTRE SECCIONES
+' ========================================
 Personal "1" -- "*" CodigoInvitacion : crea >
 Personal "1" -- "*" CMSSeccion : actualiza >
 Personal "1" -- "*" CMSServicio : gestiona >
@@ -332,7 +354,7 @@ Personal "1" -- "*" AjustesAplicacion : configura >
 CMSServicio "1" -- "*" CMSServicioImagen : tiene >
 
 @enduml
-````
+```
 
 ---
 
@@ -470,198 +492,221 @@ end note
 @startuml Modelo_ER_Admin_CMS
 !theme plain
 skinparam linetype ortho
-
-title Modelo ER - Administración, CMS y Chatbot (Basado en Esquema SQL)
-
-' ========== AUTENTICACIÓN Y USUARIOS ==========
-
-entity "auth.users" as users {
-    *id : UUID <<PK>>
-    --
-    email : VARCHAR
-    encrypted_password : VARCHAR
-    email_confirmed_at : TIMESTAMP
-    last_sign_in_at : TIMESTAMP
+skinparam packageStyle frame
+skinparam package {
+    BackgroundColor<<auth>> #E8F5E9
+    BackgroundColor<<config>> #FFF3E0
+    BackgroundColor<<cms>> #E3F2FD
+    BackgroundColor<<chatbot>> #F3E5F5
 }
 
-entity "personal" as personal {
-    *id : UUID <<PK>> <<FK>>
-    --
-    nombre_completo : TEXT
-    rol : USER-DEFINED
-    especialidad : TEXT
-    telefono : TEXT
-    email : TEXT <<UK>>
-    activo : BOOLEAN
-    created_at : TIMESTAMP
+title Modelo ER - Administración, CMS y Chatbot\n(Organizado por Secciones)
+
+' ========================================
+' SECCIÓN 1: AUTENTICACIÓN Y USUARIOS
+' ========================================
+package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
+    entity "auth.users" as users {
+        *id : UUID <<PK>>
+        --
+        email : VARCHAR
+        encrypted_password : VARCHAR
+        email_confirmed_at : TIMESTAMP
+        last_sign_in_at : TIMESTAMP
+    }
+
+    entity "personal" as personal {
+        *id : UUID <<PK>> <<FK>>
+        --
+        nombre_completo : TEXT
+        rol : USER-DEFINED
+        especialidad : TEXT
+        telefono : TEXT
+        email : TEXT <<UK>>
+        activo : BOOLEAN
+        created_at : TIMESTAMP
+    }
+
+    entity "codigos_invitacion" as codigos {
+        *id : UUID <<PK>>
+        --
+        codigo : TEXT <<UK>>
+        creado_por : UUID <<FK>>
+        usado_por : UUID <<FK>>
+        rol_asignado : TEXT
+        usos_maximos : INTEGER
+        usos_actuales : INTEGER
+        activo : BOOLEAN
+        expira_at : TIMESTAMP
+        created_at : TIMESTAMP
+        used_at : TIMESTAMP
+    }
 }
 
-entity "codigos_invitacion" as codigos {
-    *id : UUID <<PK>>
-    --
-    codigo : TEXT <<UK>>
-    creado_por : UUID <<FK>>
-    usado_por : UUID <<FK>>
-    rol_asignado : TEXT
-    usos_maximos : INTEGER
-    usos_actuales : INTEGER
-    activo : BOOLEAN
-    expira_at : TIMESTAMP
-    created_at : TIMESTAMP
-    used_at : TIMESTAMP
+' ========================================
+' SECCIÓN 2: CONFIGURACIÓN DEL SISTEMA
+' ========================================
+package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
+    entity "config_seguridad" as config_seg {
+        *id : UUID <<PK>>
+        --
+        clave : TEXT <<UK>>
+        valor : TEXT
+        descripcion : TEXT
+        updated_at : TIMESTAMP
+    }
+
+    entity "ajustes_aplicacion" as ajustes {
+        *id : UUID <<PK>>
+        --
+        clave : TEXT <<UK>>
+        valor : TEXT
+        grupo : TEXT
+        tipo : USER-DEFINED
+        descripcion : TEXT
+        orden : INTEGER
+        resend_api_key : TEXT
+        updated_at : TIMESTAMP
+        created_at : TIMESTAMP
+    }
 }
 
-entity "config_seguridad" as config_seg {
-    *id : UUID <<PK>>
-    --
-    clave : TEXT <<UK>>
-    valor : TEXT
-    descripcion : TEXT
-    updated_at : TIMESTAMP
-}
 note bottom of config_seg
   También almacena:
   secuencia_historia_{año}
   para generación de HC
 end note
 
-entity "ajustes_aplicacion" as ajustes {
-    *id : UUID <<PK>>
-    --
-    clave : TEXT <<UK>>
-    valor : TEXT
-    grupo : TEXT
-    tipo : USER-DEFINED
-    descripcion : TEXT
-    orden : INTEGER
-    resend_api_key : TEXT
-    updated_at : TIMESTAMP
-    created_at : TIMESTAMP
+' ========================================
+' SECCIÓN 3: CMS (GESTIÓN DE CONTENIDOS)
+' ========================================
+package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
+    entity "cms_secciones" as secciones {
+        *id : UUID <<PK>>
+        --
+        seccion : TEXT <<UK>>
+        titulo : TEXT
+        subtitulo : TEXT
+        contenido : JSONB
+        orden : INTEGER
+        visible : BOOLEAN
+        updated_at : TIMESTAMP
+        updated_by : UUID <<FK>>
+    }
+
+    entity "cms_servicios" as servicios {
+        *id : UUID <<PK>>
+        --
+        nombre : TEXT
+        descripcion : TEXT
+        icono : TEXT
+        orden : INTEGER
+        visible : BOOLEAN
+        detalle_completo : TEXT
+        beneficios : ARRAY
+        duracion : VARCHAR
+        recomendaciones : TEXT
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+
+    entity "cms_servicio_imagenes" as serv_img {
+        *id : UUID <<PK>>
+        --
+        servicio_id : UUID <<FK>>
+        imagen_url : TEXT
+        public_id : TEXT
+        descripcion : TEXT
+        alt_text : TEXT
+        orden : INTEGER
+        visible : BOOLEAN
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+
+    entity "cms_equipo" as equipo {
+        *id : UUID <<PK>>
+        --
+        nombre : TEXT
+        cargo : TEXT
+        especialidad : TEXT
+        foto_url : TEXT
+        foto_public_id : TEXT
+        curriculum : JSONB
+        orden : INTEGER
+        visible : BOOLEAN
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+
+    entity "cms_tema" as tema {
+        *id : UUID <<PK>>
+        --
+        clave : TEXT <<UK>>
+        valor : TEXT
+        tipo : TEXT
+        descripcion : TEXT
+        grupo : TEXT
+        updated_at : TIMESTAMP
+    }
+
+    entity "cms_carrusel" as carrusel {
+        *id : UUID <<PK>>
+        --
+        imagen_url : TEXT
+        alt_text : TEXT
+        orden : INTEGER
+        visible : BOOLEAN
+        created_at : TIMESTAMP
+    }
 }
 
-' ========== CMS (CONTENIDOS) ==========
+' ========================================
+' SECCIÓN 4: CHATBOT (IA con RAG)
+' ========================================
+package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
+    entity "chatbot_faqs" as faqs {
+        *id : UUID <<PK>>
+        --
+        pregunta : TEXT
+        respuesta : TEXT
+        keywords : ARRAY
+        categoria : TEXT
+        prioridad : INTEGER
+        activo : BOOLEAN
+        embedding : VECTOR(768)
+        embedding_updated_at : TIMESTAMP
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
 
-entity "cms_secciones" as secciones {
-    *id : UUID <<PK>>
-    --
-    seccion : TEXT <<UK>>
-    titulo : TEXT
-    subtitulo : TEXT
-    contenido : JSONB
-    orden : INTEGER
-    visible : BOOLEAN
-    updated_at : TIMESTAMP
-    updated_by : UUID <<FK>>
+    entity "chatbot_contexto" as contexto {
+        *id : UUID <<PK>>
+        --
+        titulo : TEXT
+        contenido : TEXT
+        tipo : TEXT
+        activo : BOOLEAN
+        embedding : VECTOR(768)
+        embedding_updated_at : TIMESTAMP
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+
+    entity "chatbot_rate_limit" as rate_limit {
+        *id : UUID <<PK>>
+        --
+        ip_hash : TEXT <<UK>>
+        requests_count : INTEGER
+        first_request_at : TIMESTAMP
+        last_request_at : TIMESTAMP
+        blocked_until : TIMESTAMP
+    }
 }
 
-entity "cms_servicios" as servicios {
-    *id : UUID <<PK>>
-    --
-    nombre : TEXT
-    descripcion : TEXT
-    icono : TEXT
-    orden : INTEGER
-    visible : BOOLEAN
-    created_at : TIMESTAMP
-    updated_at : TIMESTAMP
-    detalle_completo : TEXT
-    beneficios : ARRAY
-    duracion : VARCHAR
-    recomendaciones : TEXT
-}
-
-entity "cms_servicio_imagenes" as serv_img {
-    *id : UUID <<PK>>
-    --
-    servicio_id : UUID <<FK>>
-    imagen_url : TEXT
-    public_id : TEXT
-    descripcion : TEXT
-    alt_text : TEXT
-    orden : INTEGER
-    visible : BOOLEAN
-    created_at : TIMESTAMP
-    updated_at : TIMESTAMP
-}
-
-entity "cms_equipo" as equipo {
-    *id : UUID <<PK>>
-    --
-    nombre : TEXT
-    cargo : TEXT
-    especialidad : TEXT
-    foto_url : TEXT
-    orden : INTEGER
-    visible : BOOLEAN
-    created_at : TIMESTAMP
-    updated_at : TIMESTAMP
-    foto_public_id : TEXT
-    curriculum : JSONB
-}
-
-entity "cms_tema" as tema {
-    *id : UUID <<PK>>
-    --
-    clave : TEXT <<UK>>
-    valor : TEXT
-    tipo : TEXT
-    descripcion : TEXT
-    grupo : TEXT
-    updated_at : TIMESTAMP
-}
-
-entity "cms_carrusel" as carrusel {
-    *id : UUID <<PK>>
-    --
-    imagen_url : TEXT
-    alt_text : TEXT
-    orden : INTEGER
-    visible : BOOLEAN
-    created_at : TIMESTAMP
-}
-
-' ========== CHATBOT (RAG) ==========
-
-entity "chatbot_faqs" as faqs {
-    *id : UUID <<PK>>
-    --
-    pregunta : TEXT
-    respuesta : TEXT
-    keywords : ARRAY
-    categoria : TEXT
-    prioridad : INTEGER
-    activo : BOOLEAN
-    created_at : TIMESTAMP
-    updated_at : TIMESTAMP
-    embedding : USER-DEFINED
-    embedding_updated_at : TIMESTAMP
-}
-
-entity "chatbot_contexto" as contexto {
-    *id : UUID <<PK>>
-    --
-    titulo : TEXT
-    contenido : TEXT
-    tipo : TEXT
-    activo : BOOLEAN
-    created_at : TIMESTAMP
-    updated_at : TIMESTAMP
-    embedding : USER-DEFINED
-    embedding_updated_at : TIMESTAMP
-}
-
-entity "chatbot_rate_limit" as rate_limit {
-    *id : UUID <<PK>>
-    --
-    ip_hash : TEXT <<UK>>
-    requests_count : INTEGER
-    first_request_at : TIMESTAMP
-    last_request_at : TIMESTAMP
-    blocked_until : TIMESTAMP
-}
-
-' ========== RELACIONES ==========
-
+' ========================================
+' RELACIONES ENTRE SECCIONES
+' ========================================
 users ||--|| personal : "perfil"
 personal ||--o{ codigos : "crea"
 users ||--o{ codigos : "usa"
@@ -747,4 +792,4 @@ cloud "Google AI" {
 
 **Documento generado:** Diciembre 2025
 **Sistema:** Dental Company Web v1.0
-````
+`````
