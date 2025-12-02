@@ -492,10 +492,6 @@ end note
 @enduml
 ```
 
-@enduml
-
-````
-
 ### 3.3 Registro con Código de Invitación
 
 ```plantuml
@@ -570,7 +566,7 @@ Frontend --> User: Redirigir a página de login
 Frontend --> User: Notificar registro exitoso
 
 @enduml
-````
+```
 
 ### 3.4 Inicio de Sesión
 
@@ -582,7 +578,7 @@ skinparam sequenceMessageAlign center
 title Diagrama de Secuencia - Inicio de Sesión
 
 actor "Usuario" as User
-participant "Frontend\n(Login)" as Frontend
+participant "Frontend" as Frontend
 participant "Supabase Auth" as Auth
 participant "Middleware" as MW
 database "Base de Datos" as DB
@@ -592,7 +588,7 @@ database "Base de Datos" as DB
 User -> Frontend: Accede a página de login
 Frontend -> User: Mostrar formulario
 
-User -> Frontend: Ingresa email y contraseña
+User -> Frontend: Ingresa usuario y contraseña
 Frontend -> Auth: Solicitar autenticación
 activate Auth
 
