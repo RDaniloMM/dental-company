@@ -360,7 +360,7 @@ CMSServicio "1" -- "*" CMSServicioImagen : tiene >
 
 ## 3. Diagramas de Secuencia
 
-### 3.1 Autenticación: Recuperación de Contraseña
+### 3.1 Recuperación de Contraseña
 
 ```plantuml
 @startuml Secuencia_Recuperar_Password
@@ -370,117 +370,131 @@ skinparam sequenceMessageAlign center
 title Diagrama de Secuencia - Recuperación de Contraseña
 
 actor "Usuario" as User
-participant "Frontend\n(Forgot Password)" as Frontend
+participant "Frontend" as Frontend
 participant "Supabase Auth" as Auth
 participant "Servicio Email" as Email
 database "Base de Datos" as DB
 
-User -> Frontend: Clic en "¿Olvidaste tu contraseña?"
-Frontend -> User: Solicitar correo electrónico
+== Solicitud de Recuperación ==
 
-User -> Frontend: Ingresa email (ej: usuario@dental.com)
-Frontend -> Auth: resetPasswordForEmail(email)
+User -> Frontend: Accede a recuperar contraseña
+Frontend -> User: Mostrar formulario de email
+
+User -> Frontend: Ingresa su correo electrónico
+Frontend -> Auth: Solicitar restablecimiento
 activate Auth
 
-Auth -> DB: Buscar usuario por email
+Auth -> DB: Verificar existencia del usuario
 activate DB
 DB --> Auth: Usuario encontrado
 deactivate DB
 
-Auth -> Email: Enviar correo con token de recuperación
+Auth -> Email: Enviar correo con enlace de recuperación
 activate Email
-Email --> User: Correo con enlace de reset
+Email --> User: Email con enlace seguro
 deactivate Email
 
-Auth --> Frontend: {success: true}
+Auth --> Frontend: Solicitud procesada
 deactivate Auth
 
-Frontend --> User: Mostrar mensaje "Correo enviado"
+Frontend --> User: Mostrar confirmación de envío
 
-User -> Frontend: Clic en enlace del correo
-Frontend -> User: Mostrar formulario "Nueva Contraseña"
+== Restablecimiento de Contraseña ==
+
+User -> Frontend: Accede al enlace del correo
+Frontend -> User: Mostrar formulario de nueva contraseña
 
 User -> Frontend: Ingresa nueva contraseña
-Frontend -> Auth: updateUser({ password: newPassword })
+Frontend -> Auth: Actualizar contraseña
 activate Auth
 
-Auth -> DB: Actualizar hash de contraseña
+Auth -> DB: Guardar nueva contraseña cifrada
 activate DB
-DB --> Auth: OK
+DB --> Auth: Confirmación
 deactivate DB
 
-Auth --> Frontend: {success: true}
+Auth --> Frontend: Contraseña actualizada
 deactivate Auth
 
-Frontend --> User: Redirigir a Login
-Frontend --> User: Toast "Contraseña actualizada"
+Frontend --> User: Redirigir a inicio de sesión
+Frontend --> User: Notificar cambio exitoso
 
 @enduml
 ```
 
-### 3.2 Interacción con Chatbot (Gemini 2.0 Flash Lite)
+### 3.2 Interacción con Chatbot
 
 ```plantuml
 @startuml Secuencia_Chatbot_Gemini
 !theme plain
 skinparam sequenceMessageAlign center
 
-title Diagrama de Secuencia - Chatbot con Gemini 2.0 Flash Lite
+title Diagrama de Secuencia - Chatbot con IA (RAG)
 
 actor "Visitante" as User
 participant "Widget Chat" as Widget
-participant "API Route\n(/api/chat)" as API
-participant "RAG Service" as RAG
-participant "Google Gemini API" as Gemini
-database "PostgreSQL\n(pgvector)" as DB
+participant "API" as API
+participant "Servicio RAG" as RAG
+participant "Servicio IA\n(Gemini)" as Gemini
+database "Base de Datos\n(Vectorial)" as DB
 
-User -> Widget: Envía pregunta
+== Envío de Consulta ==
+
+User -> Widget: Escribe una pregunta
 activate Widget
 
-Widget -> API: POST /api/chat { mensaje }
+Widget -> API: Enviar mensaje del usuario
 activate API
 
-API -> RAG: buscarContexto(mensaje)
+== Búsqueda de Contexto (RAG) ==
+
+API -> RAG: Buscar contexto relevante
 activate RAG
 
-RAG -> Gemini: Generar embedding (text-embedding-004)
+RAG -> Gemini: Convertir pregunta a vector
 activate Gemini
-Gemini --> RAG: vector[768]
+Gemini --> RAG: Embedding de la pregunta
 deactivate Gemini
 
-RAG -> DB: Búsqueda semántica (FAQs + Contexto)
+RAG -> DB: Búsqueda semántica en FAQs y contextos
 activate DB
-DB --> RAG: Fragmentos relevantes
+DB --> RAG: Fragmentos más relevantes
 deactivate DB
 
 RAG --> API: Contexto enriquecido
 deactivate RAG
 
-API -> Gemini: Generar respuesta (gemini-2.0-flash-lite)
-note right
-  Prompt incluye:
-  - Rol del sistema
-  - Contexto recuperado
-  - Pregunta del usuario
-end note
+== Generación de Respuesta ==
+
+API -> Gemini: Generar respuesta con contexto
 activate Gemini
+note right
+  El prompt incluye:
+  - Rol del asistente
+  - Contexto recuperado
+  - Pregunta original
+end note
 
 Gemini --> API: Respuesta generada
 deactivate Gemini
 
-API --> Widget: { respuesta }
+API --> Widget: Respuesta del asistente
 deactivate API
 
-Widget --> User: Muestra respuesta
+Widget --> User: Mostrar respuesta
 deactivate Widget
 
 note bottom
-  No se guarda historial de
-  conversaciones en base de datos
+  Las conversaciones no se
+  almacenan en base de datos
 end note
 
 @enduml
 ```
+
+@enduml
+
+````
 
 ### 3.3 Registro con Código de Invitación
 
@@ -493,66 +507,91 @@ title Diagrama de Secuencia - Registro con Código de Invitación
 
 actor "Nuevo Usuario" as User
 participant "Frontend\n(Sign Up)" as Frontend
-participant "API Route\n(/api/auth)" as API
+participant "API" as API
 participant "Supabase Auth" as Auth
-database "PostgreSQL" as DB
+database "Base de Datos" as DB
 
-User -> Frontend: Accede a /admin/sign-up
-Frontend -> User: Formulario de registro
+== Verificación del Código ==
 
-User -> Frontend: Ingresa datos + código invitación
-Frontend -> API: POST /api/auth/verify-code { codigo }
+User -> Frontend: Accede a página de registro
+Frontend -> User: Mostrar campo de código de invitación
+
+User -> Frontend: Ingresa código de invitación
+Frontend -> API: Verificar código
 activate API
 
-API -> DB: SELECT * FROM codigos_invitacion\nWHERE codigo = ? AND activo = true
+API -> DB: Buscar código válido y con usos disponibles
 activate DB
-DB --> API: Código encontrado (rol, usos)
+DB --> API: Resultado de búsqueda
 deactivate DB
 
-alt Código válido y con usos disponibles
-    API --> Frontend: { valid: true, rol: "Odontólogo" }
-else Código inválido o agotado
-    API --> Frontend: { valid: false, error: "Código inválido" }
-    Frontend --> User: Mostrar error
+alt Código válido
+    API --> Frontend: Código aceptado con rol asignado
+    Frontend --> User: Mostrar rol y habilitar formulario
+else Código inválido o expirado
+    API --> Frontend: Error de validación
+    Frontend --> User: Mostrar mensaje de error
 end
 deactivate API
 
-Frontend -> Auth: signUp({ email, password, metadata })
+== Registro de Credenciales ==
+
+Frontend -> User: Mostrar formulario de email y contraseña
+
+User -> Frontend: Ingresa email y contraseña
+Frontend -> Auth: Crear cuenta de usuario
 activate Auth
 
-Auth -> DB: Crear usuario en auth.users
+Auth -> DB: Registrar nuevo usuario
 activate DB
-DB --> Auth: Usuario creado (id)
+DB --> Auth: Usuario creado
 deactivate DB
 
-Auth -> Auth: Enviar email de confirmación
-
-Auth --> Frontend: { user, session }
+Auth --> Frontend: Usuario registrado (pendiente de confirmación)
 deactivate Auth
 
-Frontend -> API: POST /api/auth/complete-registration
+note right of Auth
+  El usuario no puede iniciar sesión
+  hasta confirmar su email
+end note
+
+Frontend -> API: Completar registro en el sistema
 activate API
 
-API -> DB: INSERT INTO personal\n(id, nombre, rol, email)
+API -> DB: Crear perfil del personal con rol asignado
 activate DB
-DB --> API: OK
+DB --> API: Perfil creado
 deactivate DB
 
-API -> DB: UPDATE codigos_invitacion\nSET usos_actuales = usos_actuales + 1
+API -> DB: Actualizar uso del código de invitación
 activate DB
-DB --> API: OK
+DB --> API: Código actualizado
 deactivate DB
 
-API --> Frontend: { success: true }
+API --> Frontend: Registro completado
 deactivate API
 
-Frontend --> User: Redirigir a verificación de email
-Frontend --> User: Toast "Revisa tu correo"
+== Confirmación de Email ==
+
+Frontend --> User: Mostrar pantalla de verificación pendiente
+
+Auth -> User: Enviar email de confirmación
+
+User -> Auth: Confirmar email desde el enlace
+activate Auth
+
+Auth -> DB: Activar cuenta de usuario
+activate DB
+DB --> Auth: Cuenta activada
+deactivate DB
+
+Auth --> User: Redirigir a página de login
+deactivate Auth
 
 @enduml
-```
+````
 
-### 3.4 Inicio de Sesión y Verificación de Estado
+### 3.4 Inicio de Sesión
 
 ```plantuml
 @startuml Secuencia_Login
@@ -565,44 +604,52 @@ actor "Usuario" as User
 participant "Frontend\n(Login)" as Frontend
 participant "Supabase Auth" as Auth
 participant "Middleware" as MW
-database "PostgreSQL" as DB
+database "Base de Datos" as DB
 
-User -> Frontend: Accede a /admin/login
-Frontend -> User: Formulario de login
+== Autenticación ==
+
+User -> Frontend: Accede a página de login
+Frontend -> User: Mostrar formulario
 
 User -> Frontend: Ingresa email y contraseña
-Frontend -> Auth: signInWithPassword({ email, password })
+Frontend -> Auth: Solicitar autenticación
 activate Auth
 
 Auth -> DB: Verificar credenciales
 activate DB
-DB --> Auth: Usuario autenticado
-deactivate DB
 
-Auth --> Frontend: { user, session (JWT) }
+alt Credenciales correctas
+    DB --> Auth: Usuario válido
+    deactivate DB
+    Auth --> Frontend: Sesión iniciada (token JWT)
+else Credenciales incorrectas
+    DB --> Auth: Error de autenticación
+    Auth --> Frontend: Error "Credenciales inválidas"
+    Frontend --> User: Mostrar mensaje de error
+end
 deactivate Auth
 
-Frontend -> Frontend: Guardar session en cookies
+== Verificación de Acceso ==
 
-Frontend -> MW: Navegar a /admin/dashboard
+Frontend -> MW: Navegar al panel administrativo
 activate MW
 
-MW -> Auth: getUser() desde cookie
+MW -> Auth: Obtener usuario desde sesión
 activate Auth
-Auth --> MW: { user }
+Auth --> MW: Datos del usuario
 deactivate Auth
 
-MW -> DB: SELECT * FROM personal\nWHERE id = user.id AND activo = true
+MW -> DB: Consultar estado del usuario
 activate DB
-DB --> MW: Personal encontrado
+DB --> MW: Información del personal
 deactivate DB
 
-alt Usuario activo
-    MW --> Frontend: Permitir acceso
+alt Usuario activo en el sistema
+    MW --> Frontend: Acceso permitido
     Frontend --> User: Mostrar Dashboard
-else Usuario inactivo/no existe
-    MW --> Frontend: Redirect /admin/login
-    Frontend --> User: "Cuenta desactivada"
+else Usuario inactivo o no registrado
+    MW --> Frontend: Acceso denegado
+    Frontend --> User: Redirigir a login con mensaje
 end
 deactivate MW
 
@@ -620,49 +667,53 @@ title Diagrama de Secuencia - Editar Sección CMS
 
 actor "Administrador" as Admin
 participant "Panel CMS" as CMS
-participant "API Route\n(/api/cms)" as API
+participant "API" as API
 participant "Cloudinary" as Cloud
-database "PostgreSQL" as DB
+database "Base de Datos" as DB
+
+== Carga de Datos ==
 
 Admin -> CMS: Selecciona sección a editar
-CMS -> API: GET /api/cms/secciones/{id}
+CMS -> API: Solicitar datos de la sección
 activate API
 
-API -> DB: SELECT * FROM cms_secciones\nWHERE id = ?
+API -> DB: Obtener contenido de la sección
 activate DB
 DB --> API: Datos de la sección
 deactivate DB
 
-API --> CMS: { seccion, titulo, contenido }
+API --> CMS: Información de la sección
 deactivate API
 
-CMS --> Admin: Mostrar formulario con datos
+CMS --> Admin: Mostrar formulario con datos actuales
 
-Admin -> CMS: Modifica título, subtítulo, contenido
+== Edición y Guardado ==
+
+Admin -> CMS: Modifica título, subtítulo y contenido
 Admin -> CMS: Sube nueva imagen (opcional)
 
 alt Si hay imagen nueva
-    CMS -> Cloud: upload(imagen)
+    CMS -> Cloud: Subir imagen al servicio
     activate Cloud
-    Cloud --> CMS: { url, public_id }
+    Cloud --> CMS: URL e identificador de imagen
     deactivate Cloud
 end
 
-Admin -> CMS: Clic en "Guardar"
+Admin -> CMS: Guardar cambios
 
-CMS -> API: PUT /api/cms/secciones/{id}
+CMS -> API: Enviar datos actualizados
 activate API
 
-API -> DB: UPDATE cms_secciones\nSET titulo=?, contenido=?, updated_by=?
+API -> DB: Actualizar sección con nuevo contenido
 activate DB
-DB --> API: OK
+DB --> API: Confirmación
 deactivate DB
 
-API --> CMS: { success: true }
+API --> CMS: Operación exitosa
 deactivate API
 
-CMS --> Admin: Toast "Sección actualizada"
-CMS -> CMS: Revalidar cache de landing
+CMS --> Admin: Notificar actualización completada
+CMS -> CMS: Invalidar caché de la landing page
 
 @enduml
 ```
@@ -678,41 +729,47 @@ title Diagrama de Secuencia - Sincronizar Base de Conocimiento
 
 actor "Administrador" as Admin
 participant "Panel Chatbot" as Panel
-participant "API Route\n(/api/chatbot)" as API
-participant "Google Gemini" as Gemini
-database "PostgreSQL\n(pgvector)" as DB
+participant "API" as API
+participant "Servicio IA\n(Gemini)" as Gemini
+database "Base de Datos\n(pgvector)" as DB
 
-Admin -> Panel: Clic en "Sincronizar Embeddings"
-Panel -> API: POST /api/chatbot/sync-embeddings
+== Identificar Contenido Pendiente ==
+
+Admin -> Panel: Iniciar sincronización de embeddings
+Panel -> API: Solicitar sincronización
 activate API
 
-API -> DB: SELECT * FROM chatbot_faqs\nWHERE embedding IS NULL\nOR updated_at > embedding_updated_at
+API -> DB: Obtener FAQs sin embedding o desactualizados
 activate DB
-DB --> API: FAQs pendientes
+DB --> API: Lista de FAQs pendientes
 deactivate DB
 
-API -> DB: SELECT * FROM chatbot_contexto\nWHERE embedding IS NULL\nOR updated_at > embedding_updated_at
+API -> DB: Obtener contextos sin embedding o desactualizados
 activate DB
-DB --> API: Contextos pendientes
+DB --> API: Lista de contextos pendientes
 deactivate DB
 
-loop Para cada FAQ/Contexto pendiente
-    API -> Gemini: embedContent(texto)\n[text-embedding-004]
+== Generar Vectores ==
+
+loop Para cada contenido pendiente
+    API -> Gemini: Generar embedding del texto
     activate Gemini
-    Gemini --> API: vector[768]
+    Gemini --> API: Vector de 768 dimensiones
     deactivate Gemini
 
-    API -> DB: UPDATE chatbot_faqs/contexto\nSET embedding = vector,\nembedding_updated_at = NOW()
+    API -> DB: Guardar embedding y fecha de actualización
     activate DB
-    DB --> API: OK
+    DB --> API: Confirmación
     deactivate DB
 end
 
-API --> Panel: { \n  synced_faqs: 5,\n  synced_contextos: 3,\n  total_time: "2.3s"\n}
+== Resultado ==
+
+API --> Panel: Resumen de sincronización
 deactivate API
 
-Panel --> Admin: Toast "Sincronización completada"
-Panel --> Admin: Mostrar estadísticas
+Panel --> Admin: Notificar sincronización completada
+Panel --> Admin: Mostrar estadísticas de procesamiento
 
 @enduml
 ```
@@ -727,56 +784,59 @@ skinparam sequenceMessageAlign center
 title Diagrama de Secuencia - Carga del Dashboard con KPIs
 
 actor "Usuario" as User
-participant "Dashboard\nPage" as Dashboard
-participant "API Route\n(/api/kpi)" as API
-database "PostgreSQL" as DB
+participant "Dashboard" as Dashboard
+participant "API" as API
+database "Base de Datos" as DB
 
-User -> Dashboard: Accede a /admin/dashboard
+== Carga de Métricas ==
+
+User -> Dashboard: Accede al panel principal
 activate Dashboard
 
-Dashboard -> API: GET /api/kpi/resumen
+Dashboard -> API: Solicitar resumen de KPIs
 activate API
 
 par Consultas en paralelo
-    API -> DB: SELECT COUNT(*) FROM pacientes
+    API -> DB: Contar total de pacientes
     activate DB
-    DB --> API: total_pacientes
+    DB --> API: Total pacientes
     deactivate DB
 and
-    API -> DB: SELECT COUNT(*) FROM citas\nWHERE fecha_inicio >= NOW()
+    API -> DB: Contar citas pendientes
     activate DB
-    DB --> API: citas_pendientes
+    DB --> API: Citas pendientes
     deactivate DB
 and
-    API -> DB: SELECT SUM(monto) FROM pagos\nWHERE MONTH(fecha_pago) = MONTH(NOW())
+    API -> DB: Calcular ingresos del mes
     activate DB
-    DB --> API: ingresos_mes
+    DB --> API: Ingresos mensuales
     deactivate DB
 and
-    API -> DB: SELECT COUNT(*) FROM casos_clinicos\nWHERE estado = 'Abierto'
+    API -> DB: Contar casos clínicos activos
     activate DB
-    DB --> API: casos_activos
+    DB --> API: Casos activos
     deactivate DB
 end
 
-API --> Dashboard: {\n  total_pacientes: 1250,\n  citas_pendientes: 45,\n  ingresos_mes: 25000,\n  casos_activos: 89\n}
+API --> Dashboard: Métricas consolidadas
 deactivate API
 
-Dashboard --> User: Renderizar tarjetas KPI
-Dashboard --> User: Renderizar gráficos
+Dashboard --> User: Mostrar tarjetas con indicadores
 
-Dashboard -> API: GET /api/kpi/graficos?periodo=mensual
+== Carga de Gráficos ==
+
+Dashboard -> API: Solicitar datos para gráficos
 activate API
 
-API -> DB: Consultas agregadas por mes
+API -> DB: Obtener datos agregados por período
 activate DB
-DB --> API: Datos para gráficos
+DB --> API: Series de datos temporales
 deactivate DB
 
-API --> Dashboard: { series: [...], labels: [...] }
+API --> Dashboard: Datos para visualización
 deactivate API
 
-Dashboard --> User: Actualizar gráficos
+Dashboard --> User: Renderizar gráficos estadísticos
 deactivate Dashboard
 
 @enduml
