@@ -134,10 +134,12 @@ skinparam package {
     BackgroundColor<<chatbot>> #F3E5F5
 }
 
+top to bottom direction
+
 title Diagrama de Clases - Core Administrativo y CMS\n(Organizado por Secciones)
 
 ' ========================================
-' SECCIÓN 1: AUTENTICACIÓN Y USUARIOS
+' FILA 1: AUTENTICACIÓN Y CONFIGURACIÓN
 ' ========================================
 package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
     class Personal {
@@ -171,9 +173,6 @@ package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
     }
 }
 
-' ========================================
-' SECCIÓN 2: CONFIGURACIÓN DEL SISTEMA
-' ========================================
 package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
     class ConfigSeguridad {
         +id: UUID
@@ -202,9 +201,9 @@ package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
 }
 
 ' ========================================
-' SECCIÓN 3: CMS (GESTIÓN DE CONTENIDOS)
+' FILA 2: CMS - PARTE 1
 ' ========================================
-package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
+package "🌐 CMS - CONTENIDOS PRINCIPALES" <<cms>> {
     class CMSSeccion {
         +id: UUID
         +seccion: Text
@@ -251,7 +250,9 @@ package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
         --
         +subir(): void
     }
+}
 
+package "🌐 CMS - EQUIPO Y VISUAL" <<cms>> {
     class CMSEquipo {
         +id: UUID
         +nombre: Text
@@ -294,7 +295,7 @@ package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
 }
 
 ' ========================================
-' SECCIÓN 4: CHATBOT (IA con RAG)
+' FILA 3: CHATBOT (IA con RAG)
 ' ========================================
 package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
     class ChatbotFAQ {
@@ -345,10 +346,10 @@ package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
 ' RELACIONES ENTRE SECCIONES
 ' ========================================
 Personal "1" -- "*" CodigoInvitacion : crea >
-Personal "1" -- "*" CMSSeccion : actualiza >
-Personal "1" -- "*" CMSServicio : gestiona >
-Personal "1" -- "*" CMSEquipo : gestiona >
-Personal "1" -- "*" ChatbotFAQ : gestiona >
+Personal "1" -down- "*" CMSSeccion : actualiza >
+Personal "1" -down- "*" CMSServicio : gestiona >
+Personal "1" -down- "*" CMSEquipo : gestiona >
+Personal "1" -down- "*" ChatbotFAQ : gestiona >
 Personal "1" -- "*" AjustesAplicacion : configura >
 
 CMSServicio "1" -- "*" CMSServicioImagen : tiene >
