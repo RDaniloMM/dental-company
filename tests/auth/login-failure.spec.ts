@@ -1,31 +1,36 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Autenticación y Acceso", () => {
+/**
+ * Test basado en Diagrama de Secuencia 3.4 - Inicio de Sesión (rama de error)
+ * Flujo: Usuario → Frontend → Auth → DB (credenciales inválidas) → Error → Permanece en login
+ */
+test.describe("Autenticación - Diagrama 3.4 (Error)", () => {
   test("Login fallido con credenciales inválidas", async ({ page }) => {
-    // Navegar directamente a la página de login
+    // 1. Usuario accede a página de login
     await page.goto("https://dental-company-tacna.vercel.app/admin/login");
-
-    // Verificar que la página de login se carga
     await expect(page).toHaveURL(/\/admin\/login/);
 
-    // Ingresar nombre de usuario inválido
+    // 2. Frontend muestra formulario
     const usernameField = page.getByLabel(/usuario/i);
-    await usernameField.fill("usuario_invalido");
-
-    // Ingresar contraseña incorrecta
     const passwordField = page.getByLabel(/contraseña/i);
+
+    // 3. Usuario ingresa credenciales incorrectas
+    await usernameField.fill("usuario_invalido");
     await passwordField.fill("contraseña_incorrecta");
 
-    // Hacer clic en 'Iniciar Sesión'
+    // 4. Frontend solicita autenticación
     const loginButton = page.getByRole("button", { name: /iniciar.+sesión/i });
     await loginButton.click();
 
-    // Verificar mensaje de error
+    // 5. Auth verifica con DB → Credenciales incorrectas
+    // 6. Auth retorna error "Credenciales inválidas" al Frontend
     await expect(
-      page.getByText(/usuario.+o.+contraseña.+incorrectos/i)
+      page.getByText(
+        /usuario.+o.+contraseña.+incorrectos|credenciales.+inválid/i
+      )
     ).toBeVisible({ timeout: 5000 });
 
-    // El usuario permanece en la página de login
+    // 7. Frontend muestra mensaje de error, usuario permanece en login
     await expect(page).toHaveURL(/\/admin\/login/);
 
     // Los campos se mantienen visibles para reintento
