@@ -792,10 +792,6 @@ export default function PersonalPage() {
                               <SelectItem value='Odontólogo'>
                                 Odontólogo
                               </SelectItem>
-                              <SelectItem value='Recepcionista'>
-                                Recepcionista
-                              </SelectItem>
-                              <SelectItem value='Auxiliar'>Auxiliar</SelectItem>
                               <SelectItem value='Administrador'>
                                 Administrador
                               </SelectItem>
