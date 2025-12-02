@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import {
-  Palette,
   FileText,
   Users,
   Settings,
@@ -795,7 +794,7 @@ export default function CMSPage() {
         defaultValue='general'
         className='space-y-6'
       >
-        <TabsList className='flex flex-wrap justify-start gap-1 h-auto p-1 md:grid md:w-full md:grid-cols-5'>
+        <TabsList className='flex flex-wrap justify-start gap-1 h-auto p-1 md:grid md:w-full md:grid-cols-4'>
           <TabsTrigger
             value='general'
             className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
@@ -826,13 +825,6 @@ export default function CMSPage() {
           >
             <Users className='h-3 w-3 md:h-4 md:w-4' />
             Equipo
-          </TabsTrigger>
-          <TabsTrigger
-            value='tema'
-            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
-          >
-            <Palette className='h-3 w-3 md:h-4 md:w-4' />
-            Tema
           </TabsTrigger>
         </TabsList>
 
@@ -964,8 +956,8 @@ export default function CMSPage() {
               {/* Subir nueva imagen */}
               <div className='border-2 border-dashed border-gray-200 rounded-lg p-6 space-y-4'>
                 <h4 className='font-semibold text-sm'>Agregar nueva imagen</h4>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4 items-end'>
-                  <div className='md:col-span-2'>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <div className='md:col-span-2 space-y-2'>
                     <Label>Seleccionar imagen</Label>
                     <Input
                       type='file'
@@ -990,12 +982,12 @@ export default function CMSPage() {
                         }
                       }}
                     />
-                    <p className='text-xs text-muted-foreground mt-1'>
+                    <p className='text-xs text-muted-foreground'>
                       Recomendado: Imágenes de alta resolución (1920x1080 o
                       superior). Máx. 10MB.
                     </p>
                   </div>
-                  <div>
+                  <div className='space-y-2'>
                     <Label htmlFor='hero-alt-input'>
                       Texto alternativo (opcional)
                     </Label>
@@ -1863,91 +1855,6 @@ export default function CMSPage() {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab: Tema */}
-        <TabsContent value='tema'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Colores del Tema</CardTitle>
-              <CardDescription>
-                Personaliza los colores de la marca (próximamente)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-2 md:grid-cols-3 gap-6'>
-                <div className='space-y-2'>
-                  <Label>Color Primario</Label>
-                  <div className='flex items-center gap-2'>
-                    <Input
-                      type='color'
-                      value={tema.color_primario || "#3b82f6"}
-                      onChange={(e) =>
-                        setTema({ ...tema, color_primario: e.target.value })
-                      }
-                      onBlur={(e) => saveTema("color_primario", e.target.value)}
-                      className='w-16 h-10 p-1 cursor-pointer'
-                    />
-                    <Input
-                      value={tema.color_primario || "#3b82f6"}
-                      onChange={(e) =>
-                        setTema({ ...tema, color_primario: e.target.value })
-                      }
-                      className='font-mono'
-                    />
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <Label>Color Secundario</Label>
-                  <div className='flex items-center gap-2'>
-                    <Input
-                      type='color'
-                      value={tema.color_secundario || "#1e40af"}
-                      onChange={(e) =>
-                        setTema({ ...tema, color_secundario: e.target.value })
-                      }
-                      onBlur={(e) =>
-                        saveTema("color_secundario", e.target.value)
-                      }
-                      className='w-16 h-10 p-1 cursor-pointer'
-                    />
-                    <Input
-                      value={tema.color_secundario || "#1e40af"}
-                      onChange={(e) =>
-                        setTema({ ...tema, color_secundario: e.target.value })
-                      }
-                      className='font-mono'
-                    />
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <Label>Color de Acento</Label>
-                  <div className='flex items-center gap-2'>
-                    <Input
-                      type='color'
-                      value={tema.color_acento || "#22c55e"}
-                      onChange={(e) =>
-                        setTema({ ...tema, color_acento: e.target.value })
-                      }
-                      onBlur={(e) => saveTema("color_acento", e.target.value)}
-                      className='w-16 h-10 p-1 cursor-pointer'
-                    />
-                    <Input
-                      value={tema.color_acento || "#22c55e"}
-                      onChange={(e) =>
-                        setTema({ ...tema, color_acento: e.target.value })
-                      }
-                      className='font-mono'
-                    />
-                  </div>
-                </div>
-              </div>
-              <p className='text-sm text-muted-foreground mt-6'>
-                Nota: Los cambios de color requieren actualización del código
-                para aplicarse completamente.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
