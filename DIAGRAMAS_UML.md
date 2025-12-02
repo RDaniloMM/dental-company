@@ -494,7 +494,7 @@ end note
 
 @enduml
 
-````
+```
 
 ### 3.3 Registro con Código de Invitación
 
@@ -506,7 +506,7 @@ skinparam sequenceMessageAlign center
 title Diagrama de Secuencia - Registro con Código de Invitación
 
 actor "Nuevo Usuario" as User
-participant "Frontend\n(Sign Up)" as Frontend
+participant "Frontend" as Frontend
 participant "API" as API
 participant "Supabase Auth" as Auth
 database "Base de Datos" as DB
@@ -536,9 +536,9 @@ deactivate API
 
 == Registro de Credenciales ==
 
-Frontend -> User: Mostrar formulario de email y contraseña
+Frontend -> User: Mostrar formulario de usuario y contraseña
 
-User -> Frontend: Ingresa email y contraseña
+User -> Frontend: Ingresa nombre de usuario y contraseña
 Frontend -> Auth: Crear cuenta de usuario
 activate Auth
 
@@ -547,13 +547,8 @@ activate DB
 DB --> Auth: Usuario creado
 deactivate DB
 
-Auth --> Frontend: Usuario registrado (pendiente de confirmación)
+Auth --> Frontend: Usuario registrado exitosamente
 deactivate Auth
-
-note right of Auth
-  El usuario no puede iniciar sesión
-  hasta confirmar su email
-end note
 
 Frontend -> API: Completar registro en el sistema
 activate API
@@ -571,25 +566,11 @@ deactivate DB
 API --> Frontend: Registro completado
 deactivate API
 
-== Confirmación de Email ==
-
-Frontend --> User: Mostrar pantalla de verificación pendiente
-
-Auth -> User: Enviar email de confirmación
-
-User -> Auth: Confirmar email desde el enlace
-activate Auth
-
-Auth -> DB: Activar cuenta de usuario
-activate DB
-DB --> Auth: Cuenta activada
-deactivate DB
-
-Auth --> User: Redirigir a página de login
-deactivate Auth
+Frontend --> User: Redirigir a página de login
+Frontend --> User: Notificar registro exitoso
 
 @enduml
-````
+```
 
 ### 3.4 Inicio de Sesión
 
