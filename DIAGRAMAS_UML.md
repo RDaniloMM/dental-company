@@ -701,7 +701,7 @@ loop Para cada FAQ/Contexto pendiente
     activate Gemini
     Gemini --> API: vector[768]
     deactivate Gemini
-    
+
     API -> DB: UPDATE chatbot_faqs/contexto\nSET embedding = vector,\nembedding_updated_at = NOW()
     activate DB
     DB --> API: OK
@@ -1069,6 +1069,7 @@ cloud "Google AI" {
 
 @enduml
 ```
+
 ---
 
 ## 📝 Notas de Implementación
@@ -1093,4 +1094,7 @@ cloud "Google AI" {
 
 **Documento generado:** Diciembre 2025
 **Sistema:** Dental Company Web v1.0
-`````
+
+```
+
+```
