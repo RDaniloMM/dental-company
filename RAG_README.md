@@ -149,7 +149,6 @@ Body: { "type": "all" }
 
 ## 🧪 Pruebas Recomendadas
 
-```
 ✅ "¿Cuál es el horario de atención?"
 ✅ "¿A qué hora abren?"
 ✅ "¿Hasta qué hora atienden?"

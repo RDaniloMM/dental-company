@@ -1131,7 +1131,3 @@ cloud "Google AI" {
 
 **Documento generado:** Diciembre 2025
 **Sistema:** Dental Company Web v1.0
-
-```
-
-```

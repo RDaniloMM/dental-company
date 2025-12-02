@@ -4,7 +4,20 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npx playwright test",
+    "test:auth": "npx playwright test tests/auth/",
+    "test:dashboard": "npx playwright test tests/dashboard/",
+    "test:patients": "npx playwright test tests/patients/",
+    "test:dental-record": "npx playwright test tests/dental-record/",
+    "test:odontogram": "npx playwright test tests/odontogram/",
+    "test:appointments": "npx playwright test tests/appointments/",
+    "test:clinical-cases": "npx playwright test tests/clinical-cases/",
+    "test:navigation": "npx playwright test tests/navigation/",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report",
+    "test:install": "npx playwright install"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.17",
@@ -82,6 +95,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.57.0",
     "@types/node": "^20",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

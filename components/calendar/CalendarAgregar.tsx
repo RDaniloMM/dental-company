@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import flatpickr from "flatpickr";
-import "flatpickr/dist/flatpickr.min.css";
+import 'flatpickr/dist/flatpickr.min.css';
 import { createClient } from "@/lib/supabase/client";
 
 interface GoogleCalendarPageProps {
