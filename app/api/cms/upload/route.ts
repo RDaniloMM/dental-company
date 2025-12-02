@@ -27,10 +27,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validar tamaño (máximo 5MB para equipo, 10MB para hero/carrusel)
+    const maxSize = tipo === "hero" ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "El archivo excede el tamaño máximo de 5MB" },
+        {
+          error: `El archivo excede el tamaño máximo de ${
+            tipo === "hero" ? "10MB" : "5MB"
+          }`,
+        },
         { status: 400 }
       );
     }
@@ -85,6 +90,10 @@ export async function POST(req: Request) {
       case "servicios":
         folder = "dental_company/servicios";
         tipoImagen = "general";
+        break;
+      case "hero":
+        folder = "dental_company/hero";
+        tipoImagen = "carrusel";
         break;
       default:
         folder = "dental_company/carrusel";

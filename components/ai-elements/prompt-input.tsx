@@ -27,7 +27,8 @@ import {
   XIcon,
 } from "lucide-react";
 import Image from "next/image";
-import { nanoid } from "nanoid";
+// Reemplazo de nanoid por función nativa
+const nanoid = () => crypto.randomUUID().replace(/-/g, "").slice(0, 21);
 import {
   type ChangeEventHandler,
   Children,
@@ -93,25 +94,25 @@ export function PromptInputAttachment({
       {data.mediaType?.startsWith("image/") && data.url ? (
         <Image
           alt={data.filename || "attachment"}
-          className="size-full rounded-md object-cover"
+          className='size-full rounded-md object-cover'
           height={56}
           src={data.url}
           width={56}
         />
       ) : (
-        <div className="flex size-full items-center justify-center text-muted-foreground">
-          <PaperclipIcon className="size-4" />
+        <div className='flex size-full items-center justify-center text-muted-foreground'>
+          <PaperclipIcon className='size-4' />
         </div>
       )}
       <Button
-        aria-label="Remove attachment"
-        className="-right-1.5 -top-1.5 absolute h-6 w-6 rounded-full opacity-0 group-hover:opacity-100"
+        aria-label='Remove attachment'
+        className='-right-1.5 -top-1.5 absolute h-6 w-6 rounded-full opacity-0 group-hover:opacity-100'
         onClick={() => attachments.remove(data.id)}
-        size="icon"
-        type="button"
-        variant="outline"
+        size='icon'
+        type='button'
+        variant='outline'
       >
-        <XIcon className="h-3 w-3" />
+        <XIcon className='h-3 w-3' />
       </Button>
     </div>
   );
@@ -148,7 +149,7 @@ export function PromptInputAttachments({
 
   return (
     <div
-      aria-live="polite"
+      aria-live='polite'
       className={cn(
         "overflow-hidden transition-[height] duration-200 ease-out",
         className
@@ -156,7 +157,10 @@ export function PromptInputAttachments({
       style={{ height: attachments.files.length ? height : 0 }}
       {...props}
     >
-      <div className="flex flex-wrap gap-2 p-3 pt-3" ref={contentRef}>
+      <div
+        className='flex flex-wrap gap-2 p-3 pt-3'
+        ref={contentRef}
+      >
         {attachments.files.map((file) => (
           <Fragment key={file.id}>{children(file)}</Fragment>
         ))}
@@ -185,7 +189,7 @@ export const PromptInputActionAddAttachments = ({
         attachments.openFileDialog();
       }}
     >
-      <ImageIcon className="mr-2 size-4" /> {label}
+      <ImageIcon className='mr-2 size-4' /> {label}
     </DropdownMenuItem>
   );
 };
@@ -204,7 +208,7 @@ export type PromptInputProps = Omit<
   globalDrop?: boolean;
   syncHiddenInput?: boolean;
   maxFiles?: number;
-  maxFileSize?: number; 
+  maxFileSize?: number;
   onError?: (err: {
     code: "max_files" | "max_file_size" | "accept";
     message: string;
@@ -440,14 +444,18 @@ export const PromptInput = ({
 
   return (
     <AttachmentsContext.Provider value={ctx}>
-      <span aria-hidden="true" className="hidden" ref={anchorRef} />
+      <span
+        aria-hidden='true'
+        className='hidden'
+        ref={anchorRef}
+      />
       <input
         accept={accept}
-        className="hidden"
+        className='hidden'
         multiple={multiple}
         onChange={handleChange}
         ref={inputRef}
-        type="file"
+        type='file'
       />
       <form
         className={cn(
@@ -469,7 +477,10 @@ export const PromptInputBody = ({
   className,
   ...props
 }: PromptInputBodyProps) => (
-  <div className={cn(className, "flex flex-col")} {...props} />
+  <div
+    className={cn(className, "flex flex-col")}
+    {...props}
+  />
 );
 
 export type PromptInputTextareaProps = ComponentProps<typeof Textarea>;
@@ -532,7 +543,7 @@ export const PromptInputTextarea = ({
         "focus-visible:ring-0",
         className
       )}
-      name="message"
+      name='message'
       onChange={(e) => {
         onChange?.(e);
       }}
@@ -581,7 +592,7 @@ export const PromptInputButton = ({
   ...props
 }: PromptInputButtonProps) => {
   const newSize =
-    (size ?? Children.count(props.children) > 1) ? "default" : "icon";
+    size ?? Children.count(props.children) > 1 ? "default" : "icon";
 
   return (
     <Button
@@ -592,7 +603,7 @@ export const PromptInputButton = ({
         className
       )}
       size={newSize}
-      type="button"
+      type='button'
       variant={variant}
       {...props}
     />
@@ -613,8 +624,11 @@ export const PromptInputActionMenuTrigger = ({
   ...props
 }: PromptInputActionMenuTriggerProps) => (
   <DropdownMenuTrigger asChild>
-    <PromptInputButton className={className} {...props}>
-      {children ?? <PlusIcon className="size-4" />}
+    <PromptInputButton
+      className={className}
+      {...props}
+    >
+      {children ?? <PlusIcon className='size-4' />}
     </PromptInputButton>
   </DropdownMenuTrigger>
 );
@@ -626,7 +640,11 @@ export const PromptInputActionMenuContent = ({
   className,
   ...props
 }: PromptInputActionMenuContentProps) => (
-  <DropdownMenuContent align="start" className={cn(className)} {...props} />
+  <DropdownMenuContent
+    align='start'
+    className={cn(className)}
+    {...props}
+  />
 );
 
 export type PromptInputActionMenuItemProps = ComponentProps<
@@ -636,7 +654,10 @@ export const PromptInputActionMenuItem = ({
   className,
   ...props
 }: PromptInputActionMenuItemProps) => (
-  <DropdownMenuItem className={cn(className)} {...props} />
+  <DropdownMenuItem
+    className={cn(className)}
+    {...props}
+  />
 );
 
 export type PromptInputSubmitProps = ComponentProps<typeof Button> & {
@@ -651,22 +672,22 @@ export const PromptInputSubmit = ({
   children,
   ...props
 }: PromptInputSubmitProps) => {
-  let Icon = <SendIcon className="size-4" />;
+  let Icon = <SendIcon className='size-4' />;
 
   if (status === "submitted") {
-    Icon = <Loader2Icon className="size-4 animate-spin" />;
+    Icon = <Loader2Icon className='size-4 animate-spin' />;
   } else if (status === "streaming") {
-    Icon = <SquareIcon className="size-4" />;
+    Icon = <SquareIcon className='size-4' />;
   } else if (status === "error") {
-    Icon = <XIcon className="size-4" />;
+    Icon = <XIcon className='size-4' />;
   }
 
   return (
     <Button
-      aria-label="Submit"
+      aria-label='Submit'
       className={cn("gap-1.5 rounded-lg", className)}
       size={size}
-      type="submit"
+      type='submit'
       variant={variant}
       {...props}
     >
@@ -707,7 +728,10 @@ export const PromptInputModelSelectContent = ({
   className,
   ...props
 }: PromptInputModelSelectContentProps) => (
-  <SelectContent className={cn(className)} {...props} />
+  <SelectContent
+    className={cn(className)}
+    {...props}
+  />
 );
 
 export type PromptInputModelSelectItemProps = ComponentProps<typeof SelectItem>;
@@ -716,7 +740,10 @@ export const PromptInputModelSelectItem = ({
   className,
   ...props
 }: PromptInputModelSelectItemProps) => (
-  <SelectItem className={cn(className)} {...props} />
+  <SelectItem
+    className={cn(className)}
+    {...props}
+  />
 );
 
 export type PromptInputModelSelectValueProps = ComponentProps<
@@ -727,5 +754,8 @@ export const PromptInputModelSelectValue = ({
   className,
   ...props
 }: PromptInputModelSelectValueProps) => (
-  <SelectValue className={cn(className)} {...props} />
+  <SelectValue
+    className={cn(className)}
+    {...props}
+  />
 );

@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Transpila módulos ESM que causan problemas con require()
+  transpilePackages: [
+    "tokenlens",
+    "use-stick-to-bottom",
+    "streamdown",
+    "@cloudinary/url-gen",
+    "nanoid",
+  ],
 };
 
 export default nextConfig;

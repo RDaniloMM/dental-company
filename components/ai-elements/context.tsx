@@ -9,8 +9,63 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { LanguageModelUsage } from "ai";
-import { type ComponentProps, createContext, useContext } from "react";
-import { estimateCost, type ModelId } from "tokenlens";
+import {
+  type ComponentProps,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from "react";
+
+// Tipo para ModelId (string)
+type ModelId = string;
+
+// Función estimateCost cargada dinámicamente (singleton)
+let estimateCostFn: ((params: any) => { totalUSD?: number }) | null = null;
+let isLoading = false;
+let loadPromise: Promise<void> | null = null;
+
+// Cargar tokenlens una sola vez
+function loadTokenlens(): Promise<void> {
+  if (loadPromise) return loadPromise;
+  if (estimateCostFn) return Promise.resolve();
+
+  isLoading = true;
+  loadPromise = import("tokenlens")
+    .then((module) => {
+      estimateCostFn = module.estimateCost;
+      isLoading = false;
+    })
+    .catch(() => {
+      isLoading = false;
+    });
+
+  return loadPromise;
+}
+
+// Función helper para estimar costos
+function estimateCost(params: { modelId: string; usage: any }): {
+  totalUSD: number;
+} {
+  if (estimateCostFn) {
+    const result = estimateCostFn(params);
+    return { totalUSD: result?.totalUSD ?? 0 };
+  }
+  return { totalUSD: 0 };
+}
+
+// Hook para asegurar que tokenlens está cargado
+function useTokenlensReady() {
+  const [ready, setReady] = useState(!!estimateCostFn);
+
+  useEffect(() => {
+    if (!estimateCostFn) {
+      loadTokenlens().then(() => setReady(true));
+    }
+  }, []);
+
+  return ready;
+}
 
 const PERCENT_MAX = 100;
 const ICON_RADIUS = 10;
@@ -54,7 +109,11 @@ export const Context = ({
       modelId,
     }}
   >
-    <HoverCard closeDelay={0} openDelay={0} {...props} />
+    <HoverCard
+      closeDelay={0}
+      openDelay={0}
+      {...props}
+    />
   </ContextContext.Provider>
 );
 
@@ -66,32 +125,32 @@ const ContextIcon = () => {
 
   return (
     <svg
-      aria-label="Model context usage"
-      height="20"
-      role="img"
+      aria-label='Model context usage'
+      height='20'
+      role='img'
       style={{ color: "currentcolor" }}
       viewBox={`0 0 ${ICON_VIEWBOX} ${ICON_VIEWBOX}`}
-      width="20"
+      width='20'
     >
       <circle
         cx={ICON_CENTER}
         cy={ICON_CENTER}
-        fill="none"
-        opacity="0.25"
+        fill='none'
+        opacity='0.25'
         r={ICON_RADIUS}
-        stroke="currentColor"
+        stroke='currentColor'
         strokeWidth={ICON_STROKE_WIDTH}
       />
       <circle
         cx={ICON_CENTER}
         cy={ICON_CENTER}
-        fill="none"
-        opacity="0.7"
+        fill='none'
+        opacity='0.7'
         r={ICON_RADIUS}
-        stroke="currentColor"
+        stroke='currentColor'
         strokeDasharray={`${circumference} ${circumference}`}
         strokeDashoffset={dashOffset}
-        strokeLinecap="round"
+        strokeLinecap='round'
         strokeWidth={ICON_STROKE_WIDTH}
         style={{ transformOrigin: "center", transform: "rotate(-90deg)" }}
       />
@@ -112,8 +171,12 @@ export const ContextTrigger = ({ children, ...props }: ContextTriggerProps) => {
   return (
     <HoverCardTrigger asChild>
       {children ?? (
-        <Button type="button" variant="ghost" {...props}>
-          <span className="font-medium text-muted-foreground">
+        <Button
+          type='button'
+          variant='ghost'
+          {...props}
+        >
+          <span className='font-medium text-muted-foreground'>
             {renderedPercent}
           </span>
           <ContextIcon />
@@ -156,17 +219,23 @@ export const ContextContentHeader = ({
   }).format(maxTokens);
 
   return (
-    <div className={cn("w-full space-y-2 p-3", className)} {...props}>
+    <div
+      className={cn("w-full space-y-2 p-3", className)}
+      {...props}
+    >
       {children ?? (
         <>
-          <div className="flex items-center justify-between gap-3 text-xs">
+          <div className='flex items-center justify-between gap-3 text-xs'>
             <p>{displayPct}</p>
-            <p className="font-mono text-muted-foreground">
+            <p className='font-mono text-muted-foreground'>
               {used} / {total}
             </p>
           </div>
-          <div className="space-y-2">
-            <Progress className="bg-muted" value={usedPercent * PERCENT_MAX} />
+          <div className='space-y-2'>
+            <Progress
+              className='bg-muted'
+              value={usedPercent * PERCENT_MAX}
+            />
           </div>
         </>
       )}
@@ -181,7 +250,10 @@ export const ContextContentBody = ({
   className,
   ...props
 }: ContextContentBody) => (
-  <div className={cn("w-full p-3", className)} {...props}>
+  <div
+    className={cn("w-full p-3", className)}
+    {...props}
+  >
     {children}
   </div>
 );
@@ -218,7 +290,7 @@ export const ContextContentFooter = ({
     >
       {children ?? (
         <>
-          <span className="text-muted-foreground">Total cost</span>
+          <span className='text-muted-foreground'>Total cost</span>
           <span>{totalCost}</span>
         </>
       )}
@@ -260,8 +332,11 @@ export const ContextInputUsage = ({
       className={cn("flex items-center justify-between text-xs", className)}
       {...props}
     >
-      <span className="text-muted-foreground">Input</span>
-      <TokensWithCost costText={inputCostText} tokens={inputTokens} />
+      <span className='text-muted-foreground'>Input</span>
+      <TokensWithCost
+        costText={inputCostText}
+        tokens={inputTokens}
+      />
     </div>
   );
 };
@@ -300,8 +375,11 @@ export const ContextOutputUsage = ({
       className={cn("flex items-center justify-between text-xs", className)}
       {...props}
     >
-      <span className="text-muted-foreground">Output</span>
-      <TokensWithCost costText={outputCostText} tokens={outputTokens} />
+      <span className='text-muted-foreground'>Output</span>
+      <TokensWithCost
+        costText={outputCostText}
+        tokens={outputTokens}
+      />
     </div>
   );
 };
@@ -340,8 +418,11 @@ export const ContextReasoningUsage = ({
       className={cn("flex items-center justify-between text-xs", className)}
       {...props}
     >
-      <span className="text-muted-foreground">Reasoning</span>
-      <TokensWithCost costText={reasoningCostText} tokens={reasoningTokens} />
+      <span className='text-muted-foreground'>Reasoning</span>
+      <TokensWithCost
+        costText={reasoningCostText}
+        tokens={reasoningTokens}
+      />
     </div>
   );
 };
@@ -380,8 +461,11 @@ export const ContextCacheUsage = ({
       className={cn("flex items-center justify-between text-xs", className)}
       {...props}
     >
-      <span className="text-muted-foreground">Cache</span>
-      <TokensWithCost costText={cacheCostText} tokens={cacheTokens} />
+      <span className='text-muted-foreground'>Cache</span>
+      <TokensWithCost
+        costText={cacheCostText}
+        tokens={cacheTokens}
+      />
     </div>
   );
 };
@@ -400,7 +484,7 @@ const TokensWithCost = ({
           notation: "compact",
         }).format(tokens)}
     {costText ? (
-      <span className="ml-2 text-muted-foreground">• {costText}</span>
+      <span className='ml-2 text-muted-foreground'>• {costText}</span>
     ) : null}
   </span>
 );

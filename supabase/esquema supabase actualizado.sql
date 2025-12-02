@@ -105,6 +105,7 @@ CREATE TABLE public.citas (
 CREATE TABLE public.cms_carrusel (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   imagen_url text NOT NULL,
+  public_id text,
   alt_text text,
   orden integer DEFAULT 0,
   visible boolean DEFAULT true,

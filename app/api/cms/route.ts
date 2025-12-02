@@ -49,12 +49,13 @@ export async function GET(req: Request) {
 
     if (equipoError) throw equipoError;
 
-    // Obtener imágenes del carrusel
-    const { data: carrusel, error: carruselError } = await supabase
-      .from("cms_carrusel")
-      .select("*")
-      .eq("visible", true)
-      .order("orden", { ascending: true });
+    // Obtener imágenes del carrusel (todos si admin, solo visibles si no)
+    let carruselQuery = supabase.from("cms_carrusel").select("*");
+    if (!admin) carruselQuery = carruselQuery.eq("visible", true);
+    const { data: carrusel, error: carruselError } = await carruselQuery.order(
+      "orden",
+      { ascending: true }
+    );
 
     if (carruselError) throw carruselError;
 

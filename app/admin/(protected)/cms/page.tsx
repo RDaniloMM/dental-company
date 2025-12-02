@@ -120,6 +120,15 @@ interface ServicioImagen {
   visible: boolean;
 }
 
+interface CarruselHero {
+  id: string;
+  imagen_url: string;
+  public_id?: string;
+  alt_text?: string;
+  orden: number;
+  visible: boolean;
+}
+
 const iconOptions = [
   "Stethoscope",
   "Sparkles",
@@ -283,6 +292,10 @@ export default function CMSPage() {
     chatbot_usar_equipo: "true",
   });
 
+  // Estados para el carrusel del Hero
+  const [carruselHero, setCarruselHero] = useState<CarruselHero[]>([]);
+  const [isUploadingHeroImage, setIsUploadingHeroImage] = useState(false);
+
   // Cargar configuración del chatbot
   const fetchChatbotConfig = async () => {
     try {
@@ -306,6 +319,7 @@ export default function CMSPage() {
         setServicios(data.servicios || []);
         setEquipo(data.equipo || []);
         setTema(data.tema || {});
+        setCarruselHero(data.carrusel || []);
       }
     } catch (error) {
       console.error("Error cargando CMS:", error);
@@ -338,6 +352,136 @@ export default function CMSPage() {
       }
     } catch (error) {
       console.error("Error recargando equipo:", error);
+    }
+  };
+
+  // Recargar solo carrusel hero
+  const refreshCarruselHero = async () => {
+    try {
+      const res = await fetch("/api/cms?admin=true");
+      if (res.ok) {
+        const data = await res.json();
+        setCarruselHero(data.carrusel || []);
+      }
+    } catch (error) {
+      console.error("Error recargando carrusel:", error);
+    }
+  };
+
+  // Subir imagen al carrusel hero
+  const uploadHeroImage = async (file: File, altText: string) => {
+    setIsUploadingHeroImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("tipo", "hero");
+
+      const uploadRes = await fetch("/api/cms/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Error al subir imagen");
+      }
+
+      const { secure_url, public_id } = await uploadRes.json();
+
+      // Guardar en la BD
+      const maxOrden =
+        carruselHero.length > 0
+          ? Math.max(...carruselHero.map((c) => c.orden)) + 1
+          : 1;
+
+      const res = await fetch("/api/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "carrusel",
+          data: {
+            imagen_url: secure_url,
+            public_id: public_id,
+            alt_text: altText || "Imagen de fondo",
+            orden: maxOrden,
+            visible: true,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Imagen agregada al carrusel");
+        await refreshCarruselHero();
+      }
+    } catch (error) {
+      console.error("Error subiendo imagen hero:", error);
+      toast.error("Error al subir imagen");
+    } finally {
+      setIsUploadingHeroImage(false);
+    }
+  };
+
+  // Eliminar imagen del carrusel hero
+  const deleteHeroImage = async (id: string) => {
+    if (!confirm("¿Eliminar esta imagen del carrusel?")) return;
+
+    try {
+      const res = await fetch(
+        `/api/cms?tipo=carrusel&id=${id}&permanent=true`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (res.ok) {
+        toast.success("Imagen eliminada");
+        await refreshCarruselHero();
+      }
+    } catch (error) {
+      console.error("Error eliminando imagen:", error);
+      toast.error("Error al eliminar");
+    }
+  };
+
+  // Toggle visibilidad de imagen hero
+  const toggleHeroImageVisibility = async (imagen: CarruselHero) => {
+    try {
+      const res = await fetch("/api/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "carrusel",
+          data: { ...imagen, visible: !imagen.visible },
+        }),
+      });
+
+      if (res.ok) {
+        await refreshCarruselHero();
+      }
+    } catch (error) {
+      console.error("Error actualizando visibilidad:", error);
+    }
+  };
+
+  // Actualizar orden de imagen hero
+  const updateHeroImageOrder = async (id: string, newOrder: number) => {
+    const imagen = carruselHero.find((c) => c.id === id);
+    if (!imagen) return;
+
+    try {
+      const res = await fetch("/api/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "carrusel",
+          data: { ...imagen, orden: newOrder },
+        }),
+      });
+
+      if (res.ok) {
+        await refreshCarruselHero();
+      }
+    } catch (error) {
+      console.error("Error actualizando orden:", error);
     }
   };
 
@@ -651,7 +795,7 @@ export default function CMSPage() {
         defaultValue='general'
         className='space-y-6'
       >
-        <TabsList className='flex flex-wrap justify-start gap-1 h-auto p-1 md:grid md:w-full md:grid-cols-4'>
+        <TabsList className='flex flex-wrap justify-start gap-1 h-auto p-1 md:grid md:w-full md:grid-cols-5'>
           <TabsTrigger
             value='general'
             className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
@@ -659,6 +803,14 @@ export default function CMSPage() {
             <Settings className='h-3 w-3 md:h-4 md:w-4' />
             <span className='hidden sm:inline'>General</span>
             <span className='sm:hidden'>Gen.</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value='hero'
+            className='flex items-center gap-1 px-2 py-1.5 text-xs md:text-sm md:gap-2 md:px-3 md:py-2'
+          >
+            <Images className='h-3 w-3 md:h-4 md:w-4' />
+            <span className='hidden sm:inline'>Hero</span>
+            <span className='sm:hidden'>Hero</span>
           </TabsTrigger>
           <TabsTrigger
             value='servicios'
@@ -792,6 +944,197 @@ export default function CMSPage() {
                     onBlur={(e) => saveTema("horario_sabado", e.target.value)}
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Imágenes Hero (Carrusel) */}
+        <TabsContent value='hero'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Imágenes del Hero (Carrusel)</CardTitle>
+              <CardDescription>
+                Personaliza las imágenes de fondo de la sección principal de la
+                landing page. Estas imágenes se muestran en un carrusel
+                automático detrás del título &quot;Dental Company&quot;.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='space-y-6'>
+              {/* Subir nueva imagen */}
+              <div className='border-2 border-dashed border-gray-200 rounded-lg p-6 space-y-4'>
+                <h4 className='font-semibold text-sm'>Agregar nueva imagen</h4>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4 items-end'>
+                  <div className='md:col-span-2'>
+                    <Label>Seleccionar imagen</Label>
+                    <Input
+                      type='file'
+                      accept='image/*'
+                      disabled={isUploadingHeroImage}
+                      id='hero-image-input'
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error(
+                              "El archivo excede el tamaño máximo de 10MB"
+                            );
+                            return;
+                          }
+                          const altInput = document.getElementById(
+                            "hero-alt-input"
+                          ) as HTMLInputElement;
+                          await uploadHeroImage(file, altInput?.value || "");
+                          e.target.value = "";
+                          if (altInput) altInput.value = "";
+                        }
+                      }}
+                    />
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      Recomendado: Imágenes de alta resolución (1920x1080 o
+                      superior). Máx. 10MB.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor='hero-alt-input'>
+                      Texto alternativo (opcional)
+                    </Label>
+                    <Input
+                      id='hero-alt-input'
+                      placeholder='Descripción de la imagen'
+                      disabled={isUploadingHeroImage}
+                    />
+                  </div>
+                </div>
+                {isUploadingHeroImage && (
+                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                    <Loader2 className='h-4 w-4 animate-spin' />
+                    Subiendo imagen...
+                  </div>
+                )}
+              </div>
+
+              {/* Lista de imágenes */}
+              <div className='space-y-4'>
+                <div className='flex items-center justify-between'>
+                  <h4 className='font-semibold'>
+                    Imágenes del carrusel (
+                    {carruselHero.filter((c) => c.visible).length} visibles de{" "}
+                    {carruselHero.length})
+                  </h4>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={refreshCarruselHero}
+                  >
+                    <RefreshCw className='h-4 w-4 mr-2' />
+                    Actualizar
+                  </Button>
+                </div>
+
+                {carruselHero.length === 0 ? (
+                  <div className='text-center py-12 text-muted-foreground border rounded-lg'>
+                    <Images className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                    <p>No hay imágenes en el carrusel.</p>
+                    <p className='text-sm'>
+                      Agrega la primera imagen usando el formulario de arriba.
+                    </p>
+                  </div>
+                ) : (
+                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                    {carruselHero.map((imagen) => (
+                      <div
+                        key={imagen.id}
+                        className={`relative border rounded-lg overflow-hidden group ${
+                          !imagen.visible ? "opacity-50" : ""
+                        }`}
+                      >
+                        <div className='aspect-video relative'>
+                          <Image
+                            src={imagen.imagen_url}
+                            alt={imagen.alt_text || "Imagen hero"}
+                            fill
+                            className='object-cover'
+                          />
+                          {/* Overlay con acciones */}
+                          <div className='absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100'>
+                            <Button
+                              variant='secondary'
+                              size='sm'
+                              onClick={() => toggleHeroImageVisibility(imagen)}
+                              title={imagen.visible ? "Ocultar" : "Mostrar"}
+                            >
+                              {imagen.visible ? (
+                                <EyeOff className='h-4 w-4' />
+                              ) : (
+                                <Eye className='h-4 w-4' />
+                              )}
+                            </Button>
+                            <Button
+                              variant='destructive'
+                              size='sm'
+                              onClick={() => deleteHeroImage(imagen.id)}
+                              title='Eliminar'
+                            >
+                              <Trash2 className='h-4 w-4' />
+                            </Button>
+                          </div>
+                          {/* Badge de orden */}
+                          <div className='absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium'>
+                            #{imagen.orden}
+                          </div>
+                          {/* Badge de visibilidad */}
+                          {!imagen.visible && (
+                            <div className='absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs'>
+                              Oculta
+                            </div>
+                          )}
+                        </div>
+                        <div className='p-3 space-y-2 bg-white'>
+                          <div className='flex items-center justify-between gap-2'>
+                            <span className='text-sm text-muted-foreground truncate'>
+                              {imagen.alt_text || "Sin descripción"}
+                            </span>
+                            <div className='flex items-center gap-1'>
+                              <Input
+                                type='number'
+                                value={imagen.orden}
+                                onChange={(e) =>
+                                  updateHeroImageOrder(
+                                    imagen.id,
+                                    parseInt(e.target.value) || 1
+                                  )
+                                }
+                                className='w-16 h-8 text-center text-sm'
+                                min={1}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Nota informativa */}
+              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700'>
+                <p className='font-medium mb-1'>
+                  💡 Consejos para las imágenes del hero:
+                </p>
+                <ul className='list-disc list-inside space-y-1 text-blue-600'>
+                  <li>
+                    Usa imágenes horizontales de alta calidad (ratio 16:9)
+                  </li>
+                  <li>
+                    El texto superpuesto es blanco, por lo que funcionan mejor
+                    las imágenes oscuras o con buen contraste
+                  </li>
+                  <li>
+                    Las imágenes se muestran en orden ascendente según el número
+                  </li>
+                  <li>El carrusel cambia automáticamente cada 5 segundos</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
