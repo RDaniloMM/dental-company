@@ -494,7 +494,7 @@ end note
 
 @enduml
 
-```
+````
 
 ### 3.3 Registro con Código de Invitación
 
@@ -570,7 +570,7 @@ Frontend --> User: Redirigir a página de login
 Frontend --> User: Notificar registro exitoso
 
 @enduml
-```
+````
 
 ### 3.4 Inicio de Sesión
 
