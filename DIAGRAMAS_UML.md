@@ -482,6 +482,306 @@ end note
 @enduml
 ```
 
+### 3.3 Registro con Código de Invitación
+
+```plantuml
+@startuml Secuencia_Registro_Invitacion
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Registro con Código de Invitación
+
+actor "Nuevo Usuario" as User
+participant "Frontend\n(Sign Up)" as Frontend
+participant "API Route\n(/api/auth)" as API
+participant "Supabase Auth" as Auth
+database "PostgreSQL" as DB
+
+User -> Frontend: Accede a /admin/sign-up
+Frontend -> User: Formulario de registro
+
+User -> Frontend: Ingresa datos + código invitación
+Frontend -> API: POST /api/auth/verify-code { codigo }
+activate API
+
+API -> DB: SELECT * FROM codigos_invitacion\nWHERE codigo = ? AND activo = true
+activate DB
+DB --> API: Código encontrado (rol, usos)
+deactivate DB
+
+alt Código válido y con usos disponibles
+    API --> Frontend: { valid: true, rol: "Odontólogo" }
+else Código inválido o agotado
+    API --> Frontend: { valid: false, error: "Código inválido" }
+    Frontend --> User: Mostrar error
+end
+deactivate API
+
+Frontend -> Auth: signUp({ email, password, metadata })
+activate Auth
+
+Auth -> DB: Crear usuario en auth.users
+activate DB
+DB --> Auth: Usuario creado (id)
+deactivate DB
+
+Auth -> Auth: Enviar email de confirmación
+
+Auth --> Frontend: { user, session }
+deactivate Auth
+
+Frontend -> API: POST /api/auth/complete-registration
+activate API
+
+API -> DB: INSERT INTO personal\n(id, nombre, rol, email)
+activate DB
+DB --> API: OK
+deactivate DB
+
+API -> DB: UPDATE codigos_invitacion\nSET usos_actuales = usos_actuales + 1
+activate DB
+DB --> API: OK
+deactivate DB
+
+API --> Frontend: { success: true }
+deactivate API
+
+Frontend --> User: Redirigir a verificación de email
+Frontend --> User: Toast "Revisa tu correo"
+
+@enduml
+```
+
+### 3.4 Inicio de Sesión y Verificación de Estado
+
+```plantuml
+@startuml Secuencia_Login
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Inicio de Sesión
+
+actor "Usuario" as User
+participant "Frontend\n(Login)" as Frontend
+participant "Supabase Auth" as Auth
+participant "Middleware" as MW
+database "PostgreSQL" as DB
+
+User -> Frontend: Accede a /admin/login
+Frontend -> User: Formulario de login
+
+User -> Frontend: Ingresa email y contraseña
+Frontend -> Auth: signInWithPassword({ email, password })
+activate Auth
+
+Auth -> DB: Verificar credenciales
+activate DB
+DB --> Auth: Usuario autenticado
+deactivate DB
+
+Auth --> Frontend: { user, session (JWT) }
+deactivate Auth
+
+Frontend -> Frontend: Guardar session en cookies
+
+Frontend -> MW: Navegar a /admin/dashboard
+activate MW
+
+MW -> Auth: getUser() desde cookie
+activate Auth
+Auth --> MW: { user }
+deactivate Auth
+
+MW -> DB: SELECT * FROM personal\nWHERE id = user.id AND activo = true
+activate DB
+DB --> MW: Personal encontrado
+deactivate DB
+
+alt Usuario activo
+    MW --> Frontend: Permitir acceso
+    Frontend --> User: Mostrar Dashboard
+else Usuario inactivo/no existe
+    MW --> Frontend: Redirect /admin/login
+    Frontend --> User: "Cuenta desactivada"
+end
+deactivate MW
+
+@enduml
+```
+
+### 3.5 Edición de Contenido CMS
+
+```plantuml
+@startuml Secuencia_CMS_Editar
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Editar Sección CMS
+
+actor "Administrador" as Admin
+participant "Panel CMS" as CMS
+participant "API Route\n(/api/cms)" as API
+participant "Cloudinary" as Cloud
+database "PostgreSQL" as DB
+
+Admin -> CMS: Selecciona sección a editar
+CMS -> API: GET /api/cms/secciones/{id}
+activate API
+
+API -> DB: SELECT * FROM cms_secciones\nWHERE id = ?
+activate DB
+DB --> API: Datos de la sección
+deactivate DB
+
+API --> CMS: { seccion, titulo, contenido }
+deactivate API
+
+CMS --> Admin: Mostrar formulario con datos
+
+Admin -> CMS: Modifica título, subtítulo, contenido
+Admin -> CMS: Sube nueva imagen (opcional)
+
+alt Si hay imagen nueva
+    CMS -> Cloud: upload(imagen)
+    activate Cloud
+    Cloud --> CMS: { url, public_id }
+    deactivate Cloud
+end
+
+Admin -> CMS: Clic en "Guardar"
+
+CMS -> API: PUT /api/cms/secciones/{id}
+activate API
+
+API -> DB: UPDATE cms_secciones\nSET titulo=?, contenido=?, updated_by=?
+activate DB
+DB --> API: OK
+deactivate DB
+
+API --> CMS: { success: true }
+deactivate API
+
+CMS --> Admin: Toast "Sección actualizada"
+CMS -> CMS: Revalidar cache de landing
+
+@enduml
+```
+
+### 3.6 Sincronización de Embeddings (RAG)
+
+```plantuml
+@startuml Secuencia_Sync_Embeddings
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Sincronizar Base de Conocimiento
+
+actor "Administrador" as Admin
+participant "Panel Chatbot" as Panel
+participant "API Route\n(/api/chatbot)" as API
+participant "Google Gemini" as Gemini
+database "PostgreSQL\n(pgvector)" as DB
+
+Admin -> Panel: Clic en "Sincronizar Embeddings"
+Panel -> API: POST /api/chatbot/sync-embeddings
+activate API
+
+API -> DB: SELECT * FROM chatbot_faqs\nWHERE embedding IS NULL\nOR updated_at > embedding_updated_at
+activate DB
+DB --> API: FAQs pendientes
+deactivate DB
+
+API -> DB: SELECT * FROM chatbot_contexto\nWHERE embedding IS NULL\nOR updated_at > embedding_updated_at
+activate DB
+DB --> API: Contextos pendientes
+deactivate DB
+
+loop Para cada FAQ/Contexto pendiente
+    API -> Gemini: embedContent(texto)\n[text-embedding-004]
+    activate Gemini
+    Gemini --> API: vector[768]
+    deactivate Gemini
+    
+    API -> DB: UPDATE chatbot_faqs/contexto\nSET embedding = vector,\nembedding_updated_at = NOW()
+    activate DB
+    DB --> API: OK
+    deactivate DB
+end
+
+API --> Panel: { \n  synced_faqs: 5,\n  synced_contextos: 3,\n  total_time: "2.3s"\n}
+deactivate API
+
+Panel --> Admin: Toast "Sincronización completada"
+Panel --> Admin: Mostrar estadísticas
+
+@enduml
+```
+
+### 3.7 Visualización del Dashboard (KPIs)
+
+```plantuml
+@startuml Secuencia_Dashboard_KPI
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Carga del Dashboard con KPIs
+
+actor "Usuario" as User
+participant "Dashboard\nPage" as Dashboard
+participant "API Route\n(/api/kpi)" as API
+database "PostgreSQL" as DB
+
+User -> Dashboard: Accede a /admin/dashboard
+activate Dashboard
+
+Dashboard -> API: GET /api/kpi/resumen
+activate API
+
+par Consultas en paralelo
+    API -> DB: SELECT COUNT(*) FROM pacientes
+    activate DB
+    DB --> API: total_pacientes
+    deactivate DB
+and
+    API -> DB: SELECT COUNT(*) FROM citas\nWHERE fecha_inicio >= NOW()
+    activate DB
+    DB --> API: citas_pendientes
+    deactivate DB
+and
+    API -> DB: SELECT SUM(monto) FROM pagos\nWHERE MONTH(fecha_pago) = MONTH(NOW())
+    activate DB
+    DB --> API: ingresos_mes
+    deactivate DB
+and
+    API -> DB: SELECT COUNT(*) FROM casos_clinicos\nWHERE estado = 'Abierto'
+    activate DB
+    DB --> API: casos_activos
+    deactivate DB
+end
+
+API --> Dashboard: {\n  total_pacientes: 1250,\n  citas_pendientes: 45,\n  ingresos_mes: 25000,\n  casos_activos: 89\n}
+deactivate API
+
+Dashboard --> User: Renderizar tarjetas KPI
+Dashboard --> User: Renderizar gráficos
+
+Dashboard -> API: GET /api/kpi/graficos?periodo=mensual
+activate API
+
+API -> DB: Consultas agregadas por mes
+activate DB
+DB --> API: Datos para gráficos
+deactivate DB
+
+API --> Dashboard: { series: [...], labels: [...] }
+deactivate API
+
+Dashboard --> User: Actualizar gráficos
+deactivate Dashboard
+
+@enduml
+```
+
 ---
 
 ## 4. Modelo Relacional de Base de Datos
