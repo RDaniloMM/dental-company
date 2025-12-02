@@ -134,12 +134,10 @@ skinparam package {
     BackgroundColor<<chatbot>> #F3E5F5
 }
 
-top to bottom direction
-
 title Diagrama de Clases - Core Administrativo y CMS\n(Organizado por Secciones)
 
 ' ========================================
-' FILA 1: AUTENTICACIÓN Y CONFIGURACIÓN
+' COLUMNA IZQUIERDA
 ' ========================================
 package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
     class Personal {
@@ -171,6 +169,8 @@ package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
         +generar(): void
         +validar(): Boolean
     }
+    
+    Personal -[hidden]down- CodigoInvitacion
 }
 
 package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
@@ -198,12 +198,62 @@ package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
         --
         +actualizar(): void
     }
+    
+    ConfigSeguridad -[hidden]down- AjustesAplicacion
+}
+
+package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
+    class ChatbotFAQ {
+        +id: UUID
+        +pregunta: Text
+        +respuesta: Text
+        +keywords: Array
+        +categoria: Text
+        +prioridad: Integer
+        +activo: Boolean
+        +embedding: Vector(768)
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        +embedding_updated_at: Timestamp
+        --
+        +crear(): void
+        +generarEmbedding(): void
+    }
+
+    class ChatbotContexto {
+        +id: UUID
+        +titulo: Text
+        +contenido: Text
+        +tipo: Text
+        +activo: Boolean
+        +embedding: Vector(768)
+        +created_at: Timestamp
+        +updated_at: Timestamp
+        +embedding_updated_at: Timestamp
+        --
+        +crear(): void
+        +generarEmbedding(): void
+    }
+
+    class ChatbotRateLimit {
+        +id: UUID
+        +ip_hash: Text
+        +requests_count: Integer
+        +first_request_at: Timestamp
+        +last_request_at: Timestamp
+        +blocked_until: Timestamp
+        --
+        +verificar(): Boolean
+    }
+    
+    ChatbotFAQ -[hidden]down- ChatbotContexto
+    ChatbotContexto -[hidden]down- ChatbotRateLimit
 }
 
 ' ========================================
-' FILA 2: CMS - PARTE 1
+' COLUMNA DERECHA: CMS
 ' ========================================
-package "🌐 CMS - CONTENIDOS PRINCIPALES" <<cms>> {
+package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
     class CMSSeccion {
         +id: UUID
         +seccion: Text
@@ -250,9 +300,7 @@ package "🌐 CMS - CONTENIDOS PRINCIPALES" <<cms>> {
         --
         +subir(): void
     }
-}
 
-package "🌐 CMS - EQUIPO Y VISUAL" <<cms>> {
     class CMSEquipo {
         +id: UUID
         +nombre: Text
@@ -292,64 +340,29 @@ package "🌐 CMS - EQUIPO Y VISUAL" <<cms>> {
         --
         +subir(): void
     }
+    
+    CMSSeccion -[hidden]down- CMSServicio
+    CMSServicio -[hidden]down- CMSServicioImagen
+    CMSServicioImagen -[hidden]down- CMSEquipo
+    CMSEquipo -[hidden]down- CMSTema
+    CMSTema -[hidden]down- CMSCarrusel
 }
 
 ' ========================================
-' FILA 3: CHATBOT (IA con RAG)
+' LAYOUT: Forzar columnas
 ' ========================================
-package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
-    class ChatbotFAQ {
-        +id: UUID
-        +pregunta: Text
-        +respuesta: Text
-        +keywords: Array
-        +categoria: Text
-        +prioridad: Integer
-        +activo: Boolean
-        +embedding: Vector(768)
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        +embedding_updated_at: Timestamp
-        --
-        +crear(): void
-        +generarEmbedding(): void
-    }
-
-    class ChatbotContexto {
-        +id: UUID
-        +titulo: Text
-        +contenido: Text
-        +tipo: Text
-        +activo: Boolean
-        +embedding: Vector(768)
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        +embedding_updated_at: Timestamp
-        --
-        +crear(): void
-        +generarEmbedding(): void
-    }
-
-    class ChatbotRateLimit {
-        +id: UUID
-        +ip_hash: Text
-        +requests_count: Integer
-        +first_request_at: Timestamp
-        +last_request_at: Timestamp
-        +blocked_until: Timestamp
-        --
-        +verificar(): Boolean
-    }
-}
+"🔐 AUTENTICACIÓN Y USUARIOS" -[hidden]right- "🌐 CMS - GESTIÓN DE CONTENIDOS"
+"🔐 AUTENTICACIÓN Y USUARIOS" -[hidden]down- "⚙️ CONFIGURACIÓN DEL SISTEMA"
+"⚙️ CONFIGURACIÓN DEL SISTEMA" -[hidden]down- "🤖 CHATBOT - IA con RAG"
 
 ' ========================================
 ' RELACIONES ENTRE SECCIONES
 ' ========================================
 Personal "1" -- "*" CodigoInvitacion : crea >
-Personal "1" -down- "*" CMSSeccion : actualiza >
-Personal "1" -down- "*" CMSServicio : gestiona >
-Personal "1" -down- "*" CMSEquipo : gestiona >
-Personal "1" -down- "*" ChatbotFAQ : gestiona >
+Personal "1" -- "*" CMSSeccion : actualiza >
+Personal "1" -- "*" CMSServicio : gestiona >
+Personal "1" -- "*" CMSEquipo : gestiona >
+Personal "1" -- "*" ChatbotFAQ : gestiona >
 Personal "1" -- "*" AjustesAplicacion : configura >
 
 CMSServicio "1" -- "*" CMSServicioImagen : tiene >
