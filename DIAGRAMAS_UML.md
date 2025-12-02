@@ -19,7 +19,7 @@ Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [Pla
 
 ### 1.1 Casos de Uso: Administración y Landing Page
 
-`````plantuml
+```plantuml
 @startuml Casos_de_Uso_Admin_Landing
 !theme plain
 left to right direction
@@ -720,7 +720,7 @@ servicios ||--o{ serv_img : "tiene"
 
 ## 5. Diagrama de Despliegue
 
-````plantuml
+```plantuml
 @startuml Diagrama_Despliegue_Lite
 !theme plain
 skinparam nodeStyle rectangle
@@ -768,7 +768,8 @@ cloud "Google AI" {
 "Next.js App Router" --> "Gemini API" : Generación Texto/Embeddings
 
 @enduml
-```---
+```
+---
 
 ## 📝 Notas de Implementación
 
