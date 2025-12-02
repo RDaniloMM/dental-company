@@ -169,7 +169,7 @@ package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
         +generar(): void
         +validar(): Boolean
     }
-    
+
     Personal -[hidden]down- CodigoInvitacion
 }
 
@@ -198,7 +198,7 @@ package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
         --
         +actualizar(): void
     }
-    
+
     ConfigSeguridad -[hidden]down- AjustesAplicacion
 }
 
@@ -245,7 +245,7 @@ package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
         --
         +verificar(): Boolean
     }
-    
+
     ChatbotFAQ -[hidden]down- ChatbotContexto
     ChatbotContexto -[hidden]down- ChatbotRateLimit
 }
@@ -340,7 +340,7 @@ package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
         --
         +subir(): void
     }
-    
+
     CMSSeccion -[hidden]down- CMSServicio
     CMSServicio -[hidden]down- CMSServicioImagen
     CMSServicioImagen -[hidden]down- CMSEquipo
