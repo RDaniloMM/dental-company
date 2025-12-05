@@ -98,13 +98,20 @@ Odontologo --> UC_Imagenes
 ' ========================================
 Admin --> UC_Auth
 Admin --> UC_CMS
-Admin --> UC_Chatbot
 Admin --> UC_Dashboard
 Admin --> UC_Personal
 Admin --> UC_Pacientes
 Admin --> UC_Odontograma
 Admin --> UC_Citas
 Admin --> UC_Imagenes
+
+' ========================================
+' NOTAS ACLARATORIAS
+' ========================================
+note right of UC_Chatbot
+  Configuración: Administrador (CMS)
+  Interacción: Visitante Web (Landing)
+end note
 
 @enduml
 ```
