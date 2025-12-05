@@ -32,8 +32,6 @@ title Diagrama de Casos de Uso Nivel 0 - Sistema Dental Company Web Completo
 
 actor "Administrador" as Admin
 actor "Odontólogo" as Odontologo
-actor "Asistente" as Asistente
-actor "Paciente" as Paciente
 actor "Visitante Web" as Visitante
 
 rectangle "Sistema Dental Company Web" {
@@ -84,22 +82,6 @@ rectangle "Sistema Dental Company Web" {
 ' ========================================
 Visitante --> UC_Landing
 Visitante --> UC_Chatbot
-
-' ========================================
-' RELACIONES PACIENTE
-' ========================================
-Paciente --> UC_Auth
-Paciente --> UC_Chatbot
-Paciente --> UC_Landing
-
-' ========================================
-' RELACIONES ASISTENTE
-' ========================================
-Asistente --> UC_Auth
-Asistente --> UC_Dashboard
-Asistente --> UC_Pacientes
-Asistente --> UC_Citas
-Asistente --> UC_Imagenes
 
 ' ========================================
 ' RELACIONES ODONTÓLOGO
