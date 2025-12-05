@@ -8,6 +8,8 @@ Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [Pla
 ## 📑 Índice
 
 1. [Diagrama de Casos de Uso](#1-diagrama-de-casos-de-uso)
+   - [1.0 Casos de Uso Nivel 0 - Sistema Completo](#10-casos-de-uso-nivel-0---sistema-completo)
+   - [1.1 Casos de Uso: Autenticación y Administración](#11-casos-de-uso-autenticación-y-administración)
 2. [Diagrama de Clases](#2-diagrama-de-clases)
 3. [Diagramas de Secuencia](#3-diagramas-de-secuencia)
 4. [Modelo Relacional de Base de Datos](#4-modelo-relacional-de-base-de-datos)
@@ -17,7 +19,115 @@ Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [Pla
 
 ## 1. Diagrama de Casos de Uso
 
-### 1.1 Casos de Uso: Administración y Landing Page
+### 1.0 Casos de Uso Nivel 0 - Sistema Completo
+
+```plantuml
+@startuml Casos_de_Uso_Nivel_0
+!theme plain
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Diagrama de Casos de Uso Nivel 0 - Sistema Dental Company Web Completo
+
+actor "Administrador" as Admin
+actor "Odontólogo" as Odontologo
+actor "Asistente" as Asistente
+actor "Paciente" as Paciente
+actor "Visitante Web" as Visitante
+
+rectangle "Sistema Dental Company Web" {
+
+    package "Módulo Autenticación" {
+        usecase "Gestionar Autenticación\ny Sesiones" as UC_Auth
+    }
+
+    package "Módulo Landing Page" {
+        usecase "Visualizar Landing\nPage Pública" as UC_Landing
+    }
+
+    package "Módulo CMS" {
+        usecase "Administrar Contenidos\nde la Web" as UC_CMS
+    }
+
+    package "Módulo Chatbot IA" {
+        usecase "Interactuar con\nAsistente Virtual" as UC_Chatbot
+    }
+
+    package "Módulo Dashboard" {
+        usecase "Visualizar Métricas\ny KPIs" as UC_Dashboard
+    }
+
+    package "Módulo Personal" {
+        usecase "Administrar Usuarios\ny Roles" as UC_Personal
+    }
+
+    package "Módulo Pacientes e Historias Clínicas" {
+        usecase "Gestionar Pacientes,\nHistorias y Casos" as UC_Pacientes
+    }
+
+    package "Módulo Odontograma" {
+        usecase "Registrar y Visualizar\nOdontogramas" as UC_Odontograma
+    }
+
+    package "Módulo Citas" {
+        usecase "Gestionar Calendario\ny Citas" as UC_Citas
+    }
+
+    package "Módulo Imágenes" {
+        usecase "Gestionar Imágenes\nClínicas" as UC_Imagenes
+    }
+}
+
+' ========================================
+' RELACIONES VISITANTE
+' ========================================
+Visitante --> UC_Landing
+Visitante --> UC_Chatbot
+
+' ========================================
+' RELACIONES PACIENTE
+' ========================================
+Paciente --> UC_Auth
+Paciente --> UC_Chatbot
+Paciente --> UC_Landing
+
+' ========================================
+' RELACIONES ASISTENTE
+' ========================================
+Asistente --> UC_Auth
+Asistente --> UC_Dashboard
+Asistente --> UC_Pacientes
+Asistente --> UC_Citas
+Asistente --> UC_Imagenes
+
+' ========================================
+' RELACIONES ODONTÓLOGO
+' ========================================
+Odontologo --> UC_Auth
+Odontologo --> UC_Dashboard
+Odontologo --> UC_Pacientes
+Odontologo --> UC_Odontograma
+Odontologo --> UC_Citas
+Odontologo --> UC_Imagenes
+
+' ========================================
+' RELACIONES ADMINISTRADOR
+' ========================================
+Admin --> UC_Auth
+Admin --> UC_CMS
+Admin --> UC_Chatbot
+Admin --> UC_Dashboard
+Admin --> UC_Personal
+Admin --> UC_Pacientes
+Admin --> UC_Odontograma
+Admin --> UC_Citas
+Admin --> UC_Imagenes
+
+@enduml
+```
+
+### 1.1 Casos de Uso: Autenticación y Administración
 
 ```plantuml
 @startuml Casos_de_Uso_Admin_Landing
