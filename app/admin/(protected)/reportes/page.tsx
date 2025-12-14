@@ -80,6 +80,8 @@ interface OdontogramaData {
   especificaciones: string;
   observaciones: string;
   odontograma_data: Record<string, unknown>;
+  imagen_base64?: string | null;
+  existe?: boolean;
 }
 
 interface PresupuestoResumen {
@@ -374,10 +376,10 @@ export default function ReportesPage() {
         const odontogramaReciente = odontoData as OdontogramaData | null;
         const habitos = pacienteCompleto.habitos || {};
 
-        // Capturar imagen del odontograma si existe
-        let odontoBase64: string | null = null;
+        // Capturar imagen del odontograma si existe; si no hay contenedor en esta vista, usar la imagen almacenada
+        let odontoBase64: string | null = (odontogramaReciente as OdontogramaData | null)?.imagen_base64 || null;
         let toastId: string | number | undefined;
-        if (odontogramaReciente) {
+        if (odontogramaReciente && !odontoBase64) {
           toastId = toast.loading("Capturando odontograma...");
           const captureFunc = await loadCapture();
           if (captureFunc) {

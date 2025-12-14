@@ -195,7 +195,7 @@ export default function OdontogramaSVG({
         )}
       </div>
 
-      <svg className='absolute top-0 left-0 w-full h-full pointer-events-none'>
+      <svg data-testid="odontograma-svg" className='absolute top-0 left-0 w-full h-full pointer-events-none'>
         {renderAOF(odontograma)}
         {renderAOR(odontograma)}
         {renderPDCS(odontograma)}

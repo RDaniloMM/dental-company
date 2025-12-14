@@ -265,24 +265,28 @@ export default function OdontoPage({ patientId, backToSeguimientoUrl }: { patien
             <div className="border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 overflow-x-auto w-full custom-scrollbar">
               <div className="min-w-[1000px] p-6 flex justify-center">
                 <TabsContent value="adulto" className="mt-0 w-full">
-                  <OdontogramaSVG
-                    teethList={adultTeeth}
-                    odontograma={odontograma}
-                    setOdontograma={setOdontograma}
-                    borderColors={borderColors}
-                    setBorderColors={setBorderColors}
-                    isChild={false}
-                  />
+                  <div data-testid="odontograma-container" className="relative">
+                    <OdontogramaSVG
+                      teethList={adultTeeth}
+                      odontograma={odontograma}
+                      setOdontograma={setOdontograma}
+                      borderColors={borderColors}
+                      setBorderColors={setBorderColors}
+                      isChild={false}
+                    />
+                  </div>
                 </TabsContent>
                 <TabsContent value="nino" className="mt-0 w-full">
-                  <OdontogramaSVG
-                    teethList={childTeeth}
-                    odontograma={odontograma}
-                    setOdontograma={setOdontograma}
-                    borderColors={borderColors}
-                    setBorderColors={setBorderColors}
-                    isChild={true}
-                  />
+                  <div data-testid="odontograma-container" className="relative">
+                    <OdontogramaSVG
+                      teethList={childTeeth}
+                      odontograma={odontograma}
+                      setOdontograma={setOdontograma}
+                      borderColors={borderColors}
+                      setBorderColors={setBorderColors}
+                      isChild={true}
+                    />
+                  </div>
                 </TabsContent>
               </div>
             </div>

@@ -303,19 +303,37 @@ export const generateFichaPDF = (payload: FichaPDFPayload): ArrayBuffer => {
         doc.addImage(odontoImg, imgFormat as 'PNG' | 'JPEG' | 'JPG' | 'GIF', margin + 1, finalY, availableWidth - 2, targetHeight);
         finalY += targetHeight + 6;
       } catch (e) {
+        // Placeholder visible si la imagen falla
+        const availableWidth = pageWidth - margin * 2;
+        const targetHeight = 60;
+        doc.setDrawColor(COLORS.warning[0], COLORS.warning[1], COLORS.warning[2]);
+        doc.setLineWidth(0.4);
+        doc.rect(margin, finalY, availableWidth, targetHeight);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(COLORS.warning[0], COLORS.warning[1], COLORS.warning[2]);
+        doc.text("Odontograma no disponible (error al renderizar)", margin + 4, finalY + 12);
         doc.setFontSize(8);
         doc.setFont("helvetica", "italic");
-        doc.setTextColor(COLORS.warning[0], COLORS.warning[1], COLORS.warning[2]);
-        doc.text("⚠ Imagen del odontograma no disponible", margin, finalY);
-        finalY += 8;
+        doc.setTextColor(COLORS.textLight[0], COLORS.textLight[1], COLORS.textLight[2]);
+        doc.text("Revisa que el odontograma esté visible antes de generar el PDF.", margin + 4, finalY + 22);
+        finalY += targetHeight + 6;
       }
     } else {
-      // No hay imagen disponible
+      // No hay imagen disponible: mostrar placeholder
+      const availableWidth = pageWidth - margin * 2;
+      const targetHeight = 60;
+      doc.setDrawColor(COLORS.textLight[0], COLORS.textLight[1], COLORS.textLight[2]);
+      doc.setLineWidth(0.3);
+      doc.rect(margin, finalY, availableWidth, targetHeight);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(COLORS.textLight[0], COLORS.textLight[1], COLORS.textLight[2]);
+      doc.text("Odontograma no disponible", margin + 4, finalY + 12);
       doc.setFontSize(8);
       doc.setFont("helvetica", "italic");
-      doc.setTextColor(COLORS.textLight[0], COLORS.textLight[1], COLORS.textLight[2]);
-      doc.text("(No se capturó imagen del odontograma)", margin, finalY);
-      finalY += 8;
+      doc.text("No se capturó imagen. Asegúrate de que el odontograma esté visible antes de generar el reporte.", margin + 4, finalY + 22);
+      finalY += targetHeight + 6;
     }
 
     const odontoData = odontograma as OdontogramaData;
