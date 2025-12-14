@@ -68,10 +68,11 @@ export async function proxy(request: NextRequest) {
     "/admin/forgot-password",
   ];
 
+  // Las rutas API son públicas y no requieren middleware de auth
+  const isApiRoute = pathname.startsWith("/api/");
+
   // Verificar si es una ruta pública
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith("/api/")
-  );
+  const isPublicRoute = publicRoutes.some((route) => pathname === route) || isApiRoute;
 
   // Rutas de admin protegidas (excepto auth)
   const isAdminRoute =

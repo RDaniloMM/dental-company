@@ -17,6 +17,20 @@ export async function OPTIONS() {
   });
 }
 
+export async function GET() {
+  return new NextResponse(JSON.stringify({ error: 'Método GET no permitido. Use POST.' }), {
+    status: 405,
+    headers: { 'Allow': 'POST, OPTIONS' },
+  });
+}
+
+export async function DELETE() {
+  return new NextResponse(JSON.stringify({ error: 'Método DELETE no permitido. Use POST.' }), {
+    status: 405,
+    headers: { 'Allow': 'POST, OPTIONS' },
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
