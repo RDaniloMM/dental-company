@@ -93,6 +93,8 @@ export async function updateImagenMetadata(
 
   if (error) return { success: false, error: error.message }
 
+  // Revalidate multiple paths to ensure UI updates
   revalidatePath('/admin/ficha-odontologica', 'layout')
+  revalidatePath('/admin', 'layout')
   return { success: true }
 }

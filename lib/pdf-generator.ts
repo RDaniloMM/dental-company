@@ -27,6 +27,11 @@ const COLORS = {
 
 // ==================== FICHA ODONTOLÓGICA ====================
 export const generateFichaPDF = (payload: FichaPDFPayload): ArrayBuffer => {
+  // Validar datos mínimos
+  if (!payload.numero_historia) {
+    throw new Error('numero_historia es requerido para generar la ficha');
+  }
+  
   const doc: jsPDFWithAutoTable = new jsPDF();
   let finalY = 48;
   

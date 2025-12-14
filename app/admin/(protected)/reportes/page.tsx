@@ -263,6 +263,12 @@ export default function ReportesPage() {
         // Obtener historia_id primero
         const historiaId = await getHistoriaId(selectedPaciente.id);
         
+        if (!historiaId) {
+          toast.error("El paciente no tiene historia clínica. Crea una primero en la ficha del paciente.");
+          setGeneratingPdf(false);
+          return;
+        }
+        
         // Obtener datos completos para Ficha Odontológica
         const { data: pacienteCompleto, error: pacienteError } = await supabase
           .from("pacientes")
@@ -491,7 +497,9 @@ export default function ReportesPage() {
       toast.success("PDF generado correctamente");
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Error al generar el PDF. Verifique los datos.");
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      console.error("Error details:", errorMessage);
+      toast.error(`Error al generar el PDF: ${errorMessage}`);
     } finally {
       setGeneratingPdf(false);
     }
