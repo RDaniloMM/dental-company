@@ -1,249 +1,48 @@
 "use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
-import AntecedenteItem, { Question, AnswerValue } from "./antecedente-item-dinamico";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { saveAntecedentes, getAntecedentesClient } from "@/app/admin/(protected)/ficha-odontologica/[numero_historia]/actions";
 import LoadingDots from "@/components/ui/LoadingDots";
 
-const questionsConfig: { [category: string]: Question[] } = {
-  Cardiovascular: [
-    {
-      id: "hipertension",
-      text: "Hipertensión",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "tratamiento:",
-    },
-    { id: "arritmias", text: "Arritmias", type: "checkbox" },
-    { id: "cardiopatia_isquemica", text: "Cardiopatía isquémica", type: "checkbox" },
-    { id: "marcapasos", text: "Marcapasos", type: "checkbox" },
-    {
-      id: "anticoagulantes",
-      text: "Anticoagulantes",
-      type: "checkbox-with-input",
-      options: [
-        { label: "Warfarina", value: "Warfarina" },
-        { label: "AAS", value: "AAS" },
-        { label: "Otro", value: "Otro", conditionalTextInput: true, placeholder: "Especifique" },
-      ],
-    },
-  ],
-  Respiratorio: [
-    { id: "asma", text: "Asma", type: "checkbox" },
-    { id: "epoc", text: "EPOC", type: "checkbox" },
-    { id: "apnea_sueno", text: "Apnea del sueño", type: "checkbox" },
-    { id: "tuberculosis", text: "Tuberculosis", type: "checkbox" },
-  ],
-  "Endocrino-Metabólico": [
-    {
-      id: "diabetes",
-      text: "Diabetes",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "tipo:___, HbA1c:__%",
-    },
-    {
-      id: "tiroides",
-      text: "Tiroides",
-      type: "checkbox-with-input",
-      options: [
-        { label: "Hipo", value: "Hipo" },
-        { label: "Hiper", value: "Hiper" },
-      ],
-    },
-    {
-      id: "osteoporosis",
-      text: "Osteoporosis",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "tratamiento:",
-    },
-  ],
-  "Neurológico/Psiquiátrico": [
-    { id: "epilepsia", text: "Epilepsia", type: "checkbox" },
-    { id: "alzheimer", text: "Alzheimer", type: "checkbox" },
-    { id: "ansiedad_depresion", text: "Ansiedad/Depresión", type: "checkbox" },
-    {
-      id: "medicamentos_psiquiatricos",
-      text: "Medicamentos psiquiátricos",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "especificar:",
-    },
-  ],
-  "Hematología/Inmunológico": [
-    { id: "anemia", text: "Anemia", type: "checkbox" },
-    { id: "hemofilia", text: "Hemofilia", type: "checkbox" },
-    { id: "vih_sida", text: "VIH/SIDA", type: "checkbox" },
-    {
-      id: "enfermedades_autoinmunes",
-      text: "Enfermedades autoinmunes",
-      type: "checkbox",
-    },
-  ],
-  "Digestivo/Hepático": [
-    { id: "reflujo", text: "Reflujo", type: "checkbox" },
-    { id: "ulcera_gastrica", text: "Úlcera gástrica", type: "checkbox" },
-    {
-      id: "hepatitis",
-      text: "Hepatitis",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "tipo:",
-    },
-  ],
-  Renal: [
-    {
-      id: "insuficiencia_renal",
-      text: "Insuficiencia renal",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "etapa:",
-    },
-    { id: "dialisis", text: "Diálisis", type: "checkbox" },
-  ],
-  Alergias: [
-    { id: "penicilina", text: "Penicilina", type: "checkbox" },
-    { id: "sulfas", text: "Sulfas", type: "checkbox" },
-    {
-      id: "anestesicos_locales",
-      text: "Anestésicos locales",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "especificar:",
-    },
-    { id: "latex", text: "Látex", type: "checkbox" },
-    {
-      id: "alimentos",
-      text: "Alimentos",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "especificar:",
-    },
-  ],
-  Hábitos: [
-    {
-      id: "tabaco",
-      text: "Tabaco",
-      type: "checkbox-with-input",
-      options: [
-        { label: "Nunca", value: "Nunca" },
-        { label: "Exfumador", value: "Exfumador" },
-        {
-          label: "Actual",
-          value: "Actual",
-          subFields: [
-            {
-              id: "cigarros_dia",
-              text: "cigarros/día",
-              type: "number",
-              placeholder: "Cantidad",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "alcohol",
-      text: "Alcohol",
-      type: "checkbox-with-input",
-      options: [
-        { label: "Ocasional", value: "Ocasional" },
-        {
-          label: "Frecuente",
-          value: "Frecuente",
-          subFields: [
-            {
-              id: "veces_semana",
-              text: "veces/semana",
-              type: "number",
-              placeholder: "Cantidad",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "drogas_recreacionales",
-      text: "Drogas recreacionales",
-      type: "checkbox-with-input",
-      options: [
-        {
-          label: "Sí",
-          value: "si",
-          subFields: [
-            {
-              id: "tipo_drogas",
-              text: "tipo:",
-              type: "text",
-              placeholder: "Especifique el tipo",
-            },
-          ],
-        },
-        { label: "No", value: "no" },
-      ],
-    },
-  ],
-  "Otros relevantes": [
-    {
-      id: "cancer",
-      text: "Cáncer",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "tipo:",
-    },
-    {
-      id: "embarazo_actual",
-      text: "Embarazo actual",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "semanas:",
-    },
-    {
-      id: "protesis_articulaciones",
-      text: "Prótesis articulaciones",
-      type: "checkbox-with-input",
-      conditionalTextInput: true,
-      placeholder: "fecha de colocación:",
-    },
-  ],
-};
+import AntecedenteItem from "./antecedentes-item-dinamico";
+import { QUESTIONS_CONFIG, CATEGORIES_CONFIG } from "./constants";
+import { AntecedentesData, CategoryState, AnswerValue } from "./types";
+import { saveAntecedentes, getAntecedentesClient } from "@/app/admin/(protected)/ficha-odontologica/[numero_historia]/historia-clinica/actions";
 
-export type CategoryState = {
-  questions: { [questionId: string]: AnswerValue };
-  noRefiereCategoria: boolean;
-};
-
-export type CuestionarioData = {
-  [category: string]: CategoryState;
-};
+interface AntecedentesDinamicoFormProps {
+  historiaId?: string;
+  pacienteId?: string;
+  initialData?: AntecedentesData;
+}
 
 export default function AntecedentesDinamicoForm({
   historiaId,
   pacienteId,
   initialData,
-}: {
-  historiaId?: string;
-  pacienteId?: string;
-  initialData?: CuestionarioData;
-}) {
-  const createDefaultState = () => {
-    const defaultState: CuestionarioData = {};
-    for (const category in questionsConfig) {
-      defaultState[category] = {
+}: AntecedentesDinamicoFormProps) {
+  
+  const createDefaultState = (): AntecedentesData => {
+    const defaultState: AntecedentesData = {};
+    for (const categoryId in QUESTIONS_CONFIG) {
+      defaultState[categoryId] = {
         questions: {},
-        noRefiereCategoria: true,
+        refiere: false, 
+        annotationsEnabled: false,
+        annotations: [],
       };
     }
     return defaultState;
   };
 
-  const [actualHistoriaId, setActualHistoriaId] = useState<string | null>(historiaId || null);
-  const [formData, setFormData] = useState<CuestionarioData>(
+  const [actualHistoriaId] = useState<string | null>(historiaId || null);
+  const [formData, setFormData] = useState<AntecedentesData>(
     initialData && Object.keys(initialData).length > 0 ? initialData : createDefaultState()
   );
   const [isLoading, setIsLoading] = useState(!initialData || !actualHistoriaId);
@@ -254,53 +53,26 @@ export default function AntecedentesDinamicoForm({
       if (!actualHistoriaId && pacienteId) {
         setIsLoading(true);
         try {
-          const { data: paciente, error: pacienteError } = await getAntecedentesClient(pacienteId);
-          if (!pacienteError && paciente) {
-            setActualHistoriaId(pacienteId);
-          }
+          const { data } = await getAntecedentesClient(pacienteId);
+          if (data) setFormData(data);
         } catch (err) {
-          console.error("Error obtaining historia from paciente:", err);
+          console.error("Error loading data:", err);
+        } finally {
+          setIsLoading(false);
         }
-      }
-
-      if (!initialData && actualHistoriaId) {
-        setIsLoading(true);
-        const { data, error } = await getAntecedentesClient(actualHistoriaId);
-        if (error) {
-          console.error("Error loading antecedentes:", error);
-          toast.error("No se pudieron cargar los antecedentes.");
-        } else if (data) {
-          setFormData(data);
-        }
-        setIsLoading(false);
       }
     };
-
     loadData();
   }, [actualHistoriaId, initialData, pacienteId]);
 
-  useEffect(() => {
-    const handleAntecedenteUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<CuestionarioData>;
-      if (customEvent.detail) {
-        setFormData(customEvent.detail);
-      }
-    };
-
-    window.addEventListener("antecedentes-updated", handleAntecedenteUpdate);
-    return () => {
-      window.removeEventListener("antecedentes-updated", handleAntecedenteUpdate);
-    };
-  }, []);
-
   const handleQuestionChange = useCallback(
     (category: string, questionId: string, value: AnswerValue) => {
-      setFormData((prevData) => ({
-        ...prevData,
+      setFormData((prev) => ({
+        ...prev,
         [category]: {
-          ...(prevData[category] || { questions: {}, noRefiereCategoria: false }),
+          ...(prev[category] || { questions: {}, refiere: false, annotationsEnabled: false, annotations: [] }),
           questions: {
-            ...(prevData[category]?.questions || {}),
+            ...(prev[category]?.questions || {}),
             [questionId]: value,
           },
         },
@@ -309,61 +81,124 @@ export default function AntecedentesDinamicoForm({
     []
   );
 
-  const handleNoRefiereCategoriaChange = useCallback(
+  const handleRefiereChange = useCallback(
     (category: string, checked: boolean) => {
-      setFormData((prevData) => {
-        const newCategoryState: CategoryState = {
-          ...(prevData[category] || { questions: {}, noRefiereCategoria: false }),
-          noRefiereCategoria: checked,
+      setFormData((prev) => {
+        const newState = {
+          ...(prev[category] || { questions: {}, annotationsEnabled: false, annotations: [] }),
+          refiere: checked,
         };
-        if (checked) {
-          newCategoryState.questions = {};
+        if (!checked) {
+          newState.questions = {};
         }
-        return {
-          ...prevData,
-          [category]: newCategoryState,
-        };
+        return { ...prev, [category]: newState };
       });
     },
     []
   );
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleToggleAnnotations = useCallback((categoryId: string, isEnabled: boolean) => {
+    setFormData((prev) => {
+      const current = prev[categoryId];
+      let newAnnotations = current.annotations;
+      
+      if (isEnabled && newAnnotations.length === 0) {
+        newAnnotations = [{ id: crypto.randomUUID(), selection: "General", detail: "" }];
+      }
 
-    setIsSaving(true);
+      return {
+        ...prev,
+        [categoryId]: {
+          ...current,
+          annotationsEnabled: isEnabled,
+          annotations: newAnnotations,
+        },
+      };
+    });
+  }, []);
 
-    let hasValidationErrors = false;
-    const errorMessages: string[] = [];
+  const handleAddAnnotationRow = useCallback((categoryId: string) => {
+    setFormData((prev) => {
+      const current = prev[categoryId];
+      return {
+        ...prev,
+        [categoryId]: {
+          ...current,
+          annotations: [
+            ...current.annotations,
+            { id: crypto.randomUUID(), selection: "General", detail: "" },
+          ],
+        },
+      };
+    });
+  }, []);
 
-    for (const category in questionsConfig) {
+  const handleRemoveAnnotationRow = useCallback((categoryId: string, index: number) => {
+    setFormData((prev) => {
+      const current = prev[categoryId];
+      const newAnnotations = [...current.annotations];
+
+      if (index === 0 && newAnnotations.length === 1) {
+        newAnnotations[0] = { ...newAnnotations[0], selection: "General", detail: "" };
+      } else {
+        newAnnotations.splice(index, 1);
+      }
+
+      return {
+        ...prev,
+        [categoryId]: {
+          ...current,
+          annotations: newAnnotations,
+        },
+      };
+    });
+  }, []);
+
+  const handleAnnotationChange = useCallback((
+    categoryId: string, 
+    annotationId: string, 
+    field: 'selection' | 'detail', 
+    value: string
+  ) => {
+    setFormData((prev) => {
+      const current = prev[categoryId];
+      const newAnnotations = current.annotations.map((ann) => 
+        ann.id === annotationId ? { ...ann, [field]: value } : ann
+      );
+      return {
+        ...prev,
+        [categoryId]: {
+          ...current,
+          annotations: newAnnotations,
+        },
+      };
+    });
+  }, []);
+
+  const validateForm = (): string[] => {
+    const errors: string[] = [];
+
+    for (const category in QUESTIONS_CONFIG) {
       const categoryState = formData[category];
-      if (categoryState && !categoryState.noRefiereCategoria) {
-        for (const question of questionsConfig[category]) {
+      if (categoryState && categoryState.refiere) {
+        for (const question of QUESTIONS_CONFIG[category]) {
           const answer = categoryState.questions[question.id];
-
-          if (question.conditionalTextInput && typeof answer === 'object' && answer?.respuesta && !answer.texto) {
-            errorMessages.push(`${category} • ${question.text}: se olvidó completar este campo`);
-            hasValidationErrors = true;
+          if (question.conditionalTextInput && typeof answer === "object" && answer?.respuesta && !answer.texto) {
+            errors.push(`${category} • ${question.text}: complete la información requerida`);
           }
-
-          if (question.options && typeof answer === 'object' && answer?.respuesta) {
-            // Validar que al menos una opción esté seleccionada
+          if (question.options && typeof answer === "object" && answer?.respuesta) {
             if (!answer.opciones || answer.opciones.length === 0) {
-              errorMessages.push(`${category} • ${question.text}: seleccione al menos una opción`);
-              hasValidationErrors = true;
+              errors.push(`${category} • ${question.text}: seleccione al menos una opción`);
             } else {
               for (const option of question.options) {
                 if (answer.opciones.includes(option.value)) {
                   if (option.conditionalTextInput && !answer.subFields?.[option.value]) {
-                    errorMessages.push(`${category} • ${option.label}: se olvidó completar este campo`);
-                    hasValidationErrors = true;
+                    errors.push(`${category} • ${option.label}: especifique el detalle`);
                   }
                   if (option.subFields) {
                     for (const subField of option.subFields) {
                       if (!answer.subFields?.[subField.id]) {
-                        errorMessages.push(`${category} • ${option.label} • ${subField.text}: se olvidó completar este campo`);
-                        hasValidationErrors = true;
+                        errors.push(`${category} • ${option.label} • ${subField.text}: campo requerido`);
                       }
                     }
                   }
@@ -374,109 +209,206 @@ export default function AntecedentesDinamicoForm({
         }
       }
     }
+    return errors;
+  };
 
-    if (hasValidationErrors) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach((msg) => toast.warning(msg));
       setIsSaving(false);
-      // Mostrar cada error como una notificación individual
-      errorMessages.forEach((error) => {
-        toast.warning(error, { 
-          style: { backgroundColor: '#FFA500', color: 'white' },
-          duration: 4000
-        });
-      });
       return;
     }
 
-    const finalFormData = { ...formData };
-    for (const category in questionsConfig) {
-      const categoryState = finalFormData[category];
-      if (categoryState && !categoryState.noRefiereCategoria) {
-        let isCategoryEmpty = true;
-        for (const question of questionsConfig[category]) {
-          const answer = categoryState.questions[question.id];
-          if (answer) {
-            if (typeof answer === 'boolean' && answer) {
-              isCategoryEmpty = false;
-              break;
-            }
-            if (typeof answer === 'object' && answer.respuesta) {
-              isCategoryEmpty = false;
-              break;
-            }
-          }
-        }
-        if (isCategoryEmpty) {
-          finalFormData[category] = {
-            questions: {},
-            noRefiereCategoria: true,
+    const cleanedData: AntecedentesData = { ...formData };
+
+    Object.keys(cleanedData).forEach((catId) => {
+      const catState = cleanedData[catId];
+      const validAnnotations = catState.annotations.filter(ann => ann.detail.trim() !== "");
+      const hasQuestionsAnswered = Object.values(catState.questions).some(val => 
+        (typeof val === 'boolean' && val) || (typeof val === 'object' && val.respuesta)
+      );
+      const hasAnnotations = catState.annotationsEnabled && validAnnotations.length > 0;
+
+      if (catState.refiere && !hasQuestionsAnswered && !hasAnnotations) {
+        cleanedData[catId] = {
+          ...catState,
+          refiere: false,
+          questions: {},
+          annotationsEnabled: false,
+          annotations: [],
+        };
+      } else {
+        if (catState.annotationsEnabled && validAnnotations.length > 0) {
+          cleanedData[catId] = {
+            ...cleanedData[catId],
+            annotationsEnabled: true,
+            annotations: validAnnotations,
+          };
+        } else {
+          cleanedData[catId] = {
+            ...cleanedData[catId],
+            annotationsEnabled: false,
+            annotations: [], 
           };
         }
       }
-    }
+    });
 
-    const { data, error } = await saveAntecedentes(actualHistoriaId || pacienteId || "unknown", finalFormData);
+    const targetId = pacienteId || "unknown";
+    const { error } = await saveAntecedentes(targetId, cleanedData);
 
     if (error) {
-      console.error("Error al guardar antecedentes:", error);
-      toast.error("Error al guardar antecedentes.", { style: { backgroundColor: '#FF0000', color: 'white' } }); // Rojo para error
+      toast.error("Error al guardar antecedentes.");
     } else {
-      toast.success("Antecedentes guardados correctamente.", { style: { backgroundColor: '#008000', color: 'white' } }); // Verde para éxito
-      console.log("Antecedentes guardados:", data);
-      try {
-        window.dispatchEvent(new CustomEvent("antecedentes-updated", { detail: finalFormData }));
-      } catch {
-        // ignore if running in restricted env
-      }
+      toast.success("Antecedentes guardados correctamente.");
+      setFormData(cleanedData);
     }
     setIsSaving(false);
   };
 
   if (isLoading) {
-    return <div className="text-center p-8">Cargando antecedentes...</div>;
+    return (
+      <div className="flex justify-center items-center h-40">
+        <LoadingDots />
+      </div>
+    );
   }
 
   return (
     <CardContent className="pt-6">
-      <form onSubmit={handleSubmit} className="space-y-8 text-gray-900 dark:text-gray-100">
-        {Object.entries(questionsConfig).map(([category, questions]) => {
-          const categoryState = formData[category] || { questions: {}, noRefiereCategoria: false };
-          const isCategoryNoRefiere = categoryState.noRefiereCategoria === true;
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {Object.entries(QUESTIONS_CONFIG).map(([category, questions]) => {
+          const categoryState = formData[category] || { 
+            questions: {}, 
+            refiere: false, 
+            annotationsEnabled: false, 
+            annotations: [] 
+          };
+          const config = CATEGORIES_CONFIG[category] || { label: category, options: [] };
+          
           return (
-            <div key={category} className="mb-8">
-              <div className="rounded-lg border border-border bg-card p-4">
-                <div className="flex justify-between items-center mb-4 border-b pb-3 border-gray-200 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{category}</h3>
-                    <div className="flex items-center space-x-2">
-                    <Label htmlFor={`no-refiere-categoria-${category}`} className="text-sm text-gray-600 dark:text-gray-400">No Refiere</Label>
-                    <Switch id={`no-refiere-categoria-${category}`} checked={isCategoryNoRefiere} onCheckedChange={(checked: boolean) => handleNoRefiereCategoriaChange(category, checked)} className="data-[state=checked]:bg-gray-900 data-[state=unchecked]:bg-gray-300 dark:data-[state=checked]:bg-gray-100 dark:data-[state=unchecked]:bg-gray-700" />
+            <div key={category} className="mb-6 rounded-lg border border-border bg-card p-5 shadow-sm">
+              <div className="flex justify-between items-center mb-4 pb-2">
+                <h3 className="text-lg font-bold text-foreground">{category}</h3>
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-2">
+                    <Label 
+                      htmlFor={`switch-annotations-${category}`} 
+                      className={`text-sm font-medium cursor-pointer ${categoryState.annotationsEnabled ? 'text-primary' : 'text-muted-foreground'}`}
+                    >
+                      Anotaciones
+                    </Label>
+                    <Switch
+                      id={`switch-annotations-${category}`}
+                      checked={categoryState.annotationsEnabled}
+                      onCheckedChange={(checked) => handleToggleAnnotations(category, checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Label 
+                      htmlFor={`switch-refiere-${category}`} 
+                      className={`text-sm font-medium cursor-pointer ${categoryState.refiere ? 'text-foreground' : 'text-muted-foreground'}`}
+                    >
+                      Refiere
+                    </Label>
+                    <Switch
+                      id={`switch-refiere-${category}`}
+                      checked={categoryState.refiere}
+                      onCheckedChange={(checked) => handleRefiereChange(category, checked)}
+                    />
                   </div>
                 </div>
-                <div className={`transition-opacity duration-200 ${isCategoryNoRefiere ? "opacity-50" : ""}`}>
-                  {questions.map((question) => (
-                    <AntecedenteItem
-                      key={question.id}
-                      question={question}
-                      value={categoryState.questions[question.id] || (question.type === "checkbox" ? false : {})}
-                      onChange={(id: string, value: AnswerValue) => handleQuestionChange(category, id, value)}
-                      disabled={isCategoryNoRefiere}
-                    />
-                  ))}
-                </div>
               </div>
+
+              <div className="border-t border-border mb-4"></div>
+
+              <div className={`transition-opacity duration-200 ${!categoryState.refiere ? "opacity-50 pointer-events-none" : ""}`}>
+                {questions.map((question) => (
+                  <AntecedenteItem
+                    key={question.id}
+                    question={question}
+                    value={categoryState.questions[question.id] || (question.type === "checkbox" ? false : {})}
+                    onChange={(id, value) => handleQuestionChange(category, id, value)}
+                    disabled={!categoryState.refiere}
+                  />
+                ))}
+              </div>
+
+              {categoryState.annotationsEnabled && (
+                <>
+                  <div className="border-t border-border my-4"></div>
+                  
+                  <div className="space-y-3 pt-2">
+                    {categoryState.annotations.map((annotation, index) => (
+                      <div key={annotation.id} className="flex items-center gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="w-48 shrink-0">
+                          <Select
+                            value={annotation.selection}
+                            onValueChange={(val) => handleAnnotationChange(category, annotation.id, 'selection', val)}
+                          >
+                            <SelectTrigger className="h-9 rounded-full border-input bg-background px-4 text-sm shadow-sm hover:bg-accent hover:text-accent-foreground">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {config.options.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <Input
+                          value={annotation.detail}
+                          onChange={(e) => handleAnnotationChange(category, annotation.id, 'detail', e.target.value)}
+                          placeholder="Especifique detalles..."
+                          className="h-9 flex-1 bg-background text-sm"
+                        />
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
+                            onClick={() => handleAddAnnotationRow(category)}
+                            title="Agregar otra anotación"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                            onClick={() => handleRemoveAnnotationRow(category, index)}
+                            title={index === 0 && categoryState.annotations.length === 1 ? "Limpiar campos" : "Eliminar fila"}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           );
         })}
-        <div className="flex justify-end">
-          <Button type="submit">Guardar Cambios</Button>
+        
+        <div className="flex justify-end pt-4 sticky bottom-0 bg-background/80 backdrop-blur-sm p-4 border-t border-border -mx-6 -mb-6 mt-8 rounded-b-lg">
+          <Button type="submit" disabled={isSaving} className="min-w-[150px] shadow-md">
+            {isSaving ? <LoadingDots /> : "Guardar Antecedentes"}
+          </Button>
         </div>
       </form>
-      {isSaving && (
-        <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
-          <div className="bg-transparent p-2 rounded-md">
-            <LoadingDots />
-          </div>
-        </div>
-      )}
     </CardContent>
   );
 }

@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { DiagnosticoTable } from '@/components/casos/diagnostico/DiagnosticoTable'
 import { DiagnosticoHeader } from '@/components/casos/diagnostico/diagnostico-header'
-import { PageHeader } from '@/components/ui/PageHeader'
 
 interface DiagnosticoPageProps {
   params: Promise<{
@@ -53,9 +52,12 @@ export default async function DiagnosticoPage({ params: paramsPromise }: Diagnos
 
   return (
     <div className="container mx-auto p-4">
-      <PageHeader title="Diagnósticos del Caso">
+      <div className='flex items-center justify-between mb-6'>
+        <h2 className="text-2xl font-bold text-sky-950 dark:text-sky-100 tracking-tight">
+          Diagnósticos del Caso
+        </h2>
         <DiagnosticoHeader />
-      </PageHeader>
+      </div>
       <DiagnosticoTable
         casoId={casoId}
         userId={user.id}

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
 
 type CasoTabsNavProps = {
   numeroHistoria: string;
@@ -20,8 +19,6 @@ export default function CasoTabsNav({
     { href: "presupuesto", label: "Presupuesto" },
     { href: "seguimiento", label: "Seguimiento" },
     { href: "imagenes", label: "Imágenes del caso" },
-    { href: "consentimientos", label: "Consentimientos" },
-    { href: "recetas", label: "Recetas" },
   ];
 
   return (

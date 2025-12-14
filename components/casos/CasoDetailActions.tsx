@@ -45,13 +45,21 @@ export default function CasoDetailActions({
 
   React.useEffect(() => {
     const fetchUserRole = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUserRole(session.user?.user_metadata?.role || null);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.user_metadata) {
+          const role = (session.user.user_metadata as Record<string, unknown>).role as string | undefined;
+          setUserRole(role || null);
+        } else {
+          setUserRole(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        setUserRole(null);
       }
     };
     fetchUserRole();
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const canEdit = userRole === "odontologo" || userRole === "admin";
 

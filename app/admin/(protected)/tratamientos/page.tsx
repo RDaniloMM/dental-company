@@ -60,7 +60,6 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-// Definición de columnas disponibles para la tabla de procedimientos
 const COLUMNAS_PROCEDIMIENTOS = {
   nombre: { label: "Nombre", default: true },
   descripcion: { label: "Descripción", default: false },
@@ -68,8 +67,8 @@ const COLUMNAS_PROCEDIMIENTOS = {
   medida: { label: "Medida", default: true },
   tipo: { label: "Tipo", default: false },
   precio_pen: { label: "Precio (S/)", default: true },
-  precio_clp: { label: "Precio (CLP$)", default: true },
-  precio_usd: { label: "Precio ($)", default: false },
+  precio_usd: { label: "Precio ($)", default: true },
+  precio_clp: { label: "Precio (CLP)", default: true },
   estado: { label: "Estado", default: true },
 } as const;
 
@@ -125,7 +124,6 @@ export default function TratamientosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [grupoFilter, setGrupoFilter] = useState("todos");
 
-  // Estado para columnas visibles
   const [columnasVisibles, setColumnasVisibles] = useState<
     Record<ColumnaProc, boolean>
   >(() => {
@@ -136,7 +134,6 @@ export default function TratamientosPage() {
     return initial as Record<ColumnaProc, boolean>;
   });
 
-  // Form states - Procedimientos
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProcedimiento, setEditingProcedimiento] =
     useState<Procedimiento | null>(null);
@@ -148,10 +145,8 @@ export default function TratamientosPage() {
     medida: "",
     tipo: "",
   });
-  // Precios dinámicos por moneda: { moneda_id: precio_string }
   const [formPrecios, setFormPrecios] = useState<Record<string, string>>({});
 
-  // Form states - Grupos
   const [grupoDialogOpen, setGrupoDialogOpen] = useState(false);
   const [editingGrupo, setEditingGrupo] = useState<GrupoProcedimiento | null>(
     null
@@ -173,13 +168,14 @@ export default function TratamientosPage() {
         supabase
           .from("procedimiento_precios")
           .select("*")
-          .is("vigente_hasta", null),
+          .is("vigente_hasta", null)
+          .order("vigente_desde", { ascending: false }), 
       ]);
 
     if (procRes.data) setProcedimientos(procRes.data);
     if (gruposRes.data) setGrupos(gruposRes.data);
     if (unidadesRes.data) setUnidades(unidadesRes.data);
-    // Filtrar monedas duplicadas por código (mantener solo la primera)
+    
     if (monedasRes.data) {
       const uniqueMonedas = monedasRes.data.filter(
         (moneda, index, self) =>
@@ -210,6 +206,8 @@ export default function TratamientosPage() {
   const getPrecio = (procedimientoId: string, monedaCodigo: string) => {
     const moneda = monedas.find((m) => m.codigo === monedaCodigo);
     if (!moneda) return null;
+    
+    // Al estar ordenados por fecha desc en el fetch, find() devolverá el más reciente
     const precio = precios.find(
       (p) => p.procedimiento_id === procedimientoId && p.moneda_id === moneda.id
     );
@@ -228,7 +226,6 @@ export default function TratamientosPage() {
   const handleOpenDialog = (procedimiento?: Procedimiento) => {
     if (procedimiento) {
       setEditingProcedimiento(procedimiento);
-      // Cargar precios existentes para cada moneda
       const preciosMap: Record<string, string> = {};
       monedas.forEach((moneda) => {
         const precio = getPrecio(procedimiento.id, moneda.codigo);
@@ -263,7 +260,6 @@ export default function TratamientosPage() {
   const handleSave = async () => {
     try {
       if (editingProcedimiento) {
-        // Actualizar procedimiento existente
         const { error } = await supabase
           .from("procedimientos")
           .update({
@@ -278,10 +274,8 @@ export default function TratamientosPage() {
 
         if (error) throw error;
 
-        // Actualizar precios
         await updatePrecios(editingProcedimiento.id);
       } else {
-        // Crear nuevo procedimiento
         const { data, error } = await supabase
           .from("procedimientos")
           .insert({
@@ -313,18 +307,28 @@ export default function TratamientosPage() {
   const updatePrecios = async (procedimientoId: string) => {
     const hoy = new Date().toISOString().split("T")[0];
 
-    // Iterar sobre todas las monedas y actualizar/crear precios
     for (const moneda of monedas) {
       const precioStr = formPrecios[moneda.id];
 
       if (precioStr && parseFloat(precioStr) > 0) {
-        // Insertar o actualizar precio para esta moneda
+        
+        // 1. Cerrar el precio activo anterior para esta moneda (si existe y no es de hoy)
+        await supabase
+          .from("procedimiento_precios")
+          .update({ vigente_hasta: hoy })
+          .eq("procedimiento_id", procedimientoId)
+          .eq("moneda_id", moneda.id)
+          .is("vigente_hasta", null)
+          .neq("vigente_desde", hoy); // Evita cerrar si estamos editando uno creado hoy mismo
+
+        // 2. Insertar o actualizar el nuevo precio vigente
         await supabase.from("procedimiento_precios").upsert(
           {
             procedimiento_id: procedimientoId,
             moneda_id: moneda.id,
             precio: parseFloat(precioStr),
             vigente_desde: hoy,
+            vigente_hasta: null
           },
           {
             onConflict: "procedimiento_id,moneda_id,vigente_desde",
@@ -348,7 +352,6 @@ export default function TratamientosPage() {
     }
   };
 
-  // Funciones para manejar grupos
   const handleOpenGrupoDialog = (grupo?: GrupoProcedimiento) => {
     if (grupo) {
       setEditingGrupo(grupo);
@@ -399,7 +402,6 @@ export default function TratamientosPage() {
   };
 
   const handleDeleteGrupo = async (grupo: GrupoProcedimiento) => {
-    // Verificar si hay procedimientos en este grupo
     const procedimientosEnGrupo = procedimientos.filter(
       (p) => p.grupo_id === grupo.id
     );
@@ -581,7 +583,6 @@ export default function TratamientosPage() {
                 </div>
               </div>
 
-              {/* Precios dinámicos por moneda */}
               <div className='pt-2 border-t'>
                 <Label className='text-sm font-medium mb-3 block'>
                   Precios por Moneda
@@ -644,7 +645,6 @@ export default function TratamientosPage() {
         </Dialog>
       </div>
 
-      {/* Stats Cards */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -731,7 +731,6 @@ export default function TratamientosPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Filtros */}
               <div className='flex flex-col md:flex-row gap-4 mb-6'>
                 <div className='relative flex-1'>
                   <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
@@ -767,7 +766,6 @@ export default function TratamientosPage() {
                 >
                   Actualizar
                 </Button>
-                {/* Selector de columnas */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -832,14 +830,14 @@ export default function TratamientosPage() {
                             Precio (S/)
                           </TableHead>
                         )}
-                        {columnasVisibles.precio_clp && (
-                          <TableHead className='text-right'>
-                            Precio (CLP$)
-                          </TableHead>
-                        )}
                         {columnasVisibles.precio_usd && (
                           <TableHead className='text-right'>
                             Precio ($)
+                          </TableHead>
+                        )}
+                        {columnasVisibles.precio_clp && (
+                          <TableHead className='text-right'>
+                            Precio (CLP)
                           </TableHead>
                         )}
                         {columnasVisibles.estado && (
@@ -880,14 +878,14 @@ export default function TratamientosPage() {
                               {getPrecio(proc.id, "PEN")?.toFixed(2) || "-"}
                             </TableCell>
                           )}
-                          {columnasVisibles.precio_clp && (
-                            <TableCell className='text-right'>
-                              {getPrecio(proc.id, "CLP")?.toFixed(2) || "-"}
-                            </TableCell>
-                          )}
                           {columnasVisibles.precio_usd && (
                             <TableCell className='text-right'>
                               {getPrecio(proc.id, "USD")?.toFixed(2) || "-"}
+                            </TableCell>
+                          )}
+                          {columnasVisibles.precio_clp && (
+                            <TableCell className='text-right'>
+                              {getPrecio(proc.id, "CLP")?.toFixed(2) || "-"}
                             </TableCell>
                           )}
                           {columnasVisibles.estado && (
@@ -1003,7 +1001,6 @@ export default function TratamientosPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Dialog para crear/editar grupo */}
       <Dialog
         open={grupoDialogOpen}
         onOpenChange={setGrupoDialogOpen}

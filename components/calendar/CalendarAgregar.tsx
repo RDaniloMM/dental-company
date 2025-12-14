@@ -194,22 +194,6 @@ export default function GoogleCalendarPage({
           <div></div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div>
-            <label>Moneda:</label>
-            <select id="moneda_id">
-              <option value="">Seleccione...</option>
-              ${monedas
-                .map((m) => `<option value="${m.id}">${m.nombre}</option>`)
-                .join("")}
-            </select>
-          </div>
-          <div>
-            <label>Costo total:</label>
-            <input id="costo_total" type="number" step="0.01" placeholder="Monto en números">
-          </div>
-        </div>
-
         <label>Notas adicionales:</label>
         <textarea id="notas" placeholder="Agregar observaciones si es necesario"></textarea>
       </form>
@@ -272,8 +256,6 @@ export default function GoogleCalendarPage({
           duracion: get("duracion") || "60",
           estado: get("estado"),
           motivo: get("motivo"),
-          costo_total: get("costo_total"),
-          moneda_id: get("moneda_id"),
           notas: get("notas"),
           caso_id: get("caso_clinico_id") || null,
         };
@@ -291,17 +273,15 @@ export default function GoogleCalendarPage({
 
         try {
           // Google Calendar
+          const paciente = pacientes.find((p) => p.id === data.paciente_id);
+          const odontologo = odontologos.find((o) => o.id === data.odontologo_id);
+          
           const res = await fetch("/api/calendar/create-event", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              summary: `Cita: ${data.motivo || "Consulta odontológica"}`,
-              description: `Paciente: ${
-                pacientes.find((p) => p.id === data.paciente_id)?.nombres
-              }\nOdontólogo: ${
-                odontologos.find((o) => o.id === data.odontologo_id)
-                  ?.nombre_completo
-              }\nNotas: ${data.notas || "Sin notas"}`,
+              summary: `Cita: ${paciente?.nombres} ${paciente?.apellidos} - ${odontologo?.nombre_completo}`,
+              description: `Motivo: ${data.motivo || "Sin motivo"}\n\nNotas: ${data.notas || "Sin notas"}`,
               start: startDate.toISOString(),
               end: endDate.toISOString(),
             }),
@@ -322,11 +302,8 @@ export default function GoogleCalendarPage({
               fecha_fin: endDate.toISOString(),
               estado: data.estado,
               motivo: data.motivo,
-              costo_total: data.costo_total,
-              moneda_id: data.moneda_id,
               notas: data.notas,
               google_calendar_event_id: googleEventId,
-              nombre_cita: data.motivo || "Consulta odontológica",
               caso_id: data.caso_id,
             },
           ]);

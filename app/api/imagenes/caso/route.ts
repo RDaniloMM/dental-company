@@ -1,173 +1,107 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { createClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { v2 as cloudinary } from 'cloudinary'
+import type { UploadApiResponse } from 'cloudinary'
 
-export async function POST(req: Request) {
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
+export async function POST(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
-    const supabase = await createClient();
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+    const casoId = formData.get('caso_id') as string
+    const pacienteId = formData.get('paciente_id') as string
+    const numeroHistoria = formData.get('numero_historia') as string
+    
+    const descripcion = formData.get('descripcion') as string
+    const tipo = formData.get('tipo') as string
+    const etapa = formData.get('etapa') as string
+    const fechaCaptura = formData.get('fecha_captura') as string
 
-    // Verificar autenticación
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    if (!file || !casoId || !pacienteId) {
+      return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 })
     }
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-    const casoId = formData.get("caso_id") as string;
-    const tipo = formData.get("tipo") as string;
-    const titulo = formData.get("titulo") as string | null;
-    const descripcion = formData.get("descripcion") as string | null;
-    const fechaCaptura = formData.get("fecha_captura") as string | null;
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const folder = `dental_company/pacientes/${numeroHistoria}/${casoId}/galeria`
 
-    if (!file) {
-      return NextResponse.json(
-        { error: "No se proporcionó archivo" },
-        { status: 400 }
-      );
-    }
+    const uploadResponse = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder, resource_type: 'image' },
+          (error, result) => {
+            if (error) return reject(error)
+            const r = result as UploadApiResponse | undefined
+            if (!r) return reject(new Error('No result from Cloudinary'))
+            resolve({ secure_url: String(r.secure_url || ''), public_id: String(r.public_id || '') })
+          }
+        ).end(buffer)
+    })
 
-    if (!casoId) {
-      return NextResponse.json(
-        { error: "No se proporcionó ID del caso" },
-        { status: 400 }
-      );
-    }
-
-    // Validar tamaño (máximo 10MB para imágenes clínicas)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: "El archivo excede el tamaño máximo de 10MB" },
-        { status: 400 }
-      );
-    }
-
-    // Validar tipo de archivo
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Tipo de archivo no válido. Use JPG, PNG o WebP" },
-        { status: 400 }
-      );
-    }
-
-    // Convertir archivo a buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Generar ID único para la imagen
-    const timestamp = Date.now();
-    const sanitizedName = file.name
-      .replace(/[^a-zA-Z0-9]/g, "_")
-      .substring(0, 20);
-    const publicId = `${sanitizedName}_${timestamp}`;
-
-    // Subir a Cloudinary - usar tipo "paciente" para mejor calidad (radiografías, etc.)
-    const folder = `dental_company/casos/${casoId}`;
-    const result = await uploadImage(buffer, folder, publicId, "paciente");
-
-    // Guardar referencia en la base de datos
-    const { data: imagen, error: dbError } = await supabase
-      .from("seguimiento_imagenes")
+    // Siempre guardamos las nuevas subidas desde la galería en 'imagenes_pacientes'
+    const { data, error } = await supabase
+      .from('imagenes_pacientes')
       .insert({
+        paciente_id: pacienteId,
         caso_id: casoId,
-        url: result.secure_url,
-        ruta: result.secure_url,
-        public_id: result.public_id,
-        titulo: titulo || null,
-        descripcion: descripcion || null,
-        tipo: tipo || "general",
-        fecha_captura: fechaCaptura || null,
+        url: uploadResponse.secure_url,
+        public_id: uploadResponse.public_id,
+        tipo,
+        etapa,
+        descripcion,
+        fecha_captura: fechaCaptura || new Date().toISOString(),
+        fecha_subida: new Date().toISOString()
       })
       .select()
-      .single();
+      .single()
 
-    if (dbError) {
-      console.error("Error guardando en BD:", dbError);
-      // Intentar eliminar la imagen de Cloudinary si falla la BD
-      try {
-        await deleteImage(result.public_id);
-      } catch (e) {
-        console.error("Error eliminando imagen de Cloudinary:", e);
-      }
-      return NextResponse.json(
-        { error: "Error al guardar la imagen en la base de datos" },
-        { status: 500 }
-      );
-    }
+    if (error) throw error
 
-    return NextResponse.json({
-      id: imagen.id,
-      url: result.secure_url,
-      secure_url: result.secure_url,
-      public_id: result.public_id,
-    });
+    return NextResponse.json({ data, message: 'Imagen subida' }, { status: 201 })
+
   } catch (error) {
-    console.error("Error subiendo imagen:", error);
-    return NextResponse.json(
-      { error: "Error al subir la imagen" },
-      { status: 500 }
-    );
+    console.error('Upload error:', error)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
-    const supabase = await createClient();
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    const publicId = searchParams.get('public_id')
+    const origen = searchParams.get('origen') || 'galeria' // Detectar tabla
 
-    // Verificar autenticación
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    if (!id || !publicId) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
 
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    await cloudinary.uploader.destroy(publicId)
 
-    const { searchParams } = new URL(req.url);
-    const imagenId = searchParams.get("id");
-    const publicId = searchParams.get("public_id");
+    // Seleccionar tabla correcta
+    const tabla = origen === 'seguimiento' ? 'seguimiento_imagenes' : 'imagenes_pacientes'
 
-    if (!imagenId) {
-      return NextResponse.json(
-        { error: "No se proporcionó ID de imagen" },
-        { status: 400 }
-      );
-    }
-
-    // Eliminar de Cloudinary si tiene public_id
-    if (publicId) {
-      try {
-        await deleteImage(publicId);
-      } catch (error) {
-        console.error("Error eliminando imagen de Cloudinary:", error);
-        // Continuar aunque falle la eliminación
-      }
-    }
-
-    // Eliminar de la base de datos
-    const { error: dbError } = await supabase
-      .from("seguimiento_imagenes")
+    const { error } = await supabase
+      .from(tabla)
       .delete()
-      .eq("id", imagenId);
+      .eq('id', id)
 
-    if (dbError) {
-      console.error("Error eliminando de BD:", dbError);
-      return NextResponse.json(
-        { error: "Error al eliminar la imagen" },
-        { status: 500 }
-      );
-    }
+    if (error) throw error
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Eliminado correctamente' })
   } catch (error) {
-    console.error("Error eliminando imagen:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar la imagen" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar' }, { status: 500 })
   }
 }

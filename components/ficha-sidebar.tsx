@@ -107,7 +107,7 @@ export default function FichaSidebar({ patientId }: { patientId: string }) {
       <Button
         variant='outline'
         size='icon'
-        className='fixed top-20 left-4 z-50 md:hidden shadow-lg bg-background'
+        className='fixed top-20 left-4 z-0 md:hidden shadow-lg bg-background'
         onClick={() => setIsMobileOpen(true)}
       >
         <Menu className='h-5 w-5' />
@@ -124,7 +124,7 @@ export default function FichaSidebar({ patientId }: { patientId: string }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "w-64 flex-shrink-0 border-r bg-background p-4 z-50",
+          "w-64 flex-shrink-0 border-r bg-background p-4 z-0",
           "fixed inset-y-0 left-0 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0",
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
@@ -154,9 +154,22 @@ export default function FichaSidebar({ patientId }: { patientId: string }) {
         </div>
         <hr className='my-4' />
         <nav className='flex flex-col space-y-2'>
-          {navItems.map((item) => {
+          {navItems
+            // Si estamos navegando dentro de casos (incluye imágenes del caso), ocultar la opción "Imágenes"
+            .filter((item) => {
+              const segments = pathname.split("/").filter(Boolean)
+              const isInCasos = segments.includes("casos")
+              if (isInCasos && item.href === "imagenes") return false
+              return true
+            })
+            .map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.includes(item.href);
+            const pathSegments = pathname.split("/").filter(Boolean);
+            const lastSegment = pathSegments[pathSegments.length - 1];
+            // Si estamos en casos/[casoId]/imagenes, marcar como activo "casos", no "imagenes"
+            const isActive = item.href === 'casos' 
+              ? (lastSegment === 'casos' || (pathSegments.includes('casos') && (lastSegment === 'imagenes' || lastSegment.match(/^[a-f0-9-]{36}$/))))
+              : lastSegment === item.href;
             return (
               <button
                 key={item.href}

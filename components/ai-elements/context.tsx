@@ -21,7 +21,8 @@ import {
 type ModelId = string;
 
 // Función estimateCost cargada dinámicamente (singleton)
-let estimateCostFn: ((params: any) => { totalUSD?: number }) | null = null;
+type EstimateCostFn = (params: { modelId: string; usage?: unknown }) => { totalUSD?: number } | undefined;
+let estimateCostFn: EstimateCostFn | null = null;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
 
@@ -33,7 +34,11 @@ function loadTokenlens(): Promise<void> {
   isLoading = true;
   loadPromise = import("tokenlens")
     .then((module) => {
-      estimateCostFn = module.estimateCost;
+      const maybe = module as unknown as { estimateCost?: unknown };
+      const fn = maybe.estimateCost;
+      if (typeof fn === "function") {
+        estimateCostFn = fn as EstimateCostFn;
+      }
       isLoading = false;
     })
     .catch(() => {
@@ -44,11 +49,11 @@ function loadTokenlens(): Promise<void> {
 }
 
 // Función helper para estimar costos
-function estimateCost(params: { modelId: string; usage: any }): {
+function estimateCost(params: { modelId: string; usage?: unknown }): {
   totalUSD: number;
 } {
   if (estimateCostFn) {
-    const result = estimateCostFn(params);
+    const result = estimateCostFn(params as Parameters<EstimateCostFn>[0]);
     return { totalUSD: result?.totalUSD ?? 0 };
   }
   return { totalUSD: 0 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,44 +15,23 @@ import {
 import { CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import LoadingDots from "@/components/ui/LoadingDots";
+import { PatientData } from "./types";
+import {
+  NACIONALIDADES_COMMON,
+  GENERO_OPTIONS,
+  ESTADO_CIVIL_OPTIONS,
+  GRADO_INSTRUCCION_OPTIONS,
+  UPPERCASE_FIELDS,
+} from "./constants";
 
-type EmergencyContact = {
-  nombre: string;
-  parentesco: string;
-  domicilio: string;
-  telefono: string;
-};
-
-type PatientData = {
-  id: string;
-  apellidos: string;
-  nombres: string;
-  fecha_nacimiento: string;
-  dni: string;
-  direccion: string;
-  genero: string;
-  estado_civil: string;
-  ocupacion: string;
-  grado_instruccion: string;
-  telefono: string;
-  email: string;
-  pais: string;
-  departamento: string;
-  provincia: string;
-  distrito: string;
-  contacto_emergencia: EmergencyContact;
-  recomendado_por: string;
-  observaciones: string;
-};
-
-export default function FiliacionForm({
-  patient,
-}: {
+interface FiliacionFormProps {
   patient: Partial<PatientData>;
-}) {
+}
+
+export default function FiliacionForm({ patient }: FiliacionFormProps) {
   const supabase = createClient();
 
-  const sanitizePatientData = (data: Partial<PatientData>): PatientData => ({
+  const sanitizePatientData = useCallback((data: Partial<PatientData>): PatientData => ({
     id: data.id || "",
     apellidos: data.apellidos || "",
     nombres: data.nombres || "",
@@ -77,25 +56,16 @@ export default function FiliacionForm({
     },
     recomendado_por: data.recomendado_por || "",
     observaciones: data.observaciones || "",
-  });
+  }), []);
 
-  const [formData, setFormData] = useState<PatientData>(
+  const [formData, setFormData] = useState<PatientData>(() =>
     sanitizePatientData(patient)
   );
   const [age, setAge] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  
   const [showCustomNacionalidad, setShowCustomNacionalidad] = useState(() => {
-    const nacionalidadesPredefinidas = [
-      "Peruano",
-      "Chileno",
-      "Argentino",
-      "Boliviano",
-      "Colombiano",
-      "Ecuatoriano",
-      "Venezolano",
-      "",
-    ];
-    return !nacionalidadesPredefinidas.includes(patient.pais || "");
+    return !NACIONALIDADES_COMMON.includes(patient.pais || "") && patient.pais !== "";
   });
 
   useEffect(() => {
@@ -104,8 +74,9 @@ export default function FiliacionForm({
       const today = new Date();
       let years = today.getFullYear() - birthDateObj.getFullYear();
       const m = today.getMonth() - birthDateObj.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate()))
+      if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
         years--;
+      }
       setAge(years >= 0 ? String(years) : "");
     } else {
       setAge("");
@@ -114,116 +85,86 @@ export default function FiliacionForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value } as PatientData));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: keyof PatientData, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value } as PatientData));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEmergencyContactChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleEmergencyContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(
-      (prev) =>
-        ({
-          ...prev,
-          contacto_emergencia: {
-            ...prev.contacto_emergencia,
-            [name]: value,
-          },
-        } as PatientData)
-    );
+    setFormData((prev) => ({
+      ...prev,
+      contacto_emergencia: {
+        ...prev.contacto_emergencia,
+        [name]: value,
+      },
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
-    const upperFields: Array<keyof PatientData> = [
-      "apellidos",
-      "nombres",
-      "direccion",
-      "recomendado_por",
-      "observaciones",
-    ];
-
-    const payload: Partial<PatientData> = { ...formData };
-    upperFields.forEach((k) => {
-      const v = payload[k];
-      if (typeof v === "string") {
-        (payload as Record<string, string>)[k as string] = v.toUpperCase();
+    const payload: PatientData = { ...formData };
+    
+    UPPERCASE_FIELDS.forEach((key) => {
+      const val = payload[key as keyof PatientData];
+      if (typeof val === "string") {
+        (payload as unknown as Record<string, string>)[key as string] = val.toUpperCase();
       }
     });
+
     payload.contacto_emergencia = {
-      nombre: payload.contacto_emergencia?.nombre?.toUpperCase() || "",
-      parentesco: payload.contacto_emergencia?.parentesco?.toUpperCase() || "",
-      domicilio: payload.contacto_emergencia?.domicilio?.toUpperCase() || "",
-      telefono: payload.contacto_emergencia?.telefono || "",
+      nombre: payload.contacto_emergencia.nombre.toUpperCase(),
+      parentesco: payload.contacto_emergencia.parentesco.toUpperCase(),
+      domicilio: payload.contacto_emergencia.domicilio.toUpperCase(),
+      telefono: payload.contacto_emergencia.telefono,
     };
 
     try {
-      const requiredFields: Array<
-        keyof PatientData | `contacto_emergencia.${keyof EmergencyContact}`
-      > = [
+      const requiredFields: (keyof PatientData)[] = [
         "apellidos",
         "nombres",
         "fecha_nacimiento",
-        "dni",
-        "contacto_emergencia.nombre",
-        "contacto_emergencia.parentesco",
-        "contacto_emergencia.domicilio",
-        "contacto_emergencia.telefono",
       ];
 
-      let hasValidationErrors = false;
       const errorMessages: string[] = [];
 
-      for (const field of requiredFields) {
-        if (field.startsWith("contacto_emergencia.")) {
-          const subField = field.split(".")[1] as keyof EmergencyContact;
-          if (!payload.contacto_emergencia?.[subField]) {
-            errorMessages.push(
-              `En caso de emergencia • ${subField}: se olvidó completar este campo`
-            );
-            hasValidationErrors = true;
-          }
-        } else {
-          if (!payload[field as keyof PatientData]) {
-            errorMessages.push(`${field}: se olvidó completar este campo`);
-            hasValidationErrors = true;
-          }
+      requiredFields.forEach((field) => {
+        if (!payload[field]) {
+          const label = field.replace('_', ' ');
+          errorMessages.push(`${label}: se olvidó completar este campo`);
         }
-      }
+      });
 
-      if (hasValidationErrors) {
-        // Mostrar cada error como una notificación individual
-        errorMessages.forEach((error) => {
-          toast.error(error, {
-            style: { backgroundColor: "#FF0000", color: "white" },
-            duration: 4000,
-          });
-        });
+      if (errorMessages.length > 0) {
+        errorMessages.forEach((msg) => toast.error(msg, {
+          style: { backgroundColor: "#FF0000", color: "white" },
+          duration: 4000,
+        }));
+        setIsSaving(false);
         return;
       }
 
-      const { data, error } = await supabase.from("pacientes").upsert(payload);
+      const { data, error } = await supabase.from("pacientes").upsert(payload).select();
+      
       if (error) throw error;
 
-      const saved = (data && data[0]) || payload;
-      try {
+      const savedData = data?.[0] as PatientData;
+
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent("paciente-updated", { detail: saved })
+          new CustomEvent("paciente-updated", { detail: savedData })
         );
-      } catch {
-        // ignore if running in restricted env
       }
 
-      setFormData(sanitizePatientData(saved as Partial<PatientData>));
+      setFormData(sanitizePatientData(savedData));
       toast.success("Datos guardados con éxito.", {
         style: { backgroundColor: "#008000", color: "white" },
       });
+
     } catch (err) {
       console.error(err);
       toast.error("Error al guardar los datos.", {
@@ -241,13 +182,11 @@ export default function FiliacionForm({
           <h2 className='text-2xl font-bold text-white'>Datos del Paciente</h2>
         </div>
         <CardContent className='pt-6'>
-          <form
-            onSubmit={handleSubmit}
-            className='space-y-8'
-          >
+          <form onSubmit={handleSubmit} className='space-y-8'>
+            
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
+                <Label className='text-foreground'>
                   Apellidos<span className='text-red-500 text-xs ml-1'>*</span>
                 </Label>
                 <Input
@@ -255,11 +194,11 @@ export default function FiliacionForm({
                   value={formData.apellidos}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
+                <Label className='text-foreground'>
                   Nombres<span className='text-red-500 text-xs ml-1'>*</span>
                 </Label>
                 <Input
@@ -267,91 +206,82 @@ export default function FiliacionForm({
                   value={formData.nombres}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Fecha de Nacimiento
-                  <span className='text-red-500 text-xs ml-1'>*</span>
+                <Label className='text-foreground'>
+                  Fecha de Nacimiento<span className='text-red-500 text-xs ml-1'>*</span>
                 </Label>
                 <Input
                   name='fecha_nacimiento'
                   type='date'
                   value={formData.fecha_nacimiento}
                   onChange={handleChange}
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>Edad</Label>
+                <Label className='text-foreground'>Edad</Label>
                 <Input
                   value={age}
                   readOnly
                   disabled
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm bg-muted'
                 />
               </div>
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Documento de Identidad
-                  <span className='text-red-500 text-xs ml-1'>*</span>
-                </Label>
+                <Label className='text-foreground'>Documento de Identidad</Label>
                 <Input
                   name='dni'
                   value={formData.dni}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2 md:col-span-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Dirección
-                </Label>
+                <Label className='text-foreground'>Dirección</Label>
                 <Input
                   name='direccion'
                   value={formData.direccion}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>Sexo</Label>
+                <Label className='text-foreground'>Sexo</Label>
                 <Select
-                  name='genero'
-                  onValueChange={(v) => handleSelectChange("genero", v)}
                   value={formData.genero}
+                  onValueChange={(v) => handleSelectChange("genero", v)}
                 >
-                  <SelectTrigger className='h-7 px-2 py-1 text-sm'>
-                    <SelectValue />
+                  <SelectTrigger className='h-8 text-sm'>
+                    <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='M'>Masculino</SelectItem>
-                    <SelectItem value='F'>Femenino</SelectItem>
+                    {GENERO_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Estado Civil
-                </Label>
+                <Label className='text-foreground'>Estado Civil</Label>
                 <Select
-                  name='estado_civil'
-                  onValueChange={(v) => handleSelectChange("estado_civil", v)}
                   value={formData.estado_civil}
+                  onValueChange={(v) => handleSelectChange("estado_civil", v)}
                 >
-                  <SelectTrigger className='h-7 px-2 py-1 text-sm'>
-                    <SelectValue />
+                  <SelectTrigger className='h-8 text-sm'>
+                    <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='Soltero(a)'>Soltero(a)</SelectItem>
-                    <SelectItem value='Casado(a)'>Casado(a)</SelectItem>
-                    <SelectItem value='Divorciado(a)'>Divorciado(a)</SelectItem>
+                    {ESTADO_CIVIL_OPTIONS.map((opt) => (
+                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -359,79 +289,60 @@ export default function FiliacionForm({
 
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Ocupación
-                </Label>
+                <Label className='text-foreground'>Ocupación</Label>
                 <Input
                   name='ocupacion'
                   value={formData.ocupacion}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Grado de Instrucción
-                </Label>
+                <Label className='text-foreground'>Grado de Instrucción</Label>
                 <Select
-                  name='grado_instruccion'
-                  onValueChange={(v) =>
-                    handleSelectChange("grado_instruccion", v)
-                  }
                   value={formData.grado_instruccion}
+                  onValueChange={(v) => handleSelectChange("grado_instruccion", v)}
                 >
-                  <SelectTrigger className='h-7 px-2 py-1 text-sm'>
-                    <SelectValue />
+                  <SelectTrigger className='h-8 text-sm'>
+                    <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='PRIMARIA COMPLETA'>
-                      Primaria Completa
-                    </SelectItem>
-                    <SelectItem value='SECUNDARIA COMPLETA'>
-                      Secundaria Completa
-                    </SelectItem>
-                    <SelectItem value='TECNICA'>Técnica</SelectItem>
-                    <SelectItem value='SUPERIOR'>Superior</SelectItem>
-                    <SelectItem value='NO ESPECIFICA'>No especifica</SelectItem>
+                    {GRADO_INSTRUCCION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Teléfono
-                </Label>
+                <Label className='text-foreground'>Teléfono</Label>
                 <Input
                   name='telefono'
                   value={formData.telefono}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Email
-                </Label>
+                <Label className='text-foreground'>Email</Label>
                 <Input
                   name='email'
                   type='email'
                   value={formData.email}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Nacionalidad
-                </Label>
+                <Label className='text-foreground'>Nacionalidad</Label>
                 {!showCustomNacionalidad ? (
                   <Select
-                    name='pais'
+                    value={formData.pais || "Peruano"}
                     onValueChange={(v) => {
                       if (v === "Otro") {
                         setShowCustomNacionalidad(true);
@@ -440,19 +351,14 @@ export default function FiliacionForm({
                         handleSelectChange("pais", v);
                       }
                     }}
-                    value={formData.pais || "Peruano"}
                   >
-                    <SelectTrigger className='h-7 px-2 py-1 text-sm'>
+                    <SelectTrigger className='h-8 text-sm'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='Peruano'>Peruano</SelectItem>
-                      <SelectItem value='Chileno'>Chileno</SelectItem>
-                      <SelectItem value='Argentino'>Argentino</SelectItem>
-                      <SelectItem value='Boliviano'>Boliviano</SelectItem>
-                      <SelectItem value='Colombiano'>Colombiano</SelectItem>
-                      <SelectItem value='Ecuatoriano'>Ecuatoriano</SelectItem>
-                      <SelectItem value='Venezolano'>Venezolano</SelectItem>
+                      {NACIONALIDADES_COMMON.map((nac) => (
+                        <SelectItem key={nac} value={nac}>{nac}</SelectItem>
+                      ))}
                       <SelectItem value='Otro'>Otro...</SelectItem>
                     </SelectContent>
                   </Select>
@@ -462,15 +368,15 @@ export default function FiliacionForm({
                       name='pais'
                       value={formData.pais}
                       onChange={handleChange}
-                      placeholder='Escriba la nacionalidad'
+                      placeholder='Escriba nacionalidad'
                       autoComplete='off'
-                      className='h-7 px-2 py-1 text-sm flex-1'
+                      className='h-8 text-sm flex-1'
                     />
                     <Button
                       type='button'
                       variant='ghost'
                       size='sm'
-                      className='h-7 px-2'
+                      className='h-8 px-2'
                       onClick={() => {
                         setShowCustomNacionalidad(false);
                         handleSelectChange("pais", "Peruano");
@@ -482,129 +388,106 @@ export default function FiliacionForm({
                 )}
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Departamento
-                </Label>
+                <Label className='text-foreground'>Departamento</Label>
                 <Input
                   name='departamento'
                   value={formData.departamento}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Provincia
-                </Label>
+                <Label className='text-foreground'>Provincia</Label>
                 <Input
                   name='provincia'
                   value={formData.provincia}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Distrito
-                </Label>
+                <Label className='text-foreground'>Distrito</Label>
                 <Input
                   name='distrito'
                   value={formData.distrito}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Contacto de emergencia
-                  <span className='text-red-500 text-xs ml-1'>*</span>
-                </Label>
+                <Label className='text-foreground'>Contacto de emergencia</Label>
                 <Input
                   name='nombre'
                   value={formData.contacto_emergencia.nombre}
                   onChange={handleEmergencyContactChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                   placeholder='Nombre completo'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Parentesco<span className='text-red-500 text-xs ml-1'>*</span>
-                </Label>
+                <Label className='text-foreground'>Parentesco</Label>
                 <Input
                   name='parentesco'
                   value={formData.contacto_emergencia.parentesco}
                   onChange={handleEmergencyContactChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Domicilio<span className='text-red-500 text-xs ml-1'>*</span>
-                </Label>
+                <Label className='text-foreground'>Domicilio</Label>
                 <Input
                   name='domicilio'
                   value={formData.contacto_emergencia.domicilio}
                   onChange={handleEmergencyContactChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Teléfono de contacto
-                  <span className='text-red-500 text-xs ml-1'>*</span>
-                </Label>
+                <Label className='text-foreground'>Teléfono de contacto</Label>
                 <Input
                   name='telefono'
                   value={formData.contacto_emergencia.telefono}
                   onChange={handleEmergencyContactChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Referido por
-                </Label>
+                <Label className='text-foreground'>Referido por</Label>
                 <Input
                   name='recomendado_por'
                   value={formData.recomendado_por}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
               <div className='space-y-2'>
-                <Label className='text-gray-900 dark:text-gray-100'>
-                  Observación
-                </Label>
+                <Label className='text-foreground'>Observación</Label>
                 <Input
                   name='observaciones'
                   value={formData.observaciones}
                   onChange={handleChange}
                   autoComplete='off'
-                  className='h-7 px-2 py-1 text-sm'
+                  className='h-8 text-sm'
                 />
               </div>
             </div>
 
             <div className='flex justify-end'>
-              <Button
-                type='submit'
-                disabled={isSaving}
-              >
+              <Button type='submit' disabled={isSaving} className="min-w-[140px]">
                 {isSaving ? <LoadingDots /> : "Guardar Cambios"}
               </Button>
             </div>
@@ -613,9 +496,7 @@ export default function FiliacionForm({
       </div>
       {isSaving && (
         <div className='fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none'>
-          <div className='bg-transparent p-2 rounded-md'>
-            <LoadingDots />
-          </div>
+          <div className='bg-background/80 backdrop-blur-sm p-2 rounded-md border shadow-sm'></div>
         </div>
       )}
     </div>

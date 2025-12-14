@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import FiliacionForm from "@/components/filiacion-form";
+import FiliacionForm from "@/components/filiacion/filiacion-form";
 import AntecedentesDinamicoForm from "@/components/historia-clinica/antecedentes-dinamico-form";
 import ImageManager from "@/components/imagenes/ImageManager";
 import Image from "next/image";

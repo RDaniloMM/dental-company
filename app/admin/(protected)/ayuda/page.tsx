@@ -384,16 +384,12 @@ export default function AyudaPage() {
                   </p>
                   <ul className='list-disc pl-5 space-y-1'>
                     <li>
-                      <strong>Ficha Odontológica Completa:</strong> Datos de
-                      filiación, historia clínica, odontograma y antecedentes
+                      <strong>Ficha Odontológica:</strong> Incluye filiación, antecedentes patológicos, 
+                      examen clínico con odontograma y seguimientos de tratamientos
                     </li>
                     <li>
-                      <strong>Historial de Citas:</strong> Lista de todas las
-                      citas del paciente con estados y resultados
-                    </li>
-                    <li>
-                      <strong>Resumen de Tratamientos:</strong> Casos clínicos,
-                      procedimientos realizados y pagos efectuados
+                      <strong>Presupuesto:</strong> Tabla de procedimientos con costos, 
+                      subtotales y tabla de pagos realizados por seguimiento
                     </li>
                   </ul>
 
@@ -403,9 +399,10 @@ export default function AyudaPage() {
                   <ol className='list-decimal pl-5 space-y-1'>
                     <li>Ve a &quot;Reportes&quot; en el menú</li>
                     <li>Busca y selecciona el paciente</li>
-                    <li>Elige el tipo de reporte</li>
-                    <li>Haz clic en &quot;Generar PDF&quot;</li>
-                    <li>Descarga o imprime el documento</li>
+                    <li>Elige el tipo de reporte (Ficha Odontológica o Presupuesto)</li>
+                    <li>Si elegiste Presupuesto, selecciona cuál deseas generar</li>
+                    <li>Haz clic en &quot;Descargar PDF&quot;</li>
+                    <li>El documento se descargará automáticamente</li>
                   </ol>
                 </AccordionContent>
               </AccordionItem>

@@ -1,20 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import OdontogramaSVG from "./OdontogramaSVG";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
-import { Save, FilePlus } from "lucide-react";
+import { Save, FilePlus, ArrowLeft } from "lucide-react";
 import VersionSelect from "./VersionSelect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { CardContent } from "@/components/ui/card";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// ------- tipos (sin cambios) -------
 type Zona = { zona: string; condicion: string; color: string };
 type General = {
   condicion: string;
@@ -24,14 +21,15 @@ type General = {
 };
 type Diente = { zonas: Zona[]; generales: General[] };
 
-export default function OdontoPage({ patientId }: { patientId: string }) {
+export default function OdontoPage({ patientId, backToSeguimientoUrl }: { patientId: string; backToSeguimientoUrl?: string }) {
+  const supabase = createClient();
+  const router = useRouter();
+  
   const [odontograma, setOdontograma] = useState<Record<string, Diente>>({});
   const [borderColors, setBorderColors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [versiones, setVersiones] = useState<number[]>([]);
-  const [versionSeleccionada, setVersionSeleccionada] = useState<number | null>(
-    null
-  );
+  const [versionSeleccionada, setVersionSeleccionada] = useState<number | null>(null);
   const [fechaRegistro, setFechaRegistro] = useState<string | null>(null);
   const [, setActiveTab] = useState<"adulto" | "nino">("adulto");
   const [especificaciones, setEspecificaciones] = useState("");
@@ -49,7 +47,6 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     "-", "-", "-", "85", "84", "83", "82", "81", "71", "72", "73", "74", "75", "-", "-", "-"
   ];
 
-  // -------- Cargar versiones ----------
   useEffect(() => {
     const fetchVersiones = async () => {
       const { data, error } = await supabase
@@ -68,9 +65,8 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
       setVersionSeleccionada(vers[0] ?? null);
     };
     fetchVersiones();
-  }, [patientId]);
+  }, [patientId, supabase]);
 
-  // -------- Cargar odontograma según versión ----------
   useEffect(() => {
     if (!versionSeleccionada) return;
 
@@ -85,7 +81,6 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
         .single();
 
       if (error) {
-        console.warn("No hay datos para la versión seleccionada");
         setOdontograma({});
         setBorderColors({});
         setFechaRegistro(null);
@@ -101,9 +96,8 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     };
 
     fetchOdontograma();
-  }, [patientId, versionSeleccionada]);
+  }, [patientId, versionSeleccionada, supabase]);
 
-  // -------- Reconstruir colores --------
   const reconstruirBorderColors = (json: Record<string, Diente>) => {
     const newBorderColors: Record<string, string> = {};
     for (const toothId in json) {
@@ -123,7 +117,6 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     setBorderColors(newBorderColors);
   };
 
-  // -------- Guardar nueva versión --------
   const guardarOdontograma = async () => {
     if (Object.keys(odontograma).length === 0) {
       return Swal.fire({
@@ -137,6 +130,39 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     setLoading(true);
     const nuevaVersion = versiones.length ? Math.max(...versiones) + 1 : 1;
 
+    // Capturar imagen del odontograma
+    let imagenBase64 = null;
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Buscar el contenedor del odontograma
+      const odontoContainer = document.querySelector('[data-testid="odontograma-container"]') || 
+                             document.querySelector('.odontograma-container');
+      
+      if (odontoContainer && ctx) {
+        canvas.width = Math.min((odontoContainer as HTMLElement).scrollWidth || 1000, 1200);
+        canvas.height = Math.min((odontoContainer as HTMLElement).scrollHeight || 600, 800);
+        
+        // Usar html2canvas si está disponible
+        try {
+          const html2canvas = (await import('html2canvas')).default;
+          const canvasFromHtml = await html2canvas(odontoContainer as HTMLElement, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false,
+            allowTaint: true,
+            useCORS: true,
+          });
+          imagenBase64 = canvasFromHtml.toDataURL('image/png');
+        } catch (e) {
+          console.warn("html2canvas no disponible, intentando canvas native");
+        }
+      }
+    } catch (e) {
+      console.warn("Error capturando imagen del odontograma:", e);
+    }
+
     const { error } = await supabase.from("odontogramas").insert([
       {
         paciente_id: patientId,
@@ -144,6 +170,7 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
         version: nuevaVersion,
         especificaciones: especificaciones,
         observaciones: observaciones,
+        imagen_base64: imagenBase64,
       },
     ]);
 
@@ -168,7 +195,6 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
     setLoading(false);
   };
 
-  // -------- Nuevo odontograma --------
   const nuevoOdontograma = () => {
     const nuevaVersion = versiones.length ? Math.max(...versiones) + 1 : 1;
     setOdontograma({});
@@ -180,102 +206,109 @@ export default function OdontoPage({ patientId }: { patientId: string }) {
   };
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-6">Odontograma Digital</h1>
-
-      <div className="flex gap-4 flex-wrap items-center mb-6">
-        <div className="flex flex-col">
-          <label className="text-xs text-muted-foreground">Versión</label>
-          <VersionSelect
-            versiones={versiones}
-            selectedVersion={versionSeleccionada}
-            onSelectVersion={setVersionSeleccionada}
-          />
+    <div className="w-full max-w-none">
+      <div className="rounded-lg border border-border bg-card">
+        <div className="bg-blue-500 dark:bg-blue-800 p-4 rounded-t-lg flex justify-center items-center px-6">
+          <h2 className="text-2xl font-bold text-white">Odontograma Digital</h2>
         </div>
 
-        <div className="flex flex-col">
-          <label className="text-xs text-muted-foreground">Fecha Registro</label>
-          <input
-            type="text"
-            value={
-              fechaRegistro
-                ? new Date(fechaRegistro).toLocaleString("es-PE", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-                : "-"
-            }
-            readOnly
-            className="border rounded px-2 py-1 text-sm bg-muted w-52"
-          />
-        </div>
+        <CardContent className="pt-6">
+          <div className="flex flex-col xl:flex-row gap-6 mb-6 items-start xl:items-center justify-between border-b pb-4">
+            <div className="flex gap-4 items-end flex-wrap">
+              <div className="flex flex-col gap-1 w-40">
+                <label className="text-xs font-medium text-muted-foreground">Versión</label>
+                <VersionSelect
+                  versiones={versiones}
+                  selectedVersion={versionSeleccionada}
+                  onSelectVersion={setVersionSeleccionada}
+                />
+              </div>
 
-        <button
-          onClick={guardarOdontograma}
-          disabled={loading}
-          className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-600 disabled:bg-green-300"
-        >
-          <Save className="w-4 h-4" /> {loading ? "Guardando..." : "Guardar"}
-        </button>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-muted-foreground">Fecha Registro</label>
+                <input
+                  type="text"
+                  value={fechaRegistro ? new Date(fechaRegistro).toLocaleString("es-PE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                  readOnly
+                  className="h-9 px-3 py-1 text-sm bg-muted rounded-md border w-48 focus:outline-none"
+                />
+              </div>
+            </div>
 
-        <button
-          onClick={nuevoOdontograma}
-          disabled={loading}
-          className="bg-yellow-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-yellow-600 disabled:bg-yellow-300"
-        >
-          <FilePlus className="w-4 h-4" /> Nuevo
-        </button>
-      </div>
+            <div className="flex gap-2">
+              {backToSeguimientoUrl && (
+                <Button 
+                  variant="default" 
+                  onClick={() => router.push(backToSeguimientoUrl)}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Volver a seguimiento
+                </Button>
+              )}
 
-      <Tabs defaultValue="adulto" className="w-full" onValueChange={(val) => setActiveTab(val as "adulto" | "nino")}>
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto mb-4">
-          <TabsTrigger value="adulto">Adulto</TabsTrigger>
-          <TabsTrigger value="nino">Niño</TabsTrigger>
-        </TabsList>
-        <TabsContent value="adulto">
-          <OdontogramaSVG
-            teethList={adultTeeth}
-            odontograma={odontograma}
-            setOdontograma={setOdontograma}
-            borderColors={borderColors}
-            setBorderColors={setBorderColors}
-            isChild={false}
-          />
-        </TabsContent>
-        <TabsContent value="nino">
-          <OdontogramaSVG
-            teethList={childTeeth}
-            odontograma={odontograma}
-            setOdontograma={setOdontograma}
-            borderColors={borderColors}
-            setBorderColors={setBorderColors}
-            isChild={true}
-          />
-        </TabsContent>
-      </Tabs>
+              <Button onClick={guardarOdontograma} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Save className="w-4 h-4 mr-2" /> {loading ? "Guardando..." : "Guardar"}
+              </Button>
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-sm">Especificaciones</label>
-          <textarea
-            className="border rounded-lg p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-primary focus:outline-none bg-background"
-            placeholder="Escribe aquí las especificaciones..."
-            value={especificaciones}
-            onChange={(e) => setEspecificaciones(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-sm">Observaciones</label>
-          <textarea
-            className="border rounded-lg p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-primary focus:outline-none bg-background"
-            placeholder="Escribe aquí las observaciones..."
-            value={observaciones}
-            onChange={(e) => setObservaciones(e.target.value)}
-          />
-        </div>
+              <Button onClick={nuevoOdontograma} disabled={loading} className="bg-amber-500 hover:bg-amber-600 text-white">
+                <FilePlus className="w-4 h-4 mr-2" /> Nuevo
+              </Button>
+            </div>
+          </div>
+
+          <Tabs defaultValue="adulto" className="w-full" onValueChange={(val) => setActiveTab(val as "adulto" | "nino")}>
+            <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto mb-4">
+              <TabsTrigger value="adulto">Adulto</TabsTrigger>
+              <TabsTrigger value="nino">Niño</TabsTrigger>
+            </TabsList>
+
+            {/* Contenedor con Scroll Horizontal */}
+            <div className="border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 overflow-x-auto w-full custom-scrollbar">
+              <div className="min-w-[1000px] p-6 flex justify-center">
+                <TabsContent value="adulto" className="mt-0 w-full">
+                  <OdontogramaSVG
+                    teethList={adultTeeth}
+                    odontograma={odontograma}
+                    setOdontograma={setOdontograma}
+                    borderColors={borderColors}
+                    setBorderColors={setBorderColors}
+                    isChild={false}
+                  />
+                </TabsContent>
+                <TabsContent value="nino" className="mt-0 w-full">
+                  <OdontogramaSVG
+                    teethList={childTeeth}
+                    odontograma={odontograma}
+                    setOdontograma={setOdontograma}
+                    borderColors={borderColors}
+                    setBorderColors={setBorderColors}
+                    isChild={true}
+                  />
+                </TabsContent>
+              </div>
+            </div>
+          </Tabs>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-sm">Especificaciones</label>
+              <textarea
+                className="border rounded-lg p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-primary focus:outline-none bg-background text-sm"
+                placeholder="Escribe aquí las especificaciones..."
+                value={especificaciones}
+                onChange={(e) => setEspecificaciones(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-sm">Observaciones</label>
+              <textarea
+                className="border rounded-lg p-3 min-h-[100px] resize-none focus:ring-2 focus:ring-primary focus:outline-none bg-background text-sm"
+                placeholder="Escribe aquí las observaciones..."
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
       </div>
     </div>
   );

@@ -44,9 +44,7 @@ export default function CasoFormModal({
   initialData,
 }: CasoFormProps) {
   const [nombreCaso, setNombreCaso] = useState(initialData?.nombre_caso || "");
-  const [diagnosticoPreliminar, setDiagnosticoPreliminar] = useState(
-    initialData?.diagnostico_preliminar || ""
-  );
+  const [diagnosticoPreliminar, setDiagnosticoPreliminar] = useState(initialData?.diagnostico_preliminar || "");
   const [descripcion, setDescripcion] = useState(initialData?.descripcion || "");
   const [estado, setEstado] = useState(initialData?.estado || "Abierto");
   const [fechaInicio, setFechaInicio] = useState(

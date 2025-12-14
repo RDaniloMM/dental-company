@@ -16,7 +16,6 @@ export interface Cita {
   google_calendar_event_id?: string | null;
   notas?: string | null;
   created_at: string;
-  nombre_cita?: string | null;
 }
 
 interface Paciente {
@@ -109,7 +108,7 @@ export default function CalendarioCitas({ citas }: Props) {
                 className="w-full rounded-lg border border-border bg-card p-4 shadow"
               >
                 <h4 className="font-semibold text-lg">
-                  {cita.nombre_cita || "Sin nombre"}
+                  {cita.motivo || "Consulta odontológica"}
                 </h4>
                 <p className="text-sm text-muted-foreground">
                   {new Date(cita.fecha_inicio).toLocaleString()} -{" "}

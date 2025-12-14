@@ -2,8 +2,17 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+interface InputProps extends React.ComponentProps<"input"> {
+  /** Si true, aplica style inline para quitar padding-right (útil para casos puntuales) */
+  noPaddingRight?: boolean
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, style, noPaddingRight, ...props }, ref) => {
+    const mergedStyle = noPaddingRight
+      ? ({ ...(style as React.CSSProperties), paddingRight: 0 } as React.CSSProperties)
+      : style
+
     return (
       <input
         type={type}
@@ -11,12 +20,13 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
           className,
         )}
+        style={mergedStyle}
         ref={ref}
         {...props}
       />
-    );
+    )
   },
-);
-Input.displayName = "Input";
+)
+Input.displayName = "Input"
 
-export { Input };
+export { Input }

@@ -13,20 +13,26 @@ import {
   useRef,
 } from "react";
 
-// Contexto para compartir el estado de scroll (fallback cuando el módulo no está cargado)
 const ScrollContext = createContext<{
   isAtBottom: boolean;
   scrollToBottom: () => void;
 }>({ isAtBottom: true, scrollToBottom: () => {} });
 
-// Hook para cargar use-stick-to-bottom dinámicamente
+type StickModule = {
+  StickToBottom?: React.ComponentType<Record<string, unknown>> & { Content?: React.ComponentType<Record<string, unknown>> }
+}
+
 function useStickToBottomModule() {
-  const [module, setModule] = useState<any>(null);
+  const [module, setModule] = useState<StickModule | null>(null);
 
   useEffect(() => {
-    import("use-stick-to-bottom").then((mod) => {
-      setModule(mod);
-    });
+    import("use-stick-to-bottom")
+      .then((mod) => {
+        setModule(mod as unknown as StickModule);
+      })
+      .catch(() => {
+        setModule(null)
+      })
   }, []);
 
   return module;
@@ -44,7 +50,7 @@ export const Conversation = ({
 }: ConversationProps) => {
   const module = useStickToBottomModule();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isAtBottom] = useState(true);
 
   const scrollToBottom = useCallback(() => {
     if (containerRef.current) {
@@ -52,7 +58,6 @@ export const Conversation = ({
     }
   }, []);
 
-  // Si el módulo está cargado, usar StickToBottom
   if (module?.StickToBottom) {
     const StickToBottom = module.StickToBottom;
     return (
@@ -68,7 +73,6 @@ export const Conversation = ({
     );
   }
 
-  // Fallback mientras carga
   return (
     <ScrollContext.Provider value={{ isAtBottom, scrollToBottom }}>
       <div
@@ -158,7 +162,6 @@ export const ConversationScrollButton = ({
   className,
   ...props
 }: ConversationScrollButtonProps) => {
-  // Solo usar el contexto de fallback (el contexto real viene del módulo cargado dinámicamente en Conversation)
   const { isAtBottom, scrollToBottom } = useContext(ScrollContext);
 
   const handleScrollToBottom = useCallback(() => {

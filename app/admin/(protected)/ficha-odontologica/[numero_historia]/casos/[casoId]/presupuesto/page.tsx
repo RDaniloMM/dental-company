@@ -1,10 +1,59 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useState, useEffect, use } from 'react'
+import { useRouter } from 'next/navigation'
 import { PresupuestoTable } from '@/components/casos/presupuesto/PresupuestoTable'
 import { PresupuestoHeader } from '@/components/casos/presupuesto/PresupuestoHeader'
 import { PresupuestoForm } from '@/components/casos/presupuesto/PresupuestoForm'
-import { getPresupuestoById } from './actions'
-import { PageHeader } from '@/components/ui/PageHeader'
+import { createClient } from '@/lib/supabase/client'
+
+function PresupuestoFormWrapper({ 
+  casoId, 
+  pacienteId, 
+  numeroHistoria, 
+  presupuestoId 
+}: { 
+  casoId: string; 
+  pacienteId: string; 
+  numeroHistoria: string; 
+  presupuestoId: string 
+}) {
+  const [presupuesto, setPresupuesto] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchPresupuesto = async () => {
+      const supabase = createClient()
+      try {
+        const { data } = await supabase
+          .from('presupuestos')
+          .select('*')
+          .eq('id', presupuestoId)
+          .single()
+        
+        setPresupuesto(data)
+      } catch (error) {
+        console.error('Error fetching presupuesto:', error)
+        router.push(`/admin/ficha-odontologica/${numeroHistoria}/casos/${casoId}/presupuesto`)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPresupuesto()
+  }, [presupuestoId, casoId, numeroHistoria, router])
+
+  if (loading) {
+    return <div className="p-4">Cargando presupuesto...</div>
+  }
+
+  if (!presupuesto) {
+    return <div className="p-4">Presupuesto no encontrado</div>
+  }
+
+  return <PresupuestoForm casoId={casoId} pacienteId={pacienteId} numeroHistoria={numeroHistoria} presupuesto={presupuesto} />
+}
 
 interface PresupuestoPageProps {
   params: Promise<{
@@ -17,59 +66,89 @@ interface PresupuestoPageProps {
   }>
 }
 
-export default async function PresupuestoPage({ params: paramsPromise, searchParams: searchParamsPromise }: PresupuestoPageProps) {
-  const params = await paramsPromise
-  const searchParams = await searchParamsPromise
-  const supabase = await createClient()
+export default function PresupuestoPage({ params: paramsPromise, searchParams: searchParamsPromise }: PresupuestoPageProps) {
+  const router = useRouter()
+  const params = use(paramsPromise)
+  const searchParams = use(searchParamsPromise || Promise.resolve({ action: undefined, presupuestoId: undefined }))
   const { casoId, numero_historia } = params
-  const { action, presupuestoId } = searchParams || {}
+  const { action, presupuestoId } = searchParams as { action?: string; presupuestoId?: string }
+  const [pacienteId, setPacienteId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return notFound()
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = createClient()
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          router.push('/admin/login')
+          return
+        }
 
-  const { data: caso, error: casoError } = await supabase
-    .from('casos_clinicos')
-    .select('id, historia_id')
-    .eq('id', casoId)
-    .single()
+        const { data: caso } = await supabase
+          .from('casos_clinicos')
+          .select('id, historia_id')
+          .eq('id', casoId)
+          .single()
 
-  if (casoError || !caso) {
-    return notFound()
-  }
+        if (!caso) {
+          router.push('/admin/login')
+          return
+        }
 
-  const { data: historia, error: historiaError } = await supabase
-    .from('historias_clinicas')
-    .select('paciente_id')
-    .eq('id', caso.historia_id)
-    .single()
+        const { data: historia } = await supabase
+          .from('historias_clinicas')
+          .select('paciente_id')
+          .eq('id', caso.historia_id)
+          .single()
 
-  if (historiaError || !historia) {
-    return notFound()
-  }
+        if (!historia) {
+          router.push('/admin/login')
+          return
+        }
 
-  // Modo crear presupuesto
-  if (action === 'crear') {
-    return <PresupuestoForm casoId={casoId} pacienteId={historia.paciente_id} numeroHistoria={numero_historia} />
-  }
-
-  // Modo editar presupuesto
-  if (action === 'editar' && presupuestoId) {
-    const presupuestoResult = await getPresupuestoById(presupuestoId)
-    if (presupuestoResult.error) {
-      return notFound()
+        setPacienteId(historia.paciente_id)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        router.push('/admin/login')
+      } finally {
+        setLoading(false)
+      }
     }
-    return <PresupuestoForm casoId={casoId} pacienteId={historia.paciente_id} numeroHistoria={numero_historia} presupuesto={presupuestoResult.data} />
+
+    fetchData()
+  }, [casoId, router])
+
+  if (loading) {
+    return <div className="p-4">Cargando...</div>
   }
 
-  // Modo lista de presupuestos
+  if (!pacienteId) {
+    return <div className="p-4">Error al cargar datos</div>
+  }
+
+  if (action === 'crear') {
+    return <PresupuestoForm casoId={casoId} pacienteId={pacienteId} numeroHistoria={numero_historia} />
+  }
+
+  if (action === 'editar' && presupuestoId) {
+    return <PresupuestoFormWrapper casoId={casoId} pacienteId={pacienteId} numeroHistoria={numero_historia} presupuestoId={presupuestoId} />
+  }
+
   return (
-    <div className="container mx-auto p-4">
-      <PageHeader title="Presupuestos del Caso">
-        <PresupuestoHeader casoId={casoId} numeroHistoria={numero_historia} />
-      </PageHeader>
-      <PresupuestoTable casoId={casoId} pacienteId={historia.paciente_id} numeroHistoria={numero_historia} />
+    <div className='container mx-auto p-4'>
+      <PresupuestoHeader 
+        casoId={casoId} 
+        numeroHistoria={numero_historia}
+      />
+      
+      <div className='mt-6'>
+        <PresupuestoTable 
+          casoId={casoId} 
+          pacienteId={pacienteId} 
+          numeroHistoria={numero_historia}
+        />
+      </div>
     </div>
   )
 }

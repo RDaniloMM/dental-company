@@ -1,6 +1,7 @@
 import CalendarHome from "@/components/calendar/CalendarHome";
 import { KPICards } from "@/components/kpi/KPICards";
 import { KPICharts } from "@/components/kpi/KPICharts";
+import { DashboardRecordatorios } from "./DashboardRecordatorios";
 
 export default async function HomePage() {
   return (
@@ -18,6 +19,9 @@ export default async function HomePage() {
             <CalendarHome />
           </div>
         </div>
+
+        {/* Sistema de Recordatorios - Solo Client Side */}
+        <DashboardRecordatorios />
       </main>
     </>
   );

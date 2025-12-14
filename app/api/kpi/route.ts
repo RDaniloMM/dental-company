@@ -1,9 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { convertToPEN } from "@/lib/currency-converter";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
+    const casoId = request.nextUrl.searchParams.get("caso_id");
+
+    // Si viene caso_id, retornar presupuestos del caso con monedas
+    if (casoId) {
+      const { data, error } = await supabase
+        .from("presupuestos")
+        .select("id, costo_total, moneda_id, monedas(codigo)")
+        .eq("caso_id", casoId)
+        .is("deleted_at", null);
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+
+      return NextResponse.json({ data: data || [] });
+    }
     // Fechas para filtros
     const now = new Date();
     const startOfMonth = new Date(
@@ -56,17 +74,23 @@ export async function GET() {
       })
     );
 
-    // Obtener datos históricos de ingresos por mes (de pagos)
+    // Obtener datos históricos de ingresos por mes (de pagos) - CONVERTIDOS A PEN
     const ingresosPorMes = await Promise.all(
       historicoMeses.map(async (mes) => {
-        // Ingresos de pagos (presupuestos)
+        // Ingresos de pagos con moneda (presupuestos)
         const { data: pagos } = await supabase
           .from("pagos")
-          .select("monto")
+          .select("monto, monedas(codigo)")
           .gte("fecha_pago", mes.inicio)
           .lte("fecha_pago", mes.fin);
+        
+        // Convertir todos a PEN
         const totalPagos =
-          pagos?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
+          pagos?.reduce((acc, p) => {
+            const monedaCodigo = p.monedas?.codigo || "PEN";
+            const montoPEN = convertToPEN(Number(p.monto), monedaCodigo);
+            return acc + montoPEN;
+          }, 0) || 0;
 
         return { mes: mes.mes, ingresos: totalPagos };
       })
@@ -78,6 +102,7 @@ export async function GET() {
         const { count } = await supabase
           .from("citas")
           .select("*", { count: "exact", head: true })
+          .is("deleted_at", null)
           .gte("fecha_inicio", mes.inicio)
           .lte("fecha_inicio", mes.fin);
         return { mes: mes.mes, citas: count || 0 };
@@ -105,12 +130,14 @@ export async function GET() {
     // 4. Total de citas
     const { count: totalCitas } = await supabase
       .from("citas")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .is("deleted_at", null);
 
     // 5. Citas por estado
     const { data: citasPorEstado } = await supabase
       .from("citas")
-      .select("estado");
+      .select("estado")
+      .is("deleted_at", null);
 
     const estadosCitas = {
       programada: 0,
@@ -144,6 +171,7 @@ export async function GET() {
     const { count: citasSemana } = await supabase
       .from("citas")
       .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
       .gte("fecha_inicio", startOfWeek);
 
     // 7. Citas de hoy
@@ -155,27 +183,36 @@ export async function GET() {
     const { count: citasHoy } = await supabase
       .from("citas")
       .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
       .gte("fecha_inicio", todayStart.toISOString())
       .lte("fecha_inicio", todayEnd.toISOString());
 
-    // 8. Ingresos del mes actual (de pagos)
+    // 8. Ingresos del mes actual (de pagos) - CONVERTIDOS A PEN
     const { data: pagosMes } = await supabase
       .from("pagos")
-      .select("monto")
+      .select("monto, monedas(codigo)")
       .gte("fecha_pago", startOfMonth);
 
     const ingresosMes =
-      pagosMes?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
+      pagosMes?.reduce((acc, p) => {
+        const monedaCodigo = p.monedas?.codigo || "PEN";
+        const montoPEN = convertToPEN(Number(p.monto), monedaCodigo);
+        return acc + montoPEN;
+      }, 0) || 0;
 
-    // 9. Ingresos del mes anterior (de pagos)
+    // 9. Ingresos del mes anterior (de pagos) - CONVERTIDOS A PEN
     const { data: pagosAnterior } = await supabase
       .from("pagos")
-      .select("monto")
+      .select("monto, monedas(codigo)")
       .gte("fecha_pago", startOfLastMonth)
       .lte("fecha_pago", endOfLastMonth);
 
     const ingresosMesAnterior =
-      pagosAnterior?.reduce((acc, p) => acc + Number(p.monto), 0) || 0;
+      pagosAnterior?.reduce((acc, p) => {
+        const monedaCodigo = p.monedas?.codigo || "PEN";
+        const montoPEN = convertToPEN(Number(p.monto), monedaCodigo);
+        return acc + montoPEN;
+      }, 0) || 0;
 
     // 10. Presupuestos/Tratamientos por estado (usando tabla presupuestos)
     const { data: presupuestosPorEstado } = await supabase
@@ -282,6 +319,7 @@ export async function GET() {
         personal(nombres, apellidos)
       `
       )
+        .is("deleted_at", null)
       .gte("fecha_inicio", new Date().toISOString())
       .lte("fecha_inicio", nextWeek.toISOString())
       .order("fecha_inicio", { ascending: true })

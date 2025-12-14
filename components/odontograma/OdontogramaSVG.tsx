@@ -137,8 +137,8 @@ export default function OdontogramaSVG({
   const bottomTeeth = teethList.slice(midPoint);
 
   return (
-    <div className='relative flex flex-col items-center gap-5 p-4 odontograma-container'>
-      <div className='flex gap-1'>
+    <div className='relative flex flex-col items-center gap-5 p-4 odontograma-container' data-testid="odontograma-container">
+      <div className='flex gap-1' data-testid="odontograma-teeth">
         {topTeeth.map((id, index) =>
           id && id !== "-" ? (
             <ToothCard
@@ -154,7 +154,7 @@ export default function OdontogramaSVG({
           ) : (
             <ToothCard
               key={`empty-top-${index}`}
-              id="18" // Dummy ID for shape
+              id="18"
               isTop
               odontograma={{}}
               zoneColors={{}}
@@ -182,7 +182,7 @@ export default function OdontogramaSVG({
           ) : (
             <ToothCard
               key={`empty-bottom-${index}`}
-              id="48" // Dummy ID for shape
+              id="48"
               isTop={false}
               odontograma={{}}
               zoneColors={{}}
@@ -237,9 +237,8 @@ export default function OdontogramaSVG({
                 Diente {selectedTooth.id}
               </h2>
 
-              <div className='flex w-full gap-4'>
+              <div className='flex w-full gap-4 h-full overflow-hidden'>
                 <div className='flex-1 flex flex-col justify-center items-center bg-muted p-4 rounded-xl relative'>
-                  {/* Diente base */}
                   <ToothCard
                     id={selectedTooth.id}
                     isTop={selectedTooth.isTop}
@@ -250,7 +249,6 @@ export default function OdontogramaSVG({
                     borderColor={borderColors[selectedTooth.id] || "#ccc"}
                   />
 
-                  {/* Overlay de dibujo para condiciones específicas */}
                   {[
                     "Fractura dental",
                     "Restauración temporal",
@@ -259,9 +257,8 @@ export default function OdontogramaSVG({
                   ].includes(selectedCondition ?? "") && (
                       <DrawingOverlay
                         toothId={selectedTooth.id}
-                        drawColor={selectedColor || "blue"} // color que viene de CondicionMenu
+                        drawColor={selectedColor || "blue"}
                         onSave={(newDraw) => {
-                          // Solo agregar path si realmente hay dibujo
                           if (!newDraw.drawPath) return;
 
                           setOdontograma((prev) => {
@@ -277,7 +274,7 @@ export default function OdontogramaSVG({
                                 generales: [
                                   ...current.generales,
                                   {
-                                    condicion: selectedCondition!, // la condición seleccionada
+                                    condicion: selectedCondition!,
                                     icon: `path_${selectedTooth.id}`,
                                     drawPath: newDraw.drawPath,
                                     color: newDraw.color,
@@ -296,7 +293,7 @@ export default function OdontogramaSVG({
                     )}
                 </div>
 
-                <div className='flex-1 overflow-y-auto max-h-[65vh] p-2 border-l border-border'>
+                <div className='flex-1 overflow-y-auto p-2 border-l border-border custom-scrollbar'>
                   <CondicionMenu
                     toothId={selectedTooth.id}
                     selectedCondition={selectedCondition}
@@ -324,6 +321,7 @@ export default function OdontogramaSVG({
     </div>
   );
 }
+
 function DrawingOverlay({
   toothId,
   drawColor,
@@ -400,7 +398,6 @@ function DrawingOverlay({
 
   return (
     <>
-      {/* Canvas superior */}
       <canvas
         ref={topCanvasRef}
         width={CANVAS_WIDTH}
@@ -417,7 +414,6 @@ function DrawingOverlay({
         onMouseLeave={stopDraw}
       />
 
-      {/* Canvas inferior */}
       <canvas
         ref={bottomCanvasRef}
         width={CANVAS_WIDTH}
@@ -434,7 +430,6 @@ function DrawingOverlay({
         onMouseLeave={stopDraw}
       />
 
-      {/* Botón guardar */}
       <div className='absolute bottom-2 right-2 flex gap-2 z-30'>
         <button
           onClick={handleSave}

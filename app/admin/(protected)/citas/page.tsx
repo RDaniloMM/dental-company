@@ -50,7 +50,6 @@ interface Cita {
   costo_total?: number | null;
   moneda_id?: string | null;
   notas?: string | null;
-  nombre_cita?: string | null;
 }
 
 interface Paciente {
@@ -80,12 +79,35 @@ export default function CitasPage() {
     completadas: 0,
   });
 
+  const handleUpdateEstado = async (citaId: string, nuevoEstado: string) => {
+    try {
+      const { error } = await supabase
+        .from('citas')
+        .update({ estado: nuevoEstado })
+        .eq('id', citaId);
+
+      if (error) throw error;
+
+      // Actualizar estado local
+      setCitas(citas.map(c => 
+        c.id === citaId ? { ...c, estado: nuevoEstado } : c
+      ));
+
+      // Recalcular stats
+      fetchData();
+    } catch (error) {
+      console.error('Error actualizando estado:', error);
+      alert('Error al actualizar el estado de la cita');
+    }
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     const [citasRes, pacientesRes, odontologosRes] = await Promise.all([
       supabase
         .from("citas")
         .select("*")
+        .is("deleted_at", null)
         .order("fecha_inicio", { ascending: false }),
       supabase.from("pacientes").select("id,nombres,apellidos"),
       supabase.from("personal").select("id,nombre_completo"),
@@ -395,7 +417,22 @@ export default function CitasPage() {
                               {getOdontologoName(cita.odontologo_id)}
                             </TableCell>
                             <TableCell>{cita.motivo || "-"}</TableCell>
-                            <TableCell>{getEstadoBadge(cita.estado)}</TableCell>
+                            <TableCell>
+                              <Select
+                                value={cita.estado}
+                                onValueChange={(valor) => handleUpdateEstado(cita.id, valor)}
+                              >
+                                <SelectTrigger className="w-[130px] h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Programada">Programada</SelectItem>
+                                  <SelectItem value="Confirmada">Confirmada</SelectItem>
+                                  <SelectItem value="Completada">Completada</SelectItem>
+                                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
                             <TableCell>
                               {cita.costo_total
                                 ? `S/ ${cita.costo_total.toFixed(2)}`
@@ -471,7 +508,22 @@ export default function CitasPage() {
                               {getOdontologoName(cita.odontologo_id)}
                             </TableCell>
                             <TableCell>{cita.motivo || "-"}</TableCell>
-                            <TableCell>{getEstadoBadge(cita.estado)}</TableCell>
+                            <TableCell>
+                              <Select
+                                value={cita.estado}
+                                onValueChange={(valor) => handleUpdateEstado(cita.id, valor)}
+                              >
+                                <SelectTrigger className="w-[130px] h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Programada">Programada</SelectItem>
+                                  <SelectItem value="Confirmada">Confirmada</SelectItem>
+                                  <SelectItem value="Completada">Completada</SelectItem>
+                                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
                             <TableCell>
                               {cita.costo_total
                                 ? `S/ ${cita.costo_total.toFixed(2)}`
