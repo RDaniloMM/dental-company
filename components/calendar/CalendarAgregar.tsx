@@ -278,12 +278,7 @@ export default function GoogleCalendarPage({
 
         const startDate = new Date(data.fecha_inicio);
         const duracionMin = parseInt(data.duracion);
-        const endDate = new Date(startDate.getTime() + duracionMin * 60000); // duración seleccionada
-
-        // Corregir zona horaria: convertir de hora local a UTC compensando el offset
-        const offsetMs = startDate.getTimezoneOffset() * 60000;
-        const startDateUTC = new Date(startDate.getTime() + offsetMs);
-        const endDateUTC = new Date(endDate.getTime() + offsetMs);
+        const endDate = new Date(startDate.getTime() + duracionMin * 60000);
 
         try {
           // Google Calendar
@@ -296,8 +291,8 @@ export default function GoogleCalendarPage({
             body: JSON.stringify({
               summary: `Cita: ${paciente?.nombres} ${paciente?.apellidos} - ${odontologo?.nombre_completo}`,
               description: `Motivo: ${data.motivo || "Sin motivo"}\n\nNotas: ${data.notas || "Sin notas"}`,
-              start: startDateUTC.toISOString(),
-              end: endDateUTC.toISOString(),
+              start: startDate.toISOString(),
+              end: endDate.toISOString(),
             }),
           });
           const result = await res.json();
@@ -312,8 +307,8 @@ export default function GoogleCalendarPage({
             {
               paciente_id: data.paciente_id,
               odontologo_id: data.odontologo_id,
-              fecha_inicio: startDateUTC.toISOString(),
-              fecha_fin: endDateUTC.toISOString(),
+              fecha_inicio: startDate.toISOString(),
+              fecha_fin: endDate.toISOString(),
               estado: data.estado,
               motivo: data.motivo,
               notas: data.notas,
