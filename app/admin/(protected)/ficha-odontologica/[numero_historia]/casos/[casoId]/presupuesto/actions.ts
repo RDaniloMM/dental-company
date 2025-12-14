@@ -125,7 +125,8 @@ export async function upsertPresupuesto(formData: unknown, items: unknown) {
         const { data: lastBudget } = await supabase
             .from('presupuestos')
             .select('correlativo')
-            .eq('paciente_id', parsedData.data.paciente_id)
+            .eq('caso_id', parsedData.data.caso_id)
+            .is('deleted_at', null)
             .order('correlativo', { ascending: false })
             .limit(1)
             .maybeSingle();

@@ -90,7 +90,7 @@ interface PresupuestoResumen {
   costo_total: number | null;
   moneda_id: string | null;
   items_json: unknown;
-  monedas: { codigo: string; simbolo: string } | null;
+  monedas: { codigo: string; simbolo: string } | { codigo: string; simbolo: string }[] | null;
 }
 
 export default function ReportesPage() {
@@ -101,6 +101,7 @@ export default function ReportesPage() {
   const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
   const [reporteInfo, setReporteInfo] = useState<ReporteInfo | null>(null);
   const [casos, setCasos] = useState<Caso[]>([]);
+  const [casoSeleccionado, setCasoSeleccionado] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [tipoReporte, setTipoReporte] = useState("ficha");
@@ -129,6 +130,41 @@ export default function ReportesPage() {
     fetchPacientes();
   }, [fetchPacientes]);
 
+  useEffect(() => {
+    if (!casoSeleccionado || !selectedPaciente) {
+      setPresupuestos([]);
+      setPresupuestoSeleccionado("");
+      return;
+    }
+
+    const loadPresupuestos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("presupuestos")
+          .select("id, nombre, correlativo, fecha_creacion, costo_total, moneda_id, items_json, monedas(codigo, simbolo)")
+          .eq("caso_id", casoSeleccionado)
+          .is("deleted_at", null)
+          .order("correlativo", { ascending: true });
+
+        if (error) throw error;
+        
+        const presupuestosData = (data as PresupuestoResumen[]) || [];
+        setPresupuestos(presupuestosData);
+        
+        if (presupuestosData.length > 0) {
+          setPresupuestoSeleccionado(presupuestosData[0].id);
+        } else {
+          setPresupuestoSeleccionado("");
+        }
+      } catch (error) {
+        console.error("Error loading presupuestos:", error);
+        toast.error("Error al cargar presupuestos");
+      }
+    };
+
+    loadPresupuestos();
+  }, [casoSeleccionado, selectedPaciente, supabase]);
+
   const filteredPacientes = pacientes.filter((p) => {
     const fullName = `${p.nombres} ${p.apellidos}`.toLowerCase();
     const search = searchTerm.toLowerCase();
@@ -138,6 +174,8 @@ export default function ReportesPage() {
       (p.numero_historia && p.numero_historia.toLowerCase().includes(search))
     );
   });
+
+  const casosUnicos = casos.filter((caso, idx, arr) => arr.findIndex((c) => c.id === caso.id) === idx);
 
   const getHistoriaId = async (pacienteId: string): Promise<string | null> => {
     try {
@@ -157,6 +195,7 @@ export default function ReportesPage() {
   const handleViewReporte = async (paciente: Paciente) => {
     setSelectedPaciente(paciente);
     setDialogOpen(true);
+    setCasoSeleccionado("");
     setPresupuestoSeleccionado("");
 
     try {
@@ -164,23 +203,21 @@ export default function ReportesPage() {
 
       // Si no tiene historia clínica aún, asumimos datos vacíos para casos
       const casosQuery = historiaId 
-        ? supabase.from("casos_clinicos").select("id, nombre_caso, estado, fecha_inicio").eq("historia_id", historiaId).order("fecha_inicio", { ascending: false })
+        ? supabase
+            .from("casos_clinicos")
+            .select("id, nombre_caso, estado, fecha_inicio")
+            .eq("historia_id", historiaId)
+            .is("deleted_at", null)
+            .order("fecha_inicio", { ascending: false })
         : Promise.resolve({ data: [], error: null });
 
-      // Obtener presupuestos del paciente
-      const presupuestosQuery = historiaId
-        ? supabase.from("presupuestos").select("id, nombre, correlativo, fecha_creacion, costo_total, moneda_id, items_json, monedas(codigo, simbolo)").eq("paciente_id", paciente.id).is("deleted_at", null).order("fecha_creacion", { ascending: false })
-        : Promise.resolve({ data: [], error: null });
-
-      const [citasRes, casosRes, presupuestosRes] = await Promise.all([
-        supabase.from("citas").select("id, estado, fecha_inicio").eq("paciente_id", paciente.id).order("fecha_inicio", { ascending: false }),
-        casosQuery,
-        presupuestosQuery
+      const [citasRes, casosRes] = await Promise.all([
+        supabase.from("citas").select("id, estado, fecha_inicio").eq("paciente_id", paciente.id).is("deleted_at", null).order("fecha_inicio", { ascending: false }),
+        casosQuery
       ]);
 
       const citas = (citasRes.data as Cita[]) || [];
       const casosData = (casosRes.data as Caso[]) || [];
-      const presupuestosData = (presupuestosRes.data as PresupuestoResumen[]) || [];
 
       setReporteInfo({
         paciente,
@@ -191,11 +228,11 @@ export default function ReportesPage() {
         ultimaCita: citas[0]?.fecha_inicio,
       });
       setCasos(casosData);
-      setPresupuestos(presupuestosData);
       
-      // Auto-seleccionar el primer presupuesto si existe
-      if (presupuestosData.length > 0) {
-        setPresupuestoSeleccionado(presupuestosData[0].id);
+      if (casosData.length === 1) {
+        setCasoSeleccionado(casosData[0].id);
+      } else {
+        setCasoSeleccionado(""); // Forzar selección si hay múltiples
       }
     } catch (error) {
       console.error("Error loading report details:", error);
@@ -205,6 +242,10 @@ export default function ReportesPage() {
 
   const handleGeneratePdf = async () => {
     if (!selectedPaciente) return;
+    if (casosUnicos.length > 1 && !casoSeleccionado) {
+      toast.error("Debes seleccionar un caso para continuar");
+      return;
+    }
     if (tipoReporte === "presupuesto" && !presupuestoSeleccionado) {
       toast.error("Selecciona un presupuesto");
       return;
@@ -214,7 +255,8 @@ export default function ReportesPage() {
     try {
       let pdfPayload: Record<string, unknown> = {
         tipo_reporte: tipoReporte,
-        numero_historia: selectedPaciente.numero_historia
+        numero_historia: selectedPaciente.numero_historia,
+        caso_id: casoSeleccionado || (casosUnicos.length === 1 ? casosUnicos[0].id : undefined)
       };
 
       if (tipoReporte === "ficha") {
@@ -375,7 +417,10 @@ export default function ReportesPage() {
         }
 
         const items = Array.isArray(presupuesto.items_json) ? presupuesto.items_json : [];
-        const monedaSimbolo = presupuesto.monedas?.simbolo || "S/";
+        const monedasDataPres: { codigo: string; simbolo: string } | undefined = Array.isArray(presupuesto.monedas)
+          ? presupuesto.monedas[0]
+          : presupuesto.monedas ?? undefined;
+        const monedaSimbolo = monedasDataPres?.simbolo || "S/";
 
         // Obtener pagos relacionados a este presupuesto desde seguimientos
         const { data: segData } = await supabase
@@ -614,8 +659,32 @@ export default function ReportesPage() {
               </div>
 
               <div className='space-y-3 bg-card p-4 rounded-lg border'>
+                {casosUnicos.length > 1 && (
+                  <div className='space-y-2 pb-3 border-b'>
+                    <label className='text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2'>
+                      <AlertCircle className="h-4 w-4" />
+                      Seleccionar Caso *
+                    </label>
+                    <Select value={casoSeleccionado} onValueChange={setCasoSeleccionado}>
+                      <SelectTrigger className={`w-full ${!casoSeleccionado && 'border-red-500 border-2'}`}>
+                        <SelectValue placeholder='Debes seleccionar un caso' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {casosUnicos.map((caso) => (
+                          <SelectItem key={caso.id} value={caso.id}>
+                            {caso.nombre_caso}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {!casoSeleccionado && casosUnicos.length > 1 && (
+                      <p className='text-xs text-red-500 dark:text-red-400 font-medium'>Este paciente tiene múltiples casos. Selecciona uno para continuar.</p>
+                    )}
+                  </div>
+                )}
+                
                 <label className='text-sm font-medium'>Tipo de Reporte a Generar</label>
-                <Select value={tipoReporte} onValueChange={setTipoReporte}>
+                <Select value={tipoReporte} onValueChange={setTipoReporte} disabled={casosUnicos.length > 1 && !casoSeleccionado}>
                   <SelectTrigger className="w-full"><SelectValue placeholder='Selecciona el tipo' /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value='ficha'>Ficha Odontológica</SelectItem>
@@ -633,7 +702,8 @@ export default function ReportesPage() {
                           const presId = pres.id as string;
                           const correlativo = String(pres.correlativo || "000").padStart(3, "0");
                           const nombre = pres.nombre as string;
-                          const monedaSimb = ((pres.monedas as Record<string, unknown> | undefined)?.simbolo as string) || "S/";
+                          const monedasData = Array.isArray(pres.monedas) ? pres.monedas[0] : pres.monedas;
+                          const monedaSimb = monedasData?.simbolo || "S/";
                           const costoTotal = ((pres.costo_total as number) || 0).toFixed(2);
                           return (
                             <SelectItem key={presId} value={presId}>
@@ -651,11 +721,11 @@ export default function ReportesPage() {
                 )}
               </div>
 
-              {casos.length > 0 && (
+              {casosUnicos.length > 0 && (
                 <div className='space-y-2'>
-                  <h4 className='text-sm font-medium flex items-center gap-2'><Stethoscope className="h-4 w-4" /> Casos Recientes</h4>
+                  <h4 className='text-sm font-medium flex items-center gap-2'><Stethoscope className="h-4 w-4" /> Casos Recientes (últimos 3)</h4>
                   <div className='space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar'>
-                    {casos.map((caso) => (
+                    {casosUnicos.slice(0, 3).map((caso) => (
                       <div key={caso.id} className='flex items-center justify-between p-3 bg-muted/40 rounded-md border text-sm hover:bg-muted/60 transition-colors'>
                         <div className="font-medium">{caso.nombre_caso}</div>
                         <Badge variant={caso.estado === "Abierto" || caso.estado === "En Progreso" ? "default" : "secondary"}>{caso.estado}</Badge>

@@ -10,11 +10,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "caso_id is required" }, { status: 400 })
     }
 
-    // Obtener pagos del caso (a través de presupuestos)
+    const { data: presupuestos, error: presError } = await supabase
+      .from("presupuestos")
+      .select("id")
+      .eq("caso_id", casoId)
+      .is("deleted_at", null)
+
+    if (presError) {
+      return NextResponse.json({ error: presError.message }, { status: 400 })
+    }
+
+    const presupuestoIds = presupuestos?.map(p => p.id) || []
+
+    if (presupuestoIds.length === 0) {
+      return NextResponse.json({ data: [] })
+    }
     const { data, error } = await supabase
       .from("pagos")
-      .select("id, monto, moneda_id, monedas(codigo), presupuestos(caso_id)")
-      .eq("presupuestos.caso_id", casoId)
+      .select("id, monto, moneda_id, monedas(codigo)")
+      .in("presupuesto_id", presupuestoIds)
       .is("deleted_at", null)
 
     if (error) {

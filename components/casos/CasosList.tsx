@@ -204,19 +204,20 @@ export default function CasosList({
     setIsDeleting(true);
     const { data: { user } } = await supabase.auth.getUser();
     
-    const { error } = await supabase
-      .from("casos_clinicos")
-      .update({ 
-          deleted_at: new Date().toISOString(),
-          deleted_by: user?.id 
-      })
-      .eq("id", deleteCandidate.id);
+    const { data, error } = await supabase.rpc('delete_caso_clinico_cascade', {
+      p_caso_id: deleteCandidate.id,
+      p_user_id: user?.id || null
+    });
 
     if (error) {
-      toast.error('Error al eliminar el caso clínico.', { style: { backgroundColor: '#FF0000', color: 'white' } });
-    } else {
+      toast.error(`Error al eliminar el caso: ${error.message || 'Error desconocido'}`, { style: { backgroundColor: '#FF0000', color: 'white' } });
+      console.error('Error eliminando caso:', error);
+    } else if (data?.success) {
+      const summary = data.summary;
       setCasos(casos.filter((c) => c.id !== deleteCandidate.id));
-      toast.success('El caso clínico ha sido eliminado.', { style: { backgroundColor: '#008000', color: 'white' } });
+      toast.success(`Caso eliminado. Citas: ${summary.citas}, Presupuestos: ${summary.presupuestos}, Seguimientos: ${summary.seguimientos}`, { style: { backgroundColor: '#008000', color: 'white' } });
+    } else {
+      toast.error(data?.error || 'Error al eliminar el caso', { style: { backgroundColor: '#FF0000', color: 'white' } });
     }
     setIsDeleting(false);
     setIsDeleteDialogOpen(false);
@@ -391,17 +392,17 @@ export default function CasosList({
                   </TableCell>
 
                   {/* Presupuesto */}
-                  <TableCell className="text-center align-top">
+                  <TableCell className="text-right align-top min-w-[140px]">
                     <div className="space-y-0.5">
                       {caso.monedas && caso.monedas.length > 0 ? (
                         caso.monedas.map((m, idx) => (
-                          <div key={idx} className="text-xs font-mono text-slate-700 dark:text-slate-300 leading-tight">
-                            <span className="font-medium">{m.simbolo} {m.total.toFixed(0)}</span>
+                          <div key={idx} className="text-xs font-mono tabular-nums text-slate-700 dark:text-slate-300 leading-tight">
+                            <span className="font-medium">{m.simbolo} {m.total.toFixed(2)}</span>
                           </div>
                         ))
                       ) : (
-                        <div className="text-xs font-mono text-slate-700 dark:text-slate-300 leading-tight">
-                          <span className="font-medium">{caso.moneda?.simbolo || 'S/'} {caso.total_presupuesto.toFixed(0)}</span>
+                        <div className="text-xs font-mono tabular-nums text-slate-700 dark:text-slate-300 leading-tight">
+                          <span className="font-medium">{caso.moneda?.simbolo || 'S/'} {caso.total_presupuesto.toFixed(2)}</span>
                         </div>
                       )}
                     </div>

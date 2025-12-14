@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import CasosList from "@/components/casos/CasosList";
 import { type ComponentProps } from "react";
+import { convertToPEN } from "@/lib/currency-converter";
 
 interface CasosPageProps {
   params: Promise<{ numero_historia: string }>;
@@ -128,6 +129,7 @@ export default async function CasosPage({
        citas(fecha_inicio, odontologo_id, personal:odontologo_id(nombre_completo, rol))`
     )
     .eq("historia_id", historiaId)
+    .is("deleted_at", null)
     .order("fecha_inicio", { ascending: false });
 
   if (casosError) {
@@ -167,21 +169,19 @@ export default async function CasosPage({
 
     const presupuestoIds = presupuestosData?.map((p: Record<string, unknown>) => p.id as string) || [];
 
-    // Sumar pagos reales asociados a cada presupuesto (vía seguimientos -> pagos)
     const { data: pagosData } = presupuestoIds.length > 0
       ? await supabase
-          .from("seguimientos")
-          .select("presupuesto_id, pago_id, pagos(monto)")
+          .from("pagos")
+          .select("presupuesto_id, monto")
           .in("presupuesto_id", presupuestoIds)
-          .not("pago_id", "is", null)
           .is("deleted_at", null)
       : { data: null };
 
     const pagosPorPresupuesto = new Map<string, number>();
-    (pagosData || []).forEach((row) => {
-      const presupuestoId = row.presupuesto_id as string;
+    (pagosData || []).forEach((pago) => {
+      const presupuestoId = pago.presupuesto_id as string;
       if (!presupuestoId) return;
-      const monto = ((row.pagos as unknown as Record<string, unknown> | undefined)?.monto as number) || 0;
+      const monto = (pago.monto as number) || 0;
       pagosPorPresupuesto.set(
         presupuestoId,
         (pagosPorPresupuesto.get(presupuestoId) || 0) + monto
@@ -264,6 +264,19 @@ export default async function CasosPage({
       current.pagado += p.total_pagado || 0;
     });
 
+    let totalPresupuestoGlobal = 0;
+    let totalPagadoGlobal = 0;
+
+    presupuestosPorMoneda.forEach((datos, monedaCodigo) => {
+      const totalEnPEN = convertToPEN(datos.total, monedaCodigo);
+      const pagadoEnPEN = convertToPEN(datos.pagado, monedaCodigo);
+
+      totalPresupuestoGlobal += totalEnPEN;
+      totalPagadoGlobal += pagadoEnPEN;
+    });
+    
+    const porcentajePago = totalPresupuestoGlobal > 0 ? Math.round((totalPagadoGlobal / totalPresupuestoGlobal) * 100) : 0;
+    
     const monedaPrincipal = presupuestos[0]?.monedas;
     const presupuestosPrincipal = presupuestosPorMoneda.get(monedaPrincipal?.codigo || 'PEN') || {
       total: 0,
@@ -274,7 +287,6 @@ export default async function CasosPage({
     
     const totalPresupuesto = presupuestosPrincipal.total;
     const totalPagado = presupuestosPrincipal.pagado;
-    const porcentajePago = totalPresupuesto > 0 ? Math.round((totalPagado / totalPresupuesto) * 100) : 0;
     
     let estadoPago = presupuestosPrincipal.estado;
     if (presupuestos.length > 1) {
