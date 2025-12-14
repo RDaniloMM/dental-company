@@ -151,7 +151,8 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
         setProximaCitaHabilitada(true)
         if (data.citas) {
           const dateObj = new Date(data.citas.fecha_inicio)
-          const localIso = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16)
+          // Formatear para datetime-local (ya está en zona horaria local del browser)
+          const localIso = dateObj.toISOString().slice(0, 16)
           setInicio(localIso)
           setDuracion(((new Date(data.citas.fecha_fin).getTime() - dateObj.getTime()) / 60000).toString())
           setEstado(data.citas.estado || '')
