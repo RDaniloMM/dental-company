@@ -80,9 +80,10 @@ export async function GET(request: NextRequest) {
         // Ingresos de pagos con moneda (presupuestos)
         const { data: pagos } = await supabase
           .from("pagos")
-          .select("monto, monedas(codigo)")
+          .select("monto, monedas(codigo), presupuestos!inner(deleted_at)")
           .gte("fecha_pago", mes.inicio)
-          .lte("fecha_pago", mes.fin);
+          .lte("fecha_pago", mes.fin)
+          .is("presupuestos.deleted_at", null);
 
         // Convertir todos a PEN
         const totalPagos =
@@ -190,8 +191,9 @@ export async function GET(request: NextRequest) {
     // 8. Ingresos del mes actual (de pagos) - CONVERTIDOS A PEN
     const { data: pagosMes } = await supabase
       .from("pagos")
-      .select("monto, monedas(codigo)")
-      .gte("fecha_pago", startOfMonth);
+      .select("monto, monedas(codigo), presupuestos!inner(deleted_at)")
+      .gte("fecha_pago", startOfMonth)
+      .is("presupuestos.deleted_at", null);
 
     const ingresosMes =
       pagosMes?.reduce((acc, p) => {
@@ -203,9 +205,10 @@ export async function GET(request: NextRequest) {
     // 9. Ingresos del mes anterior (de pagos) - CONVERTIDOS A PEN
     const { data: pagosAnterior } = await supabase
       .from("pagos")
-      .select("monto, monedas(codigo)")
+      .select("monto, monedas(codigo), presupuestos!inner(deleted_at)")
       .gte("fecha_pago", startOfLastMonth)
-      .lte("fecha_pago", endOfLastMonth);
+      .lte("fecha_pago", endOfLastMonth)
+      .is("presupuestos.deleted_at", null);
 
     const ingresosMesAnterior =
       pagosAnterior?.reduce((acc, p) => {
@@ -217,7 +220,8 @@ export async function GET(request: NextRequest) {
     // 10. Presupuestos/Tratamientos por estado (usando tabla presupuestos)
     const { data: presupuestosPorEstado } = await supabase
       .from("presupuestos")
-      .select("estado, costo_total, total_pagado, saldo_pendiente");
+      .select("estado, costo_total, total_pagado, saldo_pendiente")
+      .is("deleted_at", null);
 
     const estadosPresupuestos = {
       porCobrar: 0, // Estado inicial - sin pagos
@@ -271,11 +275,13 @@ export async function GET(request: NextRequest) {
         procedimiento_id,
         nombre_procedimiento,
         cantidad,
-        created_at
+        created_at,
+        presupuestos!inner(deleted_at)
       `
       )
       .gte("created_at", thirtyDaysAgo.toISOString())
-      .not("procedimiento_id", "is", null);
+      .not("procedimiento_id", "is", null)
+      .is("presupuestos.deleted_at", null);
 
     // Contar procedimientos
     const conteoProc: Record<string, { nombre: string; count: number }> = {};
