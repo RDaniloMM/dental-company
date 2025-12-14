@@ -83,11 +83,11 @@ export async function GET(request: NextRequest) {
           .select("monto, monedas(codigo)")
           .gte("fecha_pago", mes.inicio)
           .lte("fecha_pago", mes.fin);
-        
+
         // Convertir todos a PEN
         const totalPagos =
           pagos?.reduce((acc, p) => {
-            const monedaCodigo = p.monedas?.codigo || "PEN";
+            const monedaCodigo = (p.monedas as any)?.codigo || "PEN";
             const montoPEN = convertToPEN(Number(p.monto), monedaCodigo);
             return acc + montoPEN;
           }, 0) || 0;
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
 
     const ingresosMes =
       pagosMes?.reduce((acc, p) => {
-        const monedaCodigo = p.monedas?.codigo || "PEN";
+        const monedaCodigo = (p.monedas as any)?.codigo || "PEN";
         const montoPEN = convertToPEN(Number(p.monto), monedaCodigo);
         return acc + montoPEN;
       }, 0) || 0;
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
 
     const ingresosMesAnterior =
       pagosAnterior?.reduce((acc, p) => {
-        const monedaCodigo = p.monedas?.codigo || "PEN";
+        const monedaCodigo = (p.monedas as any)?.codigo || "PEN";
         const montoPEN = convertToPEN(Number(p.monto), monedaCodigo);
         return acc + montoPEN;
       }, 0) || 0;
@@ -319,7 +319,7 @@ export async function GET(request: NextRequest) {
         personal(nombres, apellidos)
       `
       )
-        .is("deleted_at", null)
+      .is("deleted_at", null)
       .gte("fecha_inicio", new Date().toISOString())
       .lte("fecha_inicio", nextWeek.toISOString())
       .order("fecha_inicio", { ascending: true })

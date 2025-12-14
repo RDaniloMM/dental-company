@@ -10,6 +10,7 @@ Los diagramas están escritos en sintaxis PlantUML y pueden visualizarse en [Pla
 1. [Diagrama de Casos de Uso](#1-diagrama-de-casos-de-uso)
    - [1.0 Casos de Uso Nivel 0 - Sistema Completo](#10-casos-de-uso-nivel-0---sistema-completo)
    - [1.1 Casos de Uso: Autenticación y Administración](#11-casos-de-uso-autenticación-y-administración)
+   - [1.2 Casos de Uso: Dashboard y Métricas (Detallado)](#12-casos-de-uso-dashboard-y-métricas-detallado)
 2. [Diagrama de Clases](#2-diagrama-de-clases)
 3. [Diagramas de Secuencia](#3-diagramas-de-secuencia)
 4. [Modelo Relacional de Base de Datos](#4-modelo-relacional-de-base-de-datos)
@@ -214,257 +215,420 @@ UC6 ..> UC7 : <<include>>
 @enduml
 ```
 
+### 1.2 Casos de Uso: Dashboard y Métricas (Detallado)
+
+```plantuml
+@startuml Casos_de_Uso_Dashboard_Detallado
+!theme plain
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Diagrama de Casos de Uso - Dashboard y Sistema de Métricas (KPIs)
+
+actor "Administrador" as Admin
+actor "Odontólogo" as Odontologo
+
+rectangle "Sistema de Dashboard y Métricas" {
+
+    package "Visualización de KPIs" {
+        usecase "Ver Dashboard Principal" as UC_Dashboard
+        usecase "Visualizar Métricas de Pacientes" as UC_KPI_Pacientes
+        usecase "Visualizar Métricas de Citas" as UC_KPI_Citas
+        usecase "Visualizar Métricas Financieras" as UC_KPI_Finanzas
+        usecase "Visualizar Métricas de Tratamientos" as UC_KPI_Tratamientos
+    }
+
+    package "Métricas de Pacientes" {
+        usecase "Ver Total de Pacientes" as UC_Total_Pacientes
+        usecase "Ver Pacientes Nuevos del Mes" as UC_Nuevos_Pacientes
+        usecase "Ver Crecimiento de Pacientes" as UC_Crecimiento_Pacientes
+        usecase "Ver Cumpleaños del Día" as UC_Cumpleanos
+    }
+
+    package "Métricas de Citas" {
+        usecase "Ver Citas de Hoy" as UC_Citas_Hoy
+        usecase "Ver Citas de la Semana" as UC_Citas_Semana
+        usecase "Ver Tasa de Asistencia" as UC_Tasa_Asistencia
+        usecase "Ver Calendario Mensual" as UC_Calendario
+    }
+
+    package "Métricas Financieras" {
+        usecase "Ver Ingresos del Mes" as UC_Ingresos_Mes
+        usecase "Ver Crecimiento de Ingresos" as UC_Crecimiento_Ingresos
+        usecase "Ver Presupuestos Pendientes" as UC_Presupuestos_Pendientes
+    }
+
+    package "Métricas de Tratamientos" {
+        usecase "Ver Tratamientos por Estado" as UC_Tratamientos_Estado
+        usecase "Ver Valor Total de Tratamientos" as UC_Valor_Total
+        usecase "Ver Valor Cobrado" as UC_Valor_Cobrado
+        usecase "Ver Valor Pendiente de Cobro" as UC_Valor_Pendiente
+    }
+
+    package "Gráficos y Reportes" {
+        usecase "Ver Gráficos Estadísticos" as UC_Graficos
+        usecase "Ver Tendencias Temporales" as UC_Tendencias
+        usecase "Filtrar Datos por Período" as UC_Filtrar_Periodo
+    }
+}
+
+' Relaciones Odontólogo
+Odontologo --> UC_Dashboard
+Odontologo --> UC_KPI_Pacientes
+Odontologo --> UC_KPI_Citas
+Odontologo --> UC_KPI_Finanzas
+Odontologo --> UC_KPI_Tratamientos
+Odontologo --> UC_Graficos
+Odontologo --> UC_Calendario
+
+' Relaciones Administrador (hereda todo del Odontólogo)
+Admin --> UC_Dashboard
+Admin --> UC_KPI_Pacientes
+Admin --> UC_KPI_Citas
+Admin --> UC_KPI_Finanzas
+Admin --> UC_KPI_Tratamientos
+Admin --> UC_Graficos
+Admin --> UC_Calendario
+
+' Relaciones de Inclusión - Dashboard Principal
+UC_Dashboard ..> UC_KPI_Pacientes : <<include>>
+UC_Dashboard ..> UC_KPI_Citas : <<include>>
+UC_Dashboard ..> UC_KPI_Finanzas : <<include>>
+UC_Dashboard ..> UC_Calendario : <<include>>
+
+' Relaciones de Inclusión - KPI Pacientes
+UC_KPI_Pacientes ..> UC_Total_Pacientes : <<include>>
+UC_KPI_Pacientes ..> UC_Nuevos_Pacientes : <<include>>
+UC_KPI_Pacientes ..> UC_Crecimiento_Pacientes : <<include>>
+
+' Relaciones de Inclusión - KPI Citas
+UC_KPI_Citas ..> UC_Citas_Hoy : <<include>>
+UC_KPI_Citas ..> UC_Citas_Semana : <<include>>
+UC_KPI_Citas ..> UC_Tasa_Asistencia : <<include>>
+
+' Relaciones de Inclusión - KPI Finanzas
+UC_KPI_Finanzas ..> UC_Ingresos_Mes : <<include>>
+UC_KPI_Finanzas ..> UC_Crecimiento_Ingresos : <<include>>
+UC_KPI_Finanzas ..> UC_Presupuestos_Pendientes : <<include>>
+
+' Relaciones de Inclusión - KPI Tratamientos
+UC_KPI_Tratamientos ..> UC_Tratamientos_Estado : <<include>>
+UC_KPI_Tratamientos ..> UC_Valor_Total : <<include>>
+UC_KPI_Tratamientos ..> UC_Valor_Cobrado : <<include>>
+UC_KPI_Tratamientos ..> UC_Valor_Pendiente : <<include>>
+
+' Relaciones de Inclusión - Gráficos
+UC_Graficos ..> UC_Tendencias : <<include>>
+UC_Graficos ..> UC_Filtrar_Periodo : <<extend>>
+
+@enduml
+```
+
 ---
 
 ## 2. Diagrama de Clases
 
-### 2.1 Clases de Autenticación, CMS y Chatbot
+### 2.1 Diagrama de Clases - Autenticación, CMS, Landing Page y Chatbot IA
 
 ```plantuml
-@startuml Diagrama_Clases_Core
+@startuml Diagrama_Clases_Auth_CMS_Chatbot
 !theme plain
 skinparam classAttributeIconSize 0
 skinparam classFontStyle bold
-skinparam packageStyle frame
-skinparam package {
-    BackgroundColor<<auth>> #E8F5E9
-    BackgroundColor<<config>> #FFF3E0
-    BackgroundColor<<cms>> #E3F2FD
-    BackgroundColor<<chatbot>> #F3E5F5
+
+title Diagrama de Clases - Autenticación, CMS, Landing Page y Chatbot IA
+
+' ============================================
+' MÓDULO: AUTENTICACIÓN Y USUARIOS
+' ============================================
+
+class AuthUser {
+  +id: UUID <<PK>>
+  +email: Text <<UK>>
+  +encrypted_password: Text
+  +email_confirmed_at: Timestamp
+  +last_sign_in_at: Timestamp
+  +created_at: Timestamp
+  --
+  +autenticar(): Boolean
+  +verificarEmail(): void
+  +cambiarPassword(): void
 }
 
-title Diagrama de Clases - Core Administrativo y CMS\n(Organizado por Secciones)
-
-' ========================================
-' COLUMNA IZQUIERDA
-' ========================================
-package "🔐 AUTENTICACIÓN Y USUARIOS" <<auth>> {
-    class Personal {
-        +id: UUID
-        +nombre_completo: Text
-        +rol: USER-DEFINED
-        +especialidad: Text
-        +telefono: Text
-        +email: Text
-        +activo: Boolean
-        +created_at: Timestamp
-        --
-        +actualizarPerfil(): void
-    }
-
-    class CodigoInvitacion {
-        +id: UUID
-        +codigo: Text
-        +creado_por: UUID
-        +usado_por: UUID
-        +rol_asignado: Text
-        +usos_maximos: Integer
-        +usos_actuales: Integer
-        +activo: Boolean
-        +expira_at: Timestamp
-        +created_at: Timestamp
-        +used_at: Timestamp
-        --
-        +generar(): void
-        +validar(): Boolean
-    }
-
-    Personal -[hidden]down- CodigoInvitacion
+class Personal {
+  +id: UUID <<PK,FK>>
+  +nombre_completo: Text
+  +rol: Enum(Admin, Odontólogo)
+  +especialidad: Text
+  +telefono: Text
+  +email: Text <<UK>>
+  +activo: Boolean
+  +created_at: Timestamp
+  --
+  +actualizarPerfil(): void
+  +activar(): void
+  +desactivar(): void
 }
 
-package "⚙️ CONFIGURACIÓN DEL SISTEMA" <<config>> {
-    class ConfigSeguridad {
-        +id: UUID
-        +clave: Text
-        +valor: Text
-        +descripcion: Text
-        +updated_at: Timestamp
-        --
-        +actualizar(): void
-    }
-
-    class AjustesAplicacion {
-        +id: UUID
-        +clave: Text
-        +valor: Text
-        +grupo: Text
-        +tipo: USER-DEFINED
-        +descripcion: Text
-        +orden: Integer
-        +resend_api_key: Text
-        +updated_at: Timestamp
-        +created_at: Timestamp
-        --
-        +actualizar(): void
-    }
-
-    ConfigSeguridad -[hidden]down- AjustesAplicacion
+class CodigoInvitacion {
+  +id: UUID <<PK>>
+  +codigo: Text <<UK>>
+  +creado_por: UUID <<FK>>
+  +usado_por: UUID <<FK>>
+  +rol_asignado: Text
+  +usos_maximos: Integer
+  +usos_actuales: Integer
+  +activo: Boolean
+  +expira_at: Timestamp
+  +created_at: Timestamp
+  +used_at: Timestamp
+  --
+  +generar(): void
+  +validar(): Boolean
+  +registrarUso(): void
 }
 
-package "🤖 CHATBOT - IA con RAG" <<chatbot>> {
-    class ChatbotFAQ {
-        +id: UUID
-        +pregunta: Text
-        +respuesta: Text
-        +keywords: Array
-        +categoria: Text
-        +prioridad: Integer
-        +activo: Boolean
-        +embedding: Vector(768)
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        +embedding_updated_at: Timestamp
-        --
-        +crear(): void
-        +generarEmbedding(): void
-    }
+' ============================================
+' MÓDULO: CMS - GESTIÓN DE CONTENIDOS
+' ============================================
 
-    class ChatbotContexto {
-        +id: UUID
-        +titulo: Text
-        +contenido: Text
-        +tipo: Text
-        +activo: Boolean
-        +embedding: Vector(768)
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        +embedding_updated_at: Timestamp
-        --
-        +crear(): void
-        +generarEmbedding(): void
-    }
-
-    class ChatbotRateLimit {
-        +id: UUID
-        +ip_hash: Text
-        +requests_count: Integer
-        +first_request_at: Timestamp
-        +last_request_at: Timestamp
-        +blocked_until: Timestamp
-        --
-        +verificar(): Boolean
-    }
-
-    ChatbotFAQ -[hidden]down- ChatbotContexto
-    ChatbotContexto -[hidden]down- ChatbotRateLimit
+class CMSSeccion {
+  +id: UUID <<PK>>
+  +seccion: Text <<UK>>
+  +titulo: Text
+  +subtitulo: Text
+  +contenido: JSONB
+  +orden: Integer
+  +visible: Boolean
+  +updated_at: Timestamp
+  +updated_by: UUID <<FK>>
+  --
+  +actualizar(): void
+  +publicar(): void
+  +ocultar(): void
 }
 
-' ========================================
-' COLUMNA DERECHA: CMS
-' ========================================
-package "🌐 CMS - GESTIÓN DE CONTENIDOS" <<cms>> {
-    class CMSSeccion {
-        +id: UUID
-        +seccion: Text
-        +titulo: Text
-        +subtitulo: Text
-        +contenido: JSONB
-        +orden: Integer
-        +visible: Boolean
-        +updated_at: Timestamp
-        +updated_by: UUID
-        --
-        +actualizar(): void
-    }
-
-    class CMSServicio {
-        +id: UUID
-        +nombre: Text
-        +descripcion: Text
-        +icono: Text
-        +orden: Integer
-        +visible: Boolean
-        +detalle_completo: Text
-        +beneficios: Array
-        +duracion: Varchar
-        +recomendaciones: Text
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        --
-        +crear(): void
-        +editar(): void
-    }
-
-    class CMSServicioImagen {
-        +id: UUID
-        +servicio_id: UUID
-        +imagen_url: Text
-        +public_id: Text
-        +descripcion: Text
-        +alt_text: Text
-        +orden: Integer
-        +visible: Boolean
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        --
-        +subir(): void
-    }
-
-    class CMSEquipo {
-        +id: UUID
-        +nombre: Text
-        +cargo: Text
-        +especialidad: Text
-        +foto_url: Text
-        +foto_public_id: Text
-        +curriculum: JSONB
-        +orden: Integer
-        +visible: Boolean
-        +created_at: Timestamp
-        +updated_at: Timestamp
-        --
-        +crear(): void
-        +editar(): void
-    }
-
-    class CMSTema {
-        +id: UUID
-        +clave: Text
-        +valor: Text
-        +tipo: Text
-        +descripcion: Text
-        +grupo: Text
-        +updated_at: Timestamp
-        --
-        +actualizar(): void
-    }
-
-    class CMSCarrusel {
-        +id: UUID
-        +imagen_url: Text
-        +alt_text: Text
-        +orden: Integer
-        +visible: Boolean
-        +created_at: Timestamp
-        --
-        +subir(): void
-    }
-
-    CMSSeccion -[hidden]down- CMSServicio
-    CMSServicio -[hidden]down- CMSServicioImagen
-    CMSServicioImagen -[hidden]down- CMSEquipo
-    CMSEquipo -[hidden]down- CMSTema
-    CMSTema -[hidden]down- CMSCarrusel
+class CMSServicio {
+  +id: UUID <<PK>>
+  +nombre: Text
+  +descripcion: Text
+  +icono: Text
+  +orden: Integer
+  +visible: Boolean
+  +detalle_completo: Text
+  +beneficios: Array
+  +duracion: Text
+  +recomendaciones: Text
+  +created_at: Timestamp
+  +updated_at: Timestamp
+  --
+  +crear(): void
+  +editar(): void
+  +publicar(): void
 }
 
-' ========================================
-' LAYOUT: Forzar columnas
-' ========================================
-"🔐 AUTENTICACIÓN Y USUARIOS" -[hidden]right- "🌐 CMS - GESTIÓN DE CONTENIDOS"
-"🔐 AUTENTICACIÓN Y USUARIOS" -[hidden]down- "⚙️ CONFIGURACIÓN DEL SISTEMA"
-"⚙️ CONFIGURACIÓN DEL SISTEMA" -[hidden]down- "🤖 CHATBOT - IA con RAG"
+class CMSServicioImagen {
+  +id: UUID <<PK>>
+  +servicio_id: UUID <<FK>>
+  +imagen_url: Text
+  +public_id: Text
+  +descripcion: Text
+  +alt_text: Text
+  +orden: Integer
+  +visible: Boolean
+  +created_at: Timestamp
+  +updated_at: Timestamp
+  --
+  +subir(): void
+  +eliminar(): void
+  +reordenar(): void
+}
 
-' ========================================
-' RELACIONES ENTRE SECCIONES
-' ========================================
-Personal "1" -- "*" CodigoInvitacion : crea >
-Personal "1" -- "*" CMSSeccion : actualiza >
-Personal "1" -- "*" CMSServicio : gestiona >
-Personal "1" -- "*" CMSEquipo : gestiona >
-Personal "1" -- "*" ChatbotFAQ : gestiona >
-Personal "1" -- "*" AjustesAplicacion : configura >
+class CMSEquipo {
+  +id: UUID <<PK>>
+  +nombre: Text
+  +cargo: Text
+  +especialidad: Text
+  +foto_url: Text
+  +foto_public_id: Text
+  +curriculum: JSONB
+  +orden: Integer
+  +visible: Boolean
+  +created_at: Timestamp
+  +updated_at: Timestamp
+  --
+  +crear(): void
+  +editar(): void
+  +subirFoto(): void
+}
 
-CMSServicio "1" -- "*" CMSServicioImagen : tiene >
+class CMSTema {
+  +id: UUID <<PK>>
+  +clave: Text <<UK>>
+  +valor: Text
+  +tipo: Text
+  +descripcion: Text
+  +grupo: Text
+  +updated_at: Timestamp
+  --
+  +actualizar(): void
+  +obtenerValor(): Text
+}
+
+class CMSCarrusel {
+  +id: UUID <<PK>>
+  +imagen_url: Text
+  +public_id: Text
+  +alt_text: Text
+  +orden: Integer
+  +visible: Boolean
+  +created_at: Timestamp
+  --
+  +subir(): void
+  +eliminar(): void
+  +reordenar(): void
+}
+
+' ============================================
+' MÓDULO: CHATBOT IA CON RAG
+' ============================================
+
+class ChatbotFAQ {
+  +id: UUID <<PK>>
+  +pregunta: Text
+  +respuesta: Text
+  +keywords: Array
+  +categoria: Text
+  +prioridad: Integer
+  +activo: Boolean
+  +embedding: Vector(768)
+  +embedding_updated_at: Timestamp
+  +created_at: Timestamp
+  +updated_at: Timestamp
+  --
+  +crear(): void
+  +editar(): void
+  +generarEmbedding(): void
+  +activar(): void
+}
+
+class ChatbotContexto {
+  +id: UUID <<PK>>
+  +titulo: Text
+  +contenido: Text
+  +tipo: Text
+  +activo: Boolean
+  +embedding: Vector(768)
+  +embedding_updated_at: Timestamp
+  +created_at: Timestamp
+  +updated_at: Timestamp
+  --
+  +crear(): void
+  +editar(): void
+  +generarEmbedding(): void
+  +sincronizar(): void
+}
+
+class ChatbotRateLimit {
+  +id: UUID <<PK>>
+  +ip_hash: Text <<UK>>
+  +requests_count: Integer
+  +first_request_at: Timestamp
+  +last_request_at: Timestamp
+  +blocked_until: Timestamp
+  --
+  +verificar(): Boolean
+  +incrementar(): void
+  +bloquear(): void
+  +resetear(): void
+}
+
+' ============================================
+' MÓDULO: CONFIGURACIÓN DEL SISTEMA
+' ============================================
+
+class ConfigSeguridad {
+  +id: UUID <<PK>>
+  +clave: Text <<UK>>
+  +valor: Text
+  +descripcion: Text
+  +updated_at: Timestamp
+  --
+  +actualizar(): void
+  +obtenerValor(): Text
+}
+
+class AjustesAplicacion {
+  +id: UUID <<PK>>
+  +clave: Text <<UK>>
+  +valor: Text
+  +grupo: Text
+  +tipo: Enum
+  +descripcion: Text
+  +orden: Integer
+  +updated_at: Timestamp
+  +created_at: Timestamp
+  --
+  +actualizar(): void
+  +obtenerPorGrupo(): Array
+}
+
+' ============================================
+' RELACIONES - AUTENTICACIÓN
+' ============================================
+
+AuthUser "1" -- "1" Personal : tiene perfil >
+Personal "1" -- "0..*" CodigoInvitacion : crea >
+AuthUser "1" -- "0..*" CodigoInvitacion : usa >
+
+' ============================================
+' RELACIONES - CMS
+' ============================================
+
+Personal "1" -- "0..*" CMSSeccion : actualiza >
+Personal "1" -- "0..*" CMSServicio : gestiona >
+Personal "1" -- "0..*" CMSEquipo : gestiona >
+CMSServicio "1" -- "0..*" CMSServicioImagen : tiene >
+
+' ============================================
+' RELACIONES - CHATBOT
+' ============================================
+
+Personal "1" -- "0..*" ChatbotFAQ : configura >
+Personal "1" -- "0..*" ChatbotContexto : configura >
+
+' ============================================
+' RELACIONES - CONFIGURACIÓN
+' ============================================
+
+Personal "1" -- "0..*" ConfigSeguridad : modifica >
+Personal "1" -- "0..*" AjustesAplicacion : configura >
+
+' ============================================
+' NOTAS EXPLICATIVAS
+' ============================================
+
+note right of ChatbotFAQ
+  Usa embeddings de 768 dimensiones
+  generados por Text Embedding 004
+  para búsqueda semántica (RAG)
+end note
+
+note right of CMSSeccion
+  Las secciones incluyen:
+  - Hero
+  - Nosotros
+  - Servicios
+  - Testimonios
+  - Contacto
+end note
+
+note right of Personal
+  Roles disponibles:
+  - Admin (acceso total)
+  - Odontólogo (acceso limitado)
+end note
 
 @enduml
 ```
@@ -928,6 +1092,93 @@ deactivate API
 
 Dashboard --> User: Renderizar gráficos estadísticos
 deactivate Dashboard
+
+@enduml
+```
+
+### 3.8 Edición de Personal
+
+```plantuml
+@startuml Secuencia_Editar_Personal
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia - Editar información de personal
+
+actor "Administrador" as Admin
+participant "Panel Personal" as Panel
+participant "Formulario\nEdición" as Form
+participant "API Frontend" as API
+database "Supabase" as DB
+
+== Cargar Lista de Personal ==
+
+Admin -> Panel: Accede a sección de Personal
+activate Panel
+
+Panel -> DB: Consultar personal activo e inactivo
+activate DB
+DB --> Panel: Lista completa de personal
+deactivate DB
+
+Panel --> Admin: Mostrar tabla de personal
+deactivate Panel
+
+== Iniciar Edición ==
+
+Admin -> Panel: Clic en "Editar" de un usuario
+activate Panel
+
+Panel -> Form: Abrir diálogo de edición con datos actuales
+activate Form
+
+Form --> Admin: Mostrar formulario prellenado
+note right
+  Campos editables:
+  - Nombre completo
+  - Rol (Admin/Odontólogo)
+  - Especialidad
+  - Teléfono
+  - Estado (Activo/Inactivo)
+end note
+deactivate Panel
+
+== Guardar Cambios ==
+
+Admin -> Form: Modificar campos
+Admin -> Form: Clic en "Guardar"
+
+Form -> API: Enviar datos actualizados
+activate API
+
+API -> DB: Actualizar registro de personal con nueva información
+activate DB
+
+alt Actualización exitosa
+    DB --> API: Confirmación de actualización
+    deactivate DB
+
+    API --> Form: Operación exitosa
+    deactivate API
+
+    Form --> Admin: Notificación "Personal actualizado correctamente"
+    Form -> Form: Cerrar diálogo
+
+    Form -> DB: Recargar lista de personal
+    activate DB
+    DB --> Form: Lista actualizada
+    deactivate DB
+
+    Form --> Admin: Mostrar tabla con cambios aplicados
+
+else Error en actualización
+    DB --> API: Error de base de datos
+    API --> Form: Mensaje de error
+    Form --> Admin: Mostrar mensaje de error
+    Form --> Admin: Mantener diálogo abierto
+end
+
+deactivate Form
 
 @enduml
 ```
