@@ -12,7 +12,9 @@ export default async function HomePage() {
           <KPICards />
 
           {/* Gráficos */}
-          <KPICharts />
+          <div className='min-w-0'>
+            <KPICharts />
+          </div>
 
           {/* Calendario */}
           <div className='min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] rounded-lg'>

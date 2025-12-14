@@ -29,8 +29,12 @@ interface Moneda {
 interface CasoClinico {
   id: string;
   nombre_caso: string;
-  paciente_id: string;
+  historia_id: string;
+  // Supabase puede devolver la relación como objeto único o como array
+  historias_clinicas?: { paciente_id: string } | { paciente_id: string }[] | null;
 }
+
+type HistoriaClinicaRelation = { paciente_id: string };
 
 export default function GoogleCalendarPage({
   onCitaCreada,
@@ -64,7 +68,7 @@ export default function GoogleCalendarPage({
           supabase.from("monedas").select("id,nombre"),
           supabase
             .from("casos_clinicos")
-            .select("id,nombre_caso,paciente_id")
+            .select("id,nombre_caso,historia_id,historias_clinicas(paciente_id)")
             .eq("estado", "Abierto"),
         ]);
 
@@ -72,13 +76,18 @@ export default function GoogleCalendarPage({
       if (odontologosData.data) setOdontologos(odontologosData.data);
       if (monedasData.data) setMonedas(monedasData.data);
 
-      // Agrupar casos por paciente_id
+      // Agrupar casos por paciente_id (derivado de historias_clinicas)
       if (casosData.data) {
         const casosMap = new Map<string, CasoClinico[]>();
-        casosData.data.forEach((caso) => {
-          const existing = casosMap.get(caso.paciente_id) || [];
-          existing.push(caso);
-          casosMap.set(caso.paciente_id, existing);
+        (casosData.data as CasoClinico[]).forEach((caso) => {
+          const hc = caso.historias_clinicas;
+          const pacienteId = Array.isArray(hc)
+            ? (hc[0] as HistoriaClinicaRelation | undefined)?.paciente_id
+            : (hc as HistoriaClinicaRelation | undefined)?.paciente_id;
+          if (!pacienteId) return;
+          const existing = casosMap.get(pacienteId) || [];
+          existing.push(caso as CasoClinico);
+          casosMap.set(pacienteId, existing);
         });
         setCasosClinicosMap(casosMap);
       }

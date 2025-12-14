@@ -198,6 +198,10 @@ export function KPICharts() {
   const visibleCount = Object.values(visibility).filter(Boolean).length;
   const totalCharts = Object.keys(visibility).length;
 
+  if (!mounted) {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className='space-y-4'>
@@ -239,7 +243,7 @@ export function KPICharts() {
   ].filter((item) => item.value > 0);
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-4 min-w-0'>
       {/* Controles de personalización */}
       <div className='flex items-center justify-between'>
         <p className='text-sm text-muted-foreground'>
@@ -326,7 +330,7 @@ export function KPICharts() {
           </CardContent>
         </Card>
       ) : (
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0 w-full'>
           {/* Gráfico de Ingresos por Mes */}
           {visibility.ingresos && (
             <Card>
@@ -337,7 +341,7 @@ export function KPICharts() {
                 <CardDescription>Últimos 6 meses</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='h-[250px]'>
+                <div className='h-[250px] min-w-0 min-h-0'>
                   <ResponsiveContainer
                     width='100%'
                     height='100%'
@@ -413,7 +417,7 @@ export function KPICharts() {
                 <CardDescription>Registro mensual</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='h-[250px]'>
+                <div className='h-[250px] min-w-0 min-h-0'>
                   <ResponsiveContainer
                     width='100%'
                     height='100%'
@@ -462,7 +466,7 @@ export function KPICharts() {
                 <CardDescription>Tendencia de citas agendadas</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='h-[250px]'>
+                <div className='h-[250px] min-w-0 min-h-0'>
                   <ResponsiveContainer
                     width='100%'
                     height='100%'
@@ -514,7 +518,7 @@ export function KPICharts() {
                 <CardDescription>Distribución actual</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='h-[250px]'>
+                <div className='h-[250px] min-w-0 min-h-0'>
                   {dataCitasEstado.length > 0 ? (
                     <ResponsiveContainer
                       width='100%'
@@ -576,7 +580,7 @@ export function KPICharts() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='h-[250px]'>
+                <div className='h-[250px] min-w-0 min-h-0'>
                   {dataTratamientosEstado.length > 0 ? (
                     <ResponsiveContainer
                       width='100%'
@@ -642,7 +646,7 @@ export function KPICharts() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className='h-[250px]'>
+                <div className='h-[250px] min-w-0 min-h-0'>
                   {data?.tratamientos.topProcedimientos &&
                   data.tratamientos.topProcedimientos.length > 0 ? (
                     <ResponsiveContainer
