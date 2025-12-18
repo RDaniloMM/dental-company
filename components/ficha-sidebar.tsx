@@ -43,7 +43,6 @@ const navItems = [
   { href: "historia-clinica", label: "Historia Clínica", icon: FileText },
   { href: "odontograma", label: "Odontograma", icon: ClipboardList },
   { href: "casos", label: "Casos Clínicos", icon: FolderKanban },
-  { href: "imagenes", label: "Imágenes", icon: Image },
 ];
 
 export default function FichaSidebar({ patientId }: { patientId: string }) {
@@ -154,46 +153,6 @@ export default function FichaSidebar({ patientId }: { patientId: string }) {
         </div>
         <hr className='my-4' />
         <nav className='flex flex-col space-y-2'>
-          {navItems
-            // Si estamos navegando dentro de casos (incluye imágenes del caso), ocultar la opción "Imágenes"
-            .filter((item) => {
-              const segments = pathname.split("/").filter(Boolean)
-              const isInCasos = segments.includes("casos")
-              if (isInCasos && item.href === "imagenes") return false
-              return true
-            })
-            .map((item) => {
-            const Icon = item.icon;
-            const pathSegments = pathname.split("/").filter(Boolean);
-            const lastSegment = pathSegments[pathSegments.length - 1];
-            // Si estamos en casos/[casoId]/imagenes, marcar como activo "casos", no "imagenes"
-            const isActive = item.href === 'casos' 
-              ? (lastSegment === 'casos' || (pathSegments.includes('casos') && (lastSegment === 'imagenes' || lastSegment.match(/^[a-f0-9-]{36}$/))))
-              : lastSegment === item.href;
-            return (
-              <button
-                key={item.href}
-                onClick={() => {
-                  const pathSegments = pathname.split("/");
-                  if (pathSegments.length >= 4) {
-                    const numeroHistoria = pathSegments[3];
-                    router.push(
-                      `/admin/ficha-odontologica/${numeroHistoria}/${item.href}`
-                    );
-                  }
-                  setIsMobileOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-muted-foreground transition-all hover:text-primary",
-                  isActive &&
-                    "bg-primary text-primary-foreground hover:text-primary-foreground"
-                )}
-              >
-                <Icon className='h-4 w-4' />
-                {item.label}
-              </button>
-            );
-          })}
         </nav>
       </aside>
     </>
