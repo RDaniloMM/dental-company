@@ -160,24 +160,32 @@ export default function PacientesPage() {
 
   // Crear nuevo paciente
   const handleCreatePaciente = async (redirectToFicha = false) => {
-    if (
-      !formData.nombres ||
-      !formData.apellidos ||
-      !formData.dni ||
-      !formData.fecha_nacimiento
-    ) {
+    if (!formData.nombres || !formData.apellidos) {
       toast.error(
-        "Complete los campos obligatorios (nombres, apellidos, DNI y fecha de nacimiento)"
+        "Complete los campos obligatorios (nombres y apellidos)"
       );
       return;
     }
 
     setSaving(true);
     try {
+      // Preparar datos con valores por defecto para campos NOT NULL en la BD
+      const dataToInsert: Record<string, unknown> = {
+        nombres: formData.nombres.trim(),
+        apellidos: formData.apellidos.trim(),
+        genero: formData.genero,
+        fecha_nacimiento: formData.fecha_nacimiento || "1900-01-01",
+        dni: formData.dni.trim() || "SIN DNI",
+        // Para campos UNIQUE (como email), usar null si está vacío para evitar duplicados
+        email: formData.email.trim() || null,
+        telefono: formData.telefono.trim() || null,
+        direccion: formData.direccion.trim() || null,
+      };
+
       // El número de historia se genera automáticamente por trigger en la BD
       const { data: newPaciente, error } = await supabase
         .from("pacientes")
-        .insert([formData])
+        .insert([dataToInsert])
         .select("numero_historia")
         .single();
 
@@ -206,10 +214,15 @@ export default function PacientesPage() {
       }
     } catch (error: unknown) {
       console.error("Error creando paciente:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : (error as { message?: string })?.message || "Error desconocido";
+      let errorMessage = "Error desconocido";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === "object" && error !== null) {
+        const err = error as Record<string, unknown>;
+        errorMessage = (err.message as string) || (err.hint as string) || JSON.stringify(error);
+      }
+      
       toast.error(`Error al registrar paciente: ${errorMessage}`);
     } finally {
       setSaving(false);
@@ -261,8 +274,7 @@ export default function PacientesPage() {
             <DialogHeader>
               <DialogTitle>Registrar Nuevo Paciente</DialogTitle>
               <DialogDescription>
-                Complete los datos del paciente. Los campos con * son
-                obligatorios.
+                Complete los datos del paciente. Los campos con * son obligatorios. Los demás son opcionales.
               </DialogDescription>
             </DialogHeader>
 
@@ -290,7 +302,7 @@ export default function PacientesPage() {
                 />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='dni'>DNI *</Label>
+                <Label htmlFor='dni'>DNI</Label>
                 <Input
                   id='dni'
                   value={formData.dni}

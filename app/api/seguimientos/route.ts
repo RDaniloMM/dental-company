@@ -25,6 +25,8 @@ interface SeguimientoRequestBody {
   fecha_proxima_cita?: string
   duracion_proxima_cita?: string | number
   tratamientos_realizados_ids?: string[]
+  fecha_seguimiento?: string
+  fecha?: string
 }
 
 export async function GET(request: NextRequest) {
@@ -70,8 +72,18 @@ export async function POST(request: NextRequest) {
       caso_id, paciente_id, descripcion, tipo, titulo,
       odontograma_version, pago,
       fecha_proxima_cita, duracion_proxima_cita,
-      estado_cita, tratamientos_realizados_ids
+      estado_cita, tratamientos_realizados_ids,
+      fecha_seguimiento, fecha
     } = body
+
+    const fechaSeguimiento = (() => {
+      const candidate = fecha_seguimiento || fecha
+      if (candidate) {
+        const parsed = new Date(candidate)
+        if (!Number.isNaN(parsed.getTime())) return parsed.toISOString()
+      }
+      return new Date().toISOString()
+    })()
 
     let pagoId: string | null = null
     let presupuestoIdParaSeguimiento: string | null = null
@@ -194,7 +206,7 @@ export async function POST(request: NextRequest) {
         odontograma_version: typeof odontograma_version !== 'undefined' ? odontograma_version : null,
         pago_id: pagoId, presupuesto_id: presupuestoIdParaSeguimiento, creador_personal_id: user.id,
         creador_nombre: creadorNombre, creador_rol: creadorRol,
-        fecha: new Date().toISOString(), saldo_pendiente_snapshot: saldoSnapshot, tratamientos_realizados_ids: tratamientos_realizados_ids || []
+        fecha: fechaSeguimiento, saldo_pendiente_snapshot: saldoSnapshot, tratamientos_realizados_ids: tratamientos_realizados_ids || []
       }).select().single()
 
     if (seguimientoError) throw seguimientoError

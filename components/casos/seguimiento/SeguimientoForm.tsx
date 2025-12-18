@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,14 +12,12 @@ import SeguimientoImagesUploader, { ExtendedFileMeta } from '@/components/casos/
 import { Card } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import VersionSelect from '@/components/odontograma/VersionSelect'
-import { CheckCircle2, Save, ChevronLeft, Trash2, X, ChevronsUpDown, Check, Image as ImageIcon } from 'lucide-react'
+import { Save, Trash2, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { cn } from "@/lib/utils"
 import Image from "next/image"
 
 interface Props { casoId: string; numeroHistoria: string; pacienteId?: string; seguimientoId?: string }
-interface ProcedimientoItem { id: string; procedimiento_id: string | null; nombre_procedimiento: string; descripcion?: string; cantidad: number; costo_unitario: number; costo_final: number; pieza_dental?: string }
 interface PresupuestoItemRaw {
   procedimiento_id: string
   procedimiento_nombre: string
@@ -32,7 +30,7 @@ interface PresupuestoItemRaw {
 interface Presupuesto { id: string; nombre: string; costo_total: number; moneda_id: string | null; fecha_creacion: string; moneda_codigo?: string; correlativo?: number; items_json?: PresupuestoItemRaw[] | null }
 interface StoredFormData {
   descripcion: string; motivo: string; inicio: string; duracion: string; estado: string; presupuestoId: string; montoPago: string; tipoPago: string;
-  comprobante: string; monedaSeleccionada: string; versionSeleccionada: number | null; proximaCitaHabilitada: boolean; pendingFiles: ExtendedFileMeta[]
+  comprobante: string; monedaSeleccionada: string; versionSeleccionada: number | null; proximaCitaHabilitada: boolean; pendingFiles: ExtendedFileMeta[]; fechaSeguimiento?: string
 }
 interface ImagenExistente { id: string; imagen_url: string; public_id: string; tipo: string; descripcion?: string }
 interface MonedaDB { id: string; codigo: string }
@@ -55,6 +53,7 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
   const [tipoPago, setTipoPago] = useState<string>('')
   const [comprobante, setComprobante] = useState('')
   const [monedaSeleccionada, setMonedaSeleccionada] = useState<string>('')
+  const [fechaSeguimiento, setFechaSeguimiento] = useState<string>('')
   
   const [proximaCitaHabilitada, setProximaCitaHabilitada] = useState(() => !!seguimientoId)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -75,15 +74,41 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
   const [versionSeleccionada, setVersionSeleccionada] = useState<number | null>(null)
 
   // Diagnósticos eliminados del flujo de selección en Pago/Presupuesto
-  const [procedimientosDelPresupuesto, setProcedimientosDelPresupuesto] = useState<ProcedimientoItem[]>([])
-  const [procedimientosSeleccionados, setProcedimientosSeleccionados] = useState<string[]>([])
-  const [procSearchTerm, setProcSearchTerm] = useState("")
-  const [isProcOpen, setIsProcOpen] = useState(false)
-  const procWrapperRef = useRef<HTMLDivElement>(null)
-  
-  // Eliminado: selección de diagnósticos y UI asociada
-
   const storageKey = `seguimiento_form_${casoId}`
+
+  const toLocalDateTime = (value: string | Date) => {
+    const dateObj = typeof value === 'string' ? new Date(value) : value
+    if (Number.isNaN(dateObj.getTime())) return ''
+    const tzOffset = dateObj.getTimezoneOffset() * 60000
+    return new Date(dateObj.getTime() - tzOffset).toISOString().slice(0, 16)
+  }
+
+  const formatDateToPeru = (value: string | Date | null | undefined) => {
+    if (!value) return ''
+    const dateObj = typeof value === 'string' ? new Date(value) : value
+    if (Number.isNaN(dateObj.getTime())) return ''
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' }).format(dateObj)
+  }
+
+  const toPeruIsoNoon = (dateStr: string | null | undefined) => {
+    if (!dateStr || dateStr.length < 10) return undefined
+    // Anclamos al mediodía en Lima para evitar desfaces por zona horaria
+    return `${dateStr}T12:00:00-05:00`
+  }
+
+  const normalizeFechaSeguimientoInput = (raw?: string | null) => {
+    if (!raw) return ''
+    const dateOnly = raw.includes('T') ? raw.split('T')[0] : raw
+    const yearPart = dateOnly.split('-')[0] || ''
+    if (yearPart.length !== 4) return ''
+    return dateOnly
+  }
+
+  const handleFechaSeguimientoChange = (val: string) => {
+    const yearPart = val.split('-')[0] || ''
+    if (yearPart.length > 4) return
+    setFechaSeguimiento(val)
+  }
 
   const getCurrencySymbol = (code?: string | null): string => {
     if (!code) return 'S/'
@@ -102,6 +127,11 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
   const handleFilesChange = useCallback((files: ExtendedFileMeta[]) => {
     setPendingFiles(files)
   }, [])
+
+  useEffect(() => {
+    if (seguimientoId) return
+    setFechaSeguimiento((prev) => prev || formatDateToPeru(new Date()))
+  }, [seguimientoId])
 
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
@@ -124,18 +154,6 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
       setMontoPago(val);
   }
 
-  // Eliminado: manejador de click-outside para diagnóstico
-
-  useEffect(() => {
-    const handleProcClickOutside = (event: MouseEvent) => {
-      if (procWrapperRef.current && !procWrapperRef.current.contains(event.target as Node)) {
-        setIsProcOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleProcClickOutside)
-    return () => document.removeEventListener("mousedown", handleProcClickOutside)
-  }, [])
-
   useEffect(() => {
     if (!seguimientoId) return
     const loadSeguimiento = async () => {
@@ -148,6 +166,9 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
         setMotivo(data.titulo || '')
         if (data.titulo) setMotivoEdited(true)
         if (data.odontograma_version) setVersionSeleccionada(Number(data.odontograma_version))
+        if (data.fecha) {
+          setFechaSeguimiento(formatDateToPeru(data.fecha))
+        }
         setProximaCitaHabilitada(true)
         if (data.citas) {
           const dateObj = new Date(data.citas.fecha_inicio)
@@ -164,8 +185,6 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
           setComprobante(data.pagos.numero_comprobante || '')
         } else if (data.presupuesto_id) setPresupuestoId(data.presupuesto_id)
         if (data.seguimiento_imagenes) setExistingImages(data.seguimiento_imagenes)
-        const tratamientos = data.tratamientos_realizados_ids || data.procedimientos_realizados || []
-        if (Array.isArray(tratamientos) && tratamientos.length > 0) setProcedimientosSeleccionados(tratamientos)
       } catch (error) { toast.error('Error al cargar') } finally { setLoadingData(false) }
     }
     loadSeguimiento()
@@ -189,6 +208,7 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
         setMonedaSeleccionada(data.monedaSeleccionada || '')
         if (data.versionSeleccionada) setVersionSeleccionada(data.versionSeleccionada)
         if (data.proximaCitaHabilitada !== undefined) setProximaCitaHabilitada(data.proximaCitaHabilitada)
+        if (data.fechaSeguimiento) setFechaSeguimiento(normalizeFechaSeguimientoInput(data.fechaSeguimiento))
       } catch (e) { console.warn(e) }
     }
   }, [seguimientoId, storageKey])
@@ -201,10 +221,11 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
       descripcion, motivo, inicio, duracion, estado,
       presupuestoId, montoPago, tipoPago, comprobante,
       monedaSeleccionada, versionSeleccionada, proximaCitaHabilitada,
-      pendingFiles: []
+      pendingFiles: [],
+      fechaSeguimiento
     }
     localStorage.setItem(storageKey, JSON.stringify(dataToSave))
-  }, [seguimientoId, descripcion, motivo, inicio, duracion, estado, presupuestoId, montoPago, tipoPago, comprobante, monedaSeleccionada, versionSeleccionada, proximaCitaHabilitada, storageKey])
+  }, [seguimientoId, descripcion, motivo, inicio, duracion, estado, presupuestoId, montoPago, tipoPago, comprobante, monedaSeleccionada, versionSeleccionada, proximaCitaHabilitada, fechaSeguimiento, storageKey])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -250,30 +271,6 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
     fetchOdontogramas();
     return () => { isMounted = false; }
   }, [pacienteId, seguimientoId, supabase, versionSeleccionada]);
-
-  useEffect(() => {
-    if (!presupuestoId) {
-      setSaldoSeleccionado(null)
-      setProcedimientosDelPresupuesto([])
-      return
-    }
-    const presupuesto = presupuestos.find((p) => p.id === presupuestoId)
-    if (!presupuesto) return
-    
-    // Extraer items del items_json del presupuesto
-    const itemsJson = Array.isArray(presupuesto.items_json) ? presupuesto.items_json : []
-    const mappedItems: ProcedimientoItem[] = itemsJson.map((item, idx) => ({
-      id: `${presupuestoId}_${item.procedimiento_id}_${idx}`,
-      procedimiento_id: item.procedimiento_id,
-      nombre_procedimiento: item.procedimiento_nombre,
-      descripcion: item.notas,
-      cantidad: item.cantidad || 1,
-      costo_unitario: item.costo || 0,
-      costo_final: (item.costo || 0) * (item.cantidad || 1),
-      pieza_dental: item.pieza_dental
-    }))
-    setProcedimientosDelPresupuesto(mappedItems)
-  }, [presupuestoId, presupuestos])
 
   useEffect(() => {
     if (!presupuestoId) { setSaldoSeleccionado(null); return }
@@ -327,9 +324,9 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
         duracion_proxima_cita: proximaCitaHabilitada ? duracion : null,
         estado_cita: proximaCitaHabilitada ? (estado || 'Programada') : null,
         // Guardar tratamientos seleccionados en la nueva columna tratamientos_realizados_ids
-        tratamientos_realizados_ids: procedimientosSeleccionados,
-        // Mantener procedimientos_realizados por compatibilidad, si el backend lo soporta
-        procedimientos_realizados: procedimientosSeleccionados,
+        tratamientos_realizados_ids: [],
+        procedimientos_realizados: [],
+        fecha_seguimiento: toPeruIsoNoon(fechaSeguimiento || formatDateToPeru(new Date())),
         pago: (!seguimientoId && presupuestoId && montoPago && parseFloat(montoPago) > 0)
           ? {
               presupuesto_id: presupuestoId,
@@ -492,62 +489,15 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
                 {presupuestoId && (
                   <div className="col-span-2 space-y-6">
                     <div className="space-y-2">
-                      <Label className="block text-xs font-semibold text-slate-500 uppercase">Tratamientos hechos hoy:</Label>
-                        {procedimientosSeleccionados.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-2 min-w-0">
-                            {procedimientosSeleccionados.map((id) => {
-                              const p = procedimientosDelPresupuesto.find(proc => proc.id === id);
-                              if (!p) return null;
-                              return (
-                                <Badge key={id} variant="secondary" className="pl-2 pr-1 py-1 gap-1 text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 hover:bg-emerald-200 min-w-0 max-w-full dark:bg-slate-700 dark:text-emerald-300 dark:border-slate-600 dark:hover:bg-slate-600">
-                                  <span className="block truncate max-w-[260px]">{p.nombre_procedimiento}</span>
-                                  <span className="cursor-pointer hover:text-emerald-950 p-0.5 rounded-full hover:bg-emerald-300/50 ml-2 dark:hover:bg-slate-600" onClick={() => setProcedimientosSeleccionados(prev => prev.filter(sid => sid !== id))}>
-                                    <X className="h-3 w-3" />
-                                  </span>
-                                </Badge>
-                              );
-                            })}
-                          </div>
-                        )}
-                        <div className="relative" ref={procWrapperRef}>
-                          <Input
-                            value={procSearchTerm}
-                            onChange={(e) => { setProcSearchTerm(e.target.value); setIsProcOpen(true); }}
-                            onFocus={() => setIsProcOpen(true)}
-                            placeholder="Buscar tratamiento registrado en presupuesto..."
-                            className="w-full h-8 text-xs bg-background pr-8"
-                            autoComplete="off"
-                          />
-                          <ChevronsUpDown className="absolute right-2 top-2.5 h-4 w-4 opacity-50 pointer-events-none" />
-                          {isProcOpen && (
-                            <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-y-auto dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-slate-100">
-                              {procedimientosDelPresupuesto.filter(p => p.nombre_procedimiento.toLowerCase().includes(procSearchTerm.toLowerCase())).length > 0 ? (
-                                procedimientosDelPresupuesto.filter(p => p.nombre_procedimiento.toLowerCase().includes(procSearchTerm.toLowerCase())).map((opt) => {
-                                  const isSelected = procedimientosSeleccionados.includes(opt.id)
-                                  return (
-                                    <div
-                                      key={opt.id}
-                                      className={cn("px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-700 last:border-b-0", isSelected && "bg-emerald-50 text-emerald-900 dark:bg-slate-700 dark:text-emerald-300")}
-                                      onClick={() => {
-                                        if (!isSelected) setProcedimientosSeleccionados(prev => [...prev, opt.id]); else setProcedimientosSeleccionados(prev => prev.filter(sid => sid !== opt.id));
-                                        setProcSearchTerm("");
-                                      }}
-                                    >
-                                      <div className="flex-1 min-w-0">
-                                        <span className={cn("block truncate", isSelected && "font-medium")}>{opt.nombre_procedimiento}</span>
-                                        {opt.descripcion && <span className="text-[10px] text-muted-foreground dark:text-slate-400 line-clamp-1">{opt.descripcion}</span>}
-                                      </div>
-                                      {isSelected && <Check className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0 ml-2" />}
-                                    </div>
-                                  )
-                                })
-                              ) : (
-                                <div className="px-3 py-2 text-sm text-muted-foreground italic text-center">No se encontraron tratamientos</div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <Label className="block text-xs font-semibold text-slate-500 uppercase">Tratamientos hechos hoy (texto libre)</Label>
+                      <Textarea
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        placeholder="Ej: Limpieza general, ajuste de brackets y recomendación de higiene"
+                        className="resize-none"
+                        rows={3}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -571,14 +521,29 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
           </div>
           <div className='space-y-4'>
             <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
-              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><div className='flex items-center justify-between'><h3 className='text-base font-semibold'>4. Próxima Cita</h3><div className='flex items-center gap-2 cursor-pointer bg-white/20 px-2 py-1 rounded-full' onClick={() => setProximaCitaHabilitada(!proximaCitaHabilitada)}><span className='text-[10px] font-medium opacity-90 uppercase'>{proximaCitaHabilitada ? 'ON' : 'OFF'}</span><div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${proximaCitaHabilitada ? 'bg-green-400' : 'bg-slate-400'}`}><div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform ${proximaCitaHabilitada ? 'translate-x-4' : 'translate-x-0'}`} /></div></div></div></div>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>4. Fecha de seguimiento</h3></div>
+              <div className='space-y-2'>
+                <label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Fecha</label>
+                <Input
+                  type='date'
+                  value={fechaSeguimiento}
+                  onChange={(e) => handleFechaSeguimientoChange(e.target.value)}
+                  className='h-9 w-full text-sm'
+                  maxLength={10}
+                  pattern="\d{4}-\d{2}-\d{2}"
+                />
+                <p className='text-[11px] text-muted-foreground'>Si no seleccionas una fecha se usará la actual. Puedes editarla luego.</p>
+              </div>
+            </Card>
+
+            <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><div className='flex items-center justify-between'><h3 className='text-base font-semibold'>5. Próxima Cita</h3><div className='flex items-center gap-2 cursor-pointer bg-white/20 px-2 py-1 rounded-full' onClick={() => setProximaCitaHabilitada(!proximaCitaHabilitada)}><span className='text-[10px] font-medium opacity-90 uppercase'>{proximaCitaHabilitada ? 'ON' : 'OFF'}</span><div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${proximaCitaHabilitada ? 'bg-green-400' : 'bg-slate-400'}`}><div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform ${proximaCitaHabilitada ? 'translate-x-4' : 'translate-x-0'}`} /></div></div></div></div>
               <div className={`space-y-4 transition-all ${proximaCitaHabilitada ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale'}`}>
                    <div><label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Motivo / Título</label><Textarea value={motivo} onChange={(e) => { setMotivo(e.target.value); setMotivoEdited(true); }} className='h-20 resize-none' disabled={!proximaCitaHabilitada} /></div>
                 <div className='flex flex-wrap gap-2 items-end'>
                   <div><label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Inicio</label><Input type='datetime-local' value={inicio} onChange={handleDateChange} className='mt-0 h-8 text-sm w-fit px-2' disabled={!proximaCitaHabilitada} /></div>
                   <div className='flex items-end gap-2'><div className='w-24'><label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Duración</label><Select value={duracion || ""} onValueChange={(v) => setDuracion(v)} disabled={!proximaCitaHabilitada}><SelectTrigger className='w-full h-8 text-xs bg-background'><SelectValue placeholder='Sel.' /></SelectTrigger><SelectContent><SelectItem value='15'>15 min</SelectItem><SelectItem value='30'>30 min</SelectItem><SelectItem value='45'>45 min</SelectItem><SelectItem value='60'>1 h</SelectItem></SelectContent></Select></div><div className='w-32'><label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Estado</label><Select value={estado || ""} onValueChange={(v) => setEstado(v)} disabled={!proximaCitaHabilitada}><SelectTrigger className='w-full h-8 text-xs bg-background'><SelectValue placeholder='Sel.' /></SelectTrigger><SelectContent><SelectItem value='Programada'>Programada</SelectItem><SelectItem value='Confirmada'>Confirmada</SelectItem><SelectItem value='Cancelada'>Cancelada</SelectItem></SelectContent></Select></div></div>
                 </div>
-                <div><label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Notas adicionales</label><Textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} className='h-20 resize-none' disabled={!proximaCitaHabilitada} /></div>
               </div>
             </Card>
           </div>

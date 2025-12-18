@@ -323,7 +323,7 @@ export default function ReportesPage() {
         if (casosData && casosData.length > 0) {
           const { data: segData } = await supabase
             .from("seguimientos")
-            .select("fecha, tratamientos_realizados_ids, presupuesto_id")
+            .select("fecha, descripcion, tratamientos_realizados_ids, presupuesto_id")
             .in("caso_id", casosData.map(c => c.id))
             .is("deleted_at", null)
             .order("fecha", { ascending: false });
@@ -352,18 +352,20 @@ export default function ReportesPage() {
             }
 
             seguimientos = segData.map((seg) => {
+              const descripcion = typeof seg.descripcion === 'string' ? seg.descripcion.trim() : '';
               const tratamientosIds = Array.isArray(seg.tratamientos_realizados_ids) ? (seg.tratamientos_realizados_ids as unknown[]) : [];
-              const tratamientos = tratamientosIds
-                .filter(id => typeof id === 'string' && id.trim().length > 0)
-                .map((id: string) => {
-                  const item = presupuestosMap.get(id);
-                  if (item) {
-                    return item.descripcion ? `${item.nombre} (${item.descripcion})` : item.nombre;
-                  }
-                  // Si no encuentra mapeo, retorna la ID para debugging
-                  return "";
-                })
-                .filter(Boolean);
+              const tratamientos = descripcion
+                ? [descripcion]
+                : tratamientosIds
+                    .filter(id => typeof id === 'string' && id.trim().length > 0)
+                    .map((id: string) => {
+                      const item = presupuestosMap.get(id);
+                      if (item) {
+                        return item.descripcion ? `${item.nombre} (${item.descripcion})` : item.nombre;
+                      }
+                      return "";
+                    })
+                    .filter(Boolean);
 
               return {
                 fecha: new Date(seg.fecha as string | number | Date).toLocaleDateString('es-ES'),
@@ -433,22 +435,25 @@ export default function ReportesPage() {
         // Obtener pagos relacionados a este presupuesto desde seguimientos
         const { data: segData } = await supabase
           .from("seguimientos")
-          .select("fecha, tratamientos_realizados_ids, pago_id, pagos(monto, moneda_id)")
+          .select("fecha, descripcion, tratamientos_realizados_ids, pago_id, pagos(monto, moneda_id)")
           .eq("presupuesto_id", presupuestoSeleccionado)
           .is("deleted_at", null)
           .not("pago_id", "is", null)
           .order("fecha", { ascending: false });
 
         const pagos = (segData || []).map((seg) => {
+          const descripcion = typeof seg.descripcion === 'string' ? seg.descripcion.trim() : '';
           const tratamientosIds = (seg.tratamientos_realizados_ids as string[]) || [];
-          const tratamientos = tratamientosIds.map((id: string) => {
-            const item = items.find((it) => `${presupuestoSeleccionado}_${(it.procedimiento_id as string)}_${items.indexOf(it)}` === id);
-            if (item) {
-              const desc = (item.notas as string) || (item.descripcion as string) || "";
-              return desc ? `${item.procedimiento_nombre} (${desc})` : (item.procedimiento_nombre as string);
-            }
-            return "";
-          }).filter(Boolean);
+          const tratamientos = descripcion
+            ? [descripcion]
+            : tratamientosIds.map((id: string) => {
+                const item = items.find((it) => `${presupuestoSeleccionado}_${(it.procedimiento_id as string)}_${items.indexOf(it)}` === id);
+                if (item) {
+                  const desc = (item.notas as string) || (item.descripcion as string) || "";
+                  return desc ? `${item.procedimiento_nombre} (${desc})` : (item.procedimiento_nombre as string);
+                }
+                return "";
+              }).filter(Boolean);
 
           return {
             fecha: new Date(seg.fecha as string | number | Date).toLocaleDateString('es-ES'),
@@ -459,7 +464,7 @@ export default function ReportesPage() {
 
         pdfPayload = {
           ...pdfPayload,
-          paciente_nombre: `${selectedPaciente.nombres}_${selectedPaciente.apellidos}`,
+          paciente_nombre: `${selectedPaciente.nombres} ${selectedPaciente.apellidos}`,
           fecha_presupuesto: presupuesto.fecha_creacion ? new Date(presupuesto.fecha_creacion).toLocaleDateString('es-ES') : "",
           correlativo: presupuesto.correlativo,
           items: items.map((item: Record<string, unknown>) => ({

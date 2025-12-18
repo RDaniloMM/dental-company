@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Loader2, CalendarCheck, CalendarX, AlertCircle, Filter, AlertTriangle, Stethoscope, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Edit, Trash2, Loader2, CalendarCheck, CalendarX, AlertCircle, AlertTriangle, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -120,6 +120,7 @@ export default function SeguimientoTable({ casoId, numeroHistoria }: Props) {
         const costoTotal = Number(item.presupuestos?.costo_total || 0);
         const pendiente = Number(item.saldo_pendiente_snapshot);
         const procIds = item.tratamientos_realizados_ids || item.procedimientos_realizados || [];
+        const tratamientoTexto = (item.descripcion || '').trim();
         const formatNombre = (entry?: { nombre_procedimiento: string; descripcion?: string } | null) => {
           if (!entry) return null;
           const nombre = entry.nombre_procedimiento || '';
@@ -128,11 +129,13 @@ export default function SeguimientoTable({ casoId, numeroHistoria }: Props) {
           return full.trim() || null;
         };
 
-        const procNombres = procIds.map(id => {
-          return formatNombre(procedimientosMap.get(id))
-            || formatNombre(procedimientosByProcId.get(id))
-            || null;
-        }).filter(Boolean) as string[];
+        const procNombres = tratamientoTexto
+          ? [tratamientoTexto]
+          : procIds.map(id => {
+              return formatNombre(procedimientosMap.get(id))
+                || formatNombre(procedimientosByProcId.get(id))
+                || null;
+            }).filter(Boolean) as string[];
 
         return {
           id: item.id,
@@ -300,7 +303,7 @@ export default function SeguimientoTable({ casoId, numeroHistoria }: Props) {
                               >
                                 <span className="inline-flex items-center gap-1.5">
                                   <FileText className="h-3 w-3 text-sky-500 dark:text-sky-400 shrink-0" />
-                                  <span className="truncate">{name}</span>
+                                  <span className="truncate max-w-[200px]">{name}</span>
                                 </span>
                               </li>
                             ))}

@@ -18,6 +18,8 @@ interface UpdateRequestBody {
   fecha_proxima_cita?: string
   duracion_proxima_cita?: string | number
   estado_cita?: string
+  fecha?: string
+  fecha_seguimiento?: string
 }
 
 export async function GET(
@@ -209,7 +211,8 @@ export async function PUT(
       const body: UpdateRequestBody = await request.json()
       const { 
         descripcion, estado, tipo, titulo,
-        fecha_proxima_cita, duracion_proxima_cita, estado_cita 
+        fecha_proxima_cita, duracion_proxima_cita, estado_cita,
+        fecha: fechaInput, fecha_seguimiento
       } = body
 
       // 1. Obtener seguimiento actual para ver si tiene cita vinculada
@@ -288,6 +291,11 @@ export async function PUT(
       if (estado !== undefined) payload.estado = estado
       if (tipo !== undefined) payload.tipo = tipo
       if (titulo !== undefined) payload.titulo = titulo
+      const fechaFinal = fecha_seguimiento || fechaInput
+      if (fechaFinal) {
+        const parsed = new Date(fechaFinal)
+        if (!Number.isNaN(parsed.getTime())) payload.fecha = parsed.toISOString()
+      }
   
       const { data, error } = await supabase
         .from('seguimientos')

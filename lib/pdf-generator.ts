@@ -488,6 +488,10 @@ export const generatePresupuestoPDF = (payload: PresupuestoPDFPayload): ArrayBuf
   
   // --- TABLA DE PROCEDIMIENTOS ---
   finalY = 52;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Nombre: ${payload.paciente_nombre || ""}`, margin, finalY - 2);
+  finalY += 8; // dos saltos ligeros antes de la tabla
   drawSectionHeader(doc, margin, finalY, "1. Tabla de Procedimientos");
   finalY += 8;
   const items = payload.items || [];

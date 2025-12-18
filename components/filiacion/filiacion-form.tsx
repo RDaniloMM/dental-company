@@ -148,7 +148,16 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
         return;
       }
 
-      const { data, error } = await supabase.from("pacientes").upsert(payload).select();
+      // Preparar payload: convertir campos UNIQUE vacíos a null
+      const payloadToInsert = {
+        ...payload,
+        email: payload.email?.trim() || null,
+        telefono: payload.telefono?.trim() || null,
+        direccion: payload.direccion?.trim() || null,
+        dni: payload.dni?.trim() || null,
+      };
+
+      const { data, error } = await supabase.from("pacientes").upsert(payloadToInsert).select();
       
       if (error) throw error;
 
@@ -234,7 +243,7 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
 
             <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
               <div className='space-y-2'>
-                <Label className='text-foreground'>Documento de Identidad</Label>
+                <Label className='text-foreground'>D. N. I.</Label>
                 <Input
                   name='dni'
                   value={formData.dni}
