@@ -478,14 +478,40 @@ export default function ReportesPage() {
         };
       }
       
+      console.log('=================== CLIENT: Iniciando generación de PDF ===================');
+      console.log('[CLIENT] Tipo de reporte:', tipoReporte);
+      console.log('[CLIENT] Payload keys:', Object.keys(pdfPayload));
+      console.log('[CLIENT] Payload size:', JSON.stringify(pdfPayload).length, 'chars');
+      console.log('[CLIENT] URL:', '/api/generate-pdf');
+      
       const response = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pdfPayload),
       });
+      
+      console.log('[CLIENT] Response received');
+      console.log('[CLIENT] Response status:', response.status);
+      console.log('[CLIENT] Response statusText:', response.statusText);
+      console.log('[CLIENT] Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        throw new Error("Error en el servidor al generar PDF");
+        console.error('[CLIENT] Response not OK');
+        console.error('[CLIENT] Status:', response.status);
+        console.error('[CLIENT] StatusText:', response.statusText);
+        
+        let errorDetails = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          console.error('[CLIENT] Error data from server:', errorData);
+          errorDetails = errorData.details || errorData.error || 'Unknown error';
+        } catch (e) {
+          const text = await response.text();
+          console.error('[CLIENT] Error response text:', text);
+          errorDetails = text || 'Error parsing server response';
+        }
+        
+        throw new Error(`Error en el servidor (${response.status}): ${errorDetails}`);
       }
 
       const blob = await response.blob();
