@@ -33,7 +33,10 @@ export async function DELETE() {
 
 export async function POST(request: Request) {
   try {
+    console.log('[PDF] POST request received');
     const payload = await request.json();
+    console.log('[PDF] Payload received:', { tipo: payload.tipo_reporte, numero_historia: payload.numero_historia });
+    
     const tipoReporte = payload.tipo_reporte || 'ficha';
     
     console.log(`[PDF] Generating ${tipoReporte} report`, { numero_historia: payload.numero_historia });
@@ -43,15 +46,18 @@ export async function POST(request: Request) {
     
     try {
       if (tipoReporte === 'presupuesto') {
+        console.log('[PDF] Generating presupuesto PDF');
         pdfBuffer = generatePresupuestoPDF(payload);
         const correlativo = payload.correlativo ? String(payload.correlativo).padStart(3, "0") : "XXX";
         const nombrePaciente = (payload.paciente_nombre || 'reporte').replace(/ /g, '_');
         fileName = `Presupuesto_${correlativo}_${nombrePaciente}.pdf`;
       } else {
+        console.log('[PDF] Generating ficha PDF');
         pdfBuffer = generateFichaPDF(payload);
         const patientName = `${payload.filiacion?.nombres}_${payload.filiacion?.apellidos}`.replace(/ /g, '_') || 'ficha_odontologica';
         fileName = `${patientName}.pdf`;
       }
+      console.log('[PDF] PDF generated successfully');
     } catch (genError) {
       console.error(`[PDF] Error generating ${tipoReporte} PDF:`, genError);
       const details = genError instanceof Error ? genError.message : 'Error desconocido en generación';
