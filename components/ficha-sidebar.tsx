@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import {
@@ -11,6 +11,7 @@ import {
   FolderKanban,
   Menu,
   X,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -39,15 +40,19 @@ const calculateAge = (birthDate: string) => {
 };
 
 const navItems = [
+  { href: "", label: "Inicio", icon: Home },
   { href: "filiacion", label: "Filiación", icon: User },
   { href: "historia-clinica", label: "Historia Clínica", icon: FileText },
   { href: "odontograma", label: "Odontograma", icon: ClipboardList },
   { href: "casos", label: "Casos Clínicos", icon: FolderKanban },
+  { href: "imagenes", label: "Imágenes", icon: Image },
 ];
 
 export default function FichaSidebar({ patientId }: { patientId: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeView = searchParams.get("view");
   const supabase = createClient();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [age, setAge] = useState<number | null>(null);
@@ -153,6 +158,45 @@ export default function FichaSidebar({ patientId }: { patientId: string }) {
         </div>
         <hr className='my-4' />
         <nav className='flex flex-col space-y-2'>
+          {navItems.map((item) => {
+            // "Imágenes" se maneja como un parámetro de consulta en la página principal
+            const isQueryParamView = item.href === "imagenes";
+
+            const fullHref = isQueryParamView
+              ? `/admin/ficha-odontologica/${patient?.numero_historia}?view=${item.href}`
+              : item.href
+              ? `/admin/ficha-odontologica/${patient?.numero_historia}/${item.href}`
+              : `/admin/ficha-odontologica/${patient?.numero_historia}`;
+
+            const isActive = isQueryParamView
+              ? activeView === item.href
+              : item.href === ""
+              ? pathname ===
+                  `/admin/ficha-odontologica/${patient?.numero_historia}` &&
+                !activeView
+              : pathname.includes(item.href);
+
+            return (
+              <Button
+                key={item.label}
+                variant={isActive ? "default" : "ghost"}
+                className={cn(
+                  "justify-start gap-2",
+                  isActive && "bg-primary text-primary-foreground"
+                )}
+                onClick={() => {
+                  if (patient) {
+                    router.push(fullHref);
+                    setIsMobileOpen(false);
+                  }
+                }}
+                disabled={!patient}
+              >
+                <item.icon className='h-4 w-4' />
+                {item.label}
+              </Button>
+            );
+          })}
         </nav>
       </aside>
     </>
