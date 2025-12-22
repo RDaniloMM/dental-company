@@ -23,6 +23,7 @@ function sanitizeFichaPayload(payload: any) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('[PDF] route hit at', new Date().toISOString(), 'url:', request.url);
   try {
     const payload = await request.json();
     const tipoReporte = payload?.tipo_reporte || 'ficha';
