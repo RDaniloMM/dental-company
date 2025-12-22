@@ -509,18 +509,24 @@ export default function ReportesPage() {
           toast.message('Usando modo seguro para generar PDF');
         } else {
           console.error('[CLIENT] Response not OK');
-          console.error('[CLIENT] Status:', response.status);
-          console.error('[CLIENT] StatusText:', response.statusText);
-          
+          console.error('[CLIENT] Status:', retry.status);
+          console.error('[CLIENT] StatusText:', retry.statusText);
+
           let errorDetails = 'Unknown error';
           try {
-            const errorData = await retry.json();
-            console.error('[CLIENT] Error data from server (retry):', errorData);
-            errorDetails = errorData.details || errorData.error || 'Unknown error';
+            const clone = retry.clone();
+            const contentType = clone.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const errorData = await clone.json();
+              console.error('[CLIENT] Error data from server (retry):', errorData);
+              errorDetails = errorData.details || errorData.error || 'Unknown error';
+            } else {
+              const text = await clone.text();
+              console.error('[CLIENT] Error response text (retry):', text);
+              errorDetails = text || 'Error parsing server response';
+            }
           } catch (e) {
-            const text = await retry.text();
-            console.error('[CLIENT] Error response text (retry):', text);
-            errorDetails = text || 'Error parsing server response';
+            console.error('[CLIENT] Error parsing retry response:', e);
           }
           throw new Error(`Error en el servidor (${retry.status}): ${errorDetails}`);
         }
