@@ -58,8 +58,8 @@ function ChatbotNote({ enabled }: { enabled: boolean }) {
     <div
       className={`flex items-center gap-2 text-xs px-3 py-2 rounded-md ${
         enabled
-          ? "bg-blue-50 text-blue-700 border border-blue-200"
-          : "bg-gray-50 text-gray-500 border border-gray-200"
+          ? "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900"
+          : "bg-gray-50 text-gray-500 border border-gray-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800"
       }`}
     >
       <Bot className='h-3 w-3' />
@@ -212,8 +212,8 @@ function PhotoUploader({
       className={`relative p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors
         ${
           isDragActive
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-300 hover:border-blue-400"
+            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
+            : "border-gray-300 dark:border-slate-800 hover:border-blue-400"
         }
         ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
@@ -954,7 +954,7 @@ export default function CMSPage() {
             </CardHeader>
             <CardContent className='space-y-6'>
               {/* Subir nueva imagen */}
-              <div className='border-2 border-dashed border-gray-200 rounded-lg p-6 space-y-4'>
+              <div className='border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-lg p-6 space-y-4'>
                 <h4 className='font-semibold text-sm'>Agregar nueva imagen</h4>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                   <div className='md:col-span-2 space-y-2'>
@@ -1082,7 +1082,7 @@ export default function CMSPage() {
                             </div>
                           )}
                         </div>
-                        <div className='p-3 space-y-2 bg-white'>
+                        <div className='p-3 space-y-2 bg-card'>
                           <div className='flex items-center justify-between gap-2'>
                             <span className='text-sm text-muted-foreground truncate'>
                               {imagen.alt_text || "Sin descripción"}
@@ -1110,11 +1110,11 @@ export default function CMSPage() {
               </div>
 
               {/* Nota informativa */}
-              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700'>
+              <div className='bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4 text-sm text-blue-700 dark:text-blue-400'>
                 <p className='font-medium mb-1'>
                   💡 Consejos para las imágenes del hero:
                 </p>
-                <ul className='list-disc list-inside space-y-1 text-blue-600'>
+                <ul className='list-disc list-inside space-y-1 text-blue-600 dark:text-blue-500'>
                   <li>
                     Usa imágenes horizontales de alta calidad (ratio 16:9)
                   </li>
@@ -1369,7 +1369,9 @@ export default function CMSPage() {
                     <TableRow
                       key={servicio.id}
                       className={
-                        !servicio.visible ? "opacity-50 bg-gray-50" : ""
+                        !servicio.visible
+                          ? "opacity-50 bg-gray-50 dark:bg-slate-900/50"
+                          : ""
                       }
                     >
                       <TableCell>{servicio.orden}</TableCell>
@@ -1756,7 +1758,9 @@ export default function CMSPage() {
                     <TableRow
                       key={miembro.id}
                       className={
-                        !miembro.visible ? "opacity-50 bg-gray-50" : ""
+                        !miembro.visible
+                          ? "opacity-50 bg-gray-50 dark:bg-slate-900/50"
+                          : ""
                       }
                     >
                       <TableCell>{miembro.orden}</TableCell>
