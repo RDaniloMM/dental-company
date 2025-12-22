@@ -4,11 +4,5 @@
             "path": "/api/cron/daily-birthday",
             "schedule": "50 3 * * *"
         }
-    ],
-    "functions": {
-        "app/api/generate-pdf/route.ts": {
-            "maxDuration": 60,
-            "memory": 3008
-        }
-    }
+    ]
 }
