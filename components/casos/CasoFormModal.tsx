@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
+import { toPeruIsoNoon } from "@/lib/time";
 
 type CasoFormData = {
   nombre_caso: string;
@@ -87,12 +88,14 @@ export default function CasoFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
+      // Evitar desfase por zona horaria: anclar al mediodía de Lima
+      const fechaInicioIso = toPeruIsoNoon(fechaInicio) || fechaInicio;
       onSubmit({
         nombre_caso: nombreCaso,
         diagnostico_preliminar: diagnosticoPreliminar,
         descripcion: descripcion,
         estado: estado,
-        fecha_inicio: fechaInicio,
+        fecha_inicio: fechaInicioIso,
       });
     }
   };

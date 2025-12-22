@@ -405,7 +405,37 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
             </Card>
 
             <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
-              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>2. Evidencia</h3></div>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>2. Fecha de seguimiento</h3></div>
+              <div className='space-y-2'>
+                <label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Fecha</label>
+                <Input
+                  type='date'
+                  value={fechaSeguimiento}
+                  onChange={(e) => handleFechaSeguimientoChange(e.target.value)}
+                  className='h-9 w-full text-sm'
+                  maxLength={10}
+                  pattern="\d{4}-\d{2}-\d{2}"
+                />
+                <p className='text-[11px] text-muted-foreground'>Si no seleccionas una fecha se usará la actual. Puedes editarla luego.</p>
+              </div>
+            </Card>
+
+            <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>3. Tratamiento realizado</h3></div>
+              <div className='space-y-2'>
+                <Label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Descripción del tratamiento</Label>
+                <Textarea
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder="Ej: Limpieza general, ajuste de brackets y recomendación de higiene"
+                  className="resize-none"
+                  rows={4}
+                />
+              </div>
+            </Card>
+
+            <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>4. Evidencia</h3></div>
               
               {existingImages.length > 0 && (
                 <div className="mb-6">
@@ -461,9 +491,11 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
               <div className='text-xs text-muted-foreground mb-3'>Nuevas imágenes:</div>
               <SeguimientoImagesUploader casoId={casoId} numeroHistoria={numeroHistoria} seguimientoId={seguimientoId || tempSeguimientoId} onFilesChange={handleFilesChange} />
             </Card>
+          </div>
 
+          <div className='space-y-4'>
             <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
-              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>3. Pago y Presupuesto</h3></div>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>5. Pago y Presupuesto</h3></div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className="md:col-span-1"> 
                   <label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Presupuesto</label>
@@ -485,21 +517,6 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
                   <label className='block text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase mb-1'>Saldo pendiente</label>
                   <div className='text-sm font-medium pt-2 text-slate-700 dark:text-slate-200'>{saldoSeleccionado !== null ? `${getCurrencySymbol(monedaSeleccionada)} ${saldoSeleccionado.toFixed(2)}` : '-'}</div>
                 </div>
-                
-                {presupuestoId && (
-                  <div className="col-span-2 space-y-6">
-                    <div className="space-y-2">
-                      <Label className="block text-xs font-semibold text-slate-500 uppercase">Tratamientos hechos hoy (texto libre)</Label>
-                      <Textarea
-                        value={descripcion}
-                        onChange={(e) => setDescripcion(e.target.value)}
-                        placeholder="Ej: Limpieza general, ajuste de brackets y recomendación de higiene"
-                        className="resize-none"
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                )}
 
                  {seguimientoId && montoPago ? (
                    <div className="col-span-2 bg-blue-50 text-blue-700 p-3 rounded text-sm text-center border border-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:border-slate-700">Pago registrado: {montoPago}</div>
@@ -518,26 +535,8 @@ export default function SeguimientoForm({ casoId, numeroHistoria, pacienteId, se
                 )}
               </div>
             </Card>
-          </div>
-          <div className='space-y-4'>
             <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
-              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><h3 className='text-base font-semibold'>4. Fecha de seguimiento</h3></div>
-              <div className='space-y-2'>
-                <label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Fecha</label>
-                <Input
-                  type='date'
-                  value={fechaSeguimiento}
-                  onChange={(e) => handleFechaSeguimientoChange(e.target.value)}
-                  className='h-9 w-full text-sm'
-                  maxLength={10}
-                  pattern="\d{4}-\d{2}-\d{2}"
-                />
-                <p className='text-[11px] text-muted-foreground'>Si no seleccionas una fecha se usará la actual. Puedes editarla luego.</p>
-              </div>
-            </Card>
-
-            <Card className='p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-card'>
-              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><div className='flex items-center justify-between'><h3 className='text-base font-semibold'>5. Próxima Cita</h3><div className='flex items-center gap-2 cursor-pointer bg-white/20 px-2 py-1 rounded-full' onClick={() => setProximaCitaHabilitada(!proximaCitaHabilitada)}><span className='text-[10px] font-medium opacity-90 uppercase'>{proximaCitaHabilitada ? 'ON' : 'OFF'}</span><div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${proximaCitaHabilitada ? 'bg-green-400' : 'bg-slate-400'}`}><div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform ${proximaCitaHabilitada ? 'translate-x-4' : 'translate-x-0'}`} /></div></div></div></div>
+              <div className='-mx-4 -mt-4 px-4 py-3 mb-4 rounded-t-lg bg-sky-700 text-white'><div className='flex items-center justify-between'><h3 className='text-base font-semibold'>6. Próxima Cita</h3><div className='flex items-center gap-2 cursor-pointer bg-white/20 px-2 py-1 rounded-full' onClick={() => setProximaCitaHabilitada(!proximaCitaHabilitada)}><span className='text-[10px] font-medium opacity-90 uppercase'>{proximaCitaHabilitada ? 'ON' : 'OFF'}</span><div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${proximaCitaHabilitada ? 'bg-green-400' : 'bg-slate-400'}`}><div className={`w-3 h-3 bg-white rounded-full shadow-md transform transition-transform ${proximaCitaHabilitada ? 'translate-x-4' : 'translate-x-0'}`} /></div></div></div></div>
               <div className={`space-y-4 transition-all ${proximaCitaHabilitada ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale'}`}>
                    <div><label className='block text-xs font-semibold text-slate-500 uppercase mb-1'>Motivo / Título</label><Textarea value={motivo} onChange={(e) => { setMotivo(e.target.value); setMotivoEdited(true); }} className='h-20 resize-none' disabled={!proximaCitaHabilitada} /></div>
                 <div className='flex flex-wrap gap-2 items-end'>

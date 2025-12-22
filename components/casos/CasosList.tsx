@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { formatDateSafeDMY } from "@/lib/time";
 import { es } from "date-fns/locale";
 import {
   Table,
@@ -287,7 +288,7 @@ export default function CasosList({
         <div className="w-full max-w-full overflow-x-auto">
         <Table className="w-full table-fixed">
           <TableHeader>
-            <TableRow className="bg-sky-700 dark:bg-sky-900 border-b-sky-800">
+            <TableRow className="bg-sky-700 dark:bg-sky-900 border-b-sky-800 hover:bg-sky-700 dark:hover:bg-sky-900 transition-none">
               <TableHead className="text-white font-semibold text-left w-[100px]">Fecha Inicio</TableHead>
               <TableHead className="text-white font-semibold text-left w-[220px]">Caso</TableHead>
               <TableHead className="text-white font-semibold text-left w-[140px]">Profesional</TableHead>
@@ -328,7 +329,7 @@ export default function CasosList({
                 <TableRow key={caso.id} className="hover:bg-sky-50/30 dark:hover:bg-slate-800/30 transition-colors border-b-slate-100 dark:border-b-slate-800">
                   {/* Fecha de inicio */}
                   <TableCell className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {format(new Date(caso.fecha_inicio), "dd/MM/yyyy", { locale: es })}
+                    {formatDateSafeDMY(caso.fecha_inicio)}
                   </TableCell>
 
                   {/* Caso (sin descripción, truncate, centrado verticalmente) */}
