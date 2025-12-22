@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { generateFichaPDF, generatePresupuestoPDF } from '@/lib/pdf-generator';
 
-// Ensure this route is always dynamic and compatible in production
+// Configuración para Vercel
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 60; // Máximo tiempo de ejecución en segundos
 
 export async function OPTIONS() {
   return new NextResponse(null, {
