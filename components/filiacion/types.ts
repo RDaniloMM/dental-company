@@ -10,7 +10,7 @@ export type PatientData = {
   apellidos: string;
   nombres: string;
   fecha_nacimiento: string;
-  dni: string;
+  dni: string | null;
   direccion: string;
   genero: string;
   estado_civil: string;

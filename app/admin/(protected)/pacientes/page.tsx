@@ -82,7 +82,7 @@ interface Paciente {
   numero_historia: string;
   nombres: string;
   apellidos: string;
-  dni: string;
+  dni: string | null;
   fecha_nacimiento: string;
   genero: string;
   telefono: string;
@@ -175,7 +175,7 @@ export default function PacientesPage() {
         apellidos: formData.apellidos.trim(),
         genero: formData.genero,
         fecha_nacimiento: formData.fecha_nacimiento || "1900-01-01",
-        dni: formData.dni.trim() || "SIN DNI",
+        dni: formData.dni.trim() || null,
         // Para campos UNIQUE (como email), usar null si está vacío para evitar duplicados
         email: formData.email.trim() || null,
         telefono: formData.telefono.trim() || null,
