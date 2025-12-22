@@ -484,34 +484,46 @@ export default function ReportesPage() {
       console.log('[CLIENT] Payload size:', JSON.stringify(pdfPayload).length, 'chars');
       console.log('[CLIENT] URL:', '/api/generate-pdf');
       
-      const response = await fetch("/api/generate-pdf", {
+      const requestOptions: RequestInit = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pdfPayload),
-      });
-      
+      };
+
+      // Intento 1: endpoint principal
+      let response = await fetch("/api/generate-pdf", requestOptions);
       console.log('[CLIENT] Response received');
       console.log('[CLIENT] Response status:', response.status);
       console.log('[CLIENT] Response statusText:', response.statusText);
       console.log('[CLIENT] Response headers:', Object.fromEntries(response.headers.entries()));
 
-      if (!response.ok) {
-        console.error('[CLIENT] Response not OK');
-        console.error('[CLIENT] Status:', response.status);
-        console.error('[CLIENT] StatusText:', response.statusText);
-        
-        let errorDetails = 'Unknown error';
-        try {
-          const errorData = await response.json();
-          console.error('[CLIENT] Error data from server:', errorData);
-          errorDetails = errorData.details || errorData.error || 'Unknown error';
-        } catch (e) {
-          const text = await response.text();
-          console.error('[CLIENT] Error response text:', text);
-          errorDetails = text || 'Error parsing server response';
+      // Si falla (405/HTML fallback), reintenta con endpoint sanitizado
+      const isHtml = (response.headers.get('content-type') || '').includes('text/html');
+      if (!response.ok || isHtml || response.status === 405) {
+        console.warn('[CLIENT] Primary endpoint failed, retrying with /api/generate-pdf2');
+        const retry = await fetch('/api/generate-pdf2', requestOptions);
+        console.log('[CLIENT] Retry status:', retry.status);
+        console.log('[CLIENT] Retry headers:', Object.fromEntries(retry.headers.entries()));
+        if (retry.ok) {
+          response = retry;
+          toast.message('Usando modo seguro para generar PDF');
+        } else {
+          console.error('[CLIENT] Response not OK');
+          console.error('[CLIENT] Status:', response.status);
+          console.error('[CLIENT] StatusText:', response.statusText);
+          
+          let errorDetails = 'Unknown error';
+          try {
+            const errorData = await retry.json();
+            console.error('[CLIENT] Error data from server (retry):', errorData);
+            errorDetails = errorData.details || errorData.error || 'Unknown error';
+          } catch (e) {
+            const text = await retry.text();
+            console.error('[CLIENT] Error response text (retry):', text);
+            errorDetails = text || 'Error parsing server response';
+          }
+          throw new Error(`Error en el servidor (${retry.status}): ${errorDetails}`);
         }
-        
-        throw new Error(`Error en el servidor (${response.status}): ${errorDetails}`);
       }
 
       const blob = await response.blob();
