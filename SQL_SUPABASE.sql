@@ -297,7 +297,7 @@ CREATE TABLE public.pacientes (
   nombres text NOT NULL,
   apellidos text NOT NULL,
   fecha_nacimiento date NOT NULL,
-  dni text NOT NULL UNIQUE,
+  dni text UNIQUE,
   genero text,
   ocupacion text,
   telefono text,

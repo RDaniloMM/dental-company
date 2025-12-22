@@ -88,6 +88,11 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleNombresApellidosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+  };
+
   const handleSelectChange = (name: keyof PatientData, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -148,16 +153,34 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
         return;
       }
 
-      // Preparar payload: convertir campos UNIQUE vacíos a null
+      // Preparar payload: solo incluir campos que existen en la tabla pacientes
+      const { id, ...payloadWithoutId } = payload;
       const payloadToInsert = {
-        ...payload,
-        email: payload.email?.trim() || null,
-        telefono: payload.telefono?.trim() || null,
-        direccion: payload.direccion?.trim() || null,
+        apellidos: payloadWithoutId.apellidos,
+        nombres: payloadWithoutId.nombres,
+        fecha_nacimiento: payloadWithoutId.fecha_nacimiento,
         dni: payload.dni?.trim() || null,
+        genero: payloadWithoutId.genero,
+        estado_civil: payloadWithoutId.estado_civil,
+        ocupacion: payloadWithoutId.ocupacion,
+        grado_instruccion: payloadWithoutId.grado_instruccion,
+        telefono: payload.telefono?.trim() || null,
+        email: payload.email?.trim() || null,
+        direccion: payload.direccion?.trim() || null,
+        pais: payloadWithoutId.pais,
+        departamento: payloadWithoutId.departamento,
+        provincia: payloadWithoutId.provincia,
+        distrito: payloadWithoutId.distrito,
+        contacto_emergencia: payloadWithoutId.contacto_emergencia,
+        recomendado_por: payloadWithoutId.recomendado_por,
+        observaciones: payloadWithoutId.observaciones,
       };
 
-      const { data, error } = await supabase.from("pacientes").upsert(payloadToInsert).select();
+      const { data, error } = await supabase
+        .from("pacientes")
+        .update(payloadToInsert)
+        .eq('id', id)
+        .select();
       
       if (error) throw error;
 
@@ -175,9 +198,11 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
       });
 
     } catch (err) {
-      console.error(err);
-      toast.error("Error al guardar los datos.", {
+      console.error('Error completo:', err);
+      const errorMessage = err instanceof Error ? err.message : JSON.stringify(err);
+      toast.error(`Error al guardar: ${errorMessage}`, {
         style: { backgroundColor: "#FF0000", color: "white" },
+        duration: 5000,
       });
     } finally {
       setIsSaving(false);
@@ -201,7 +226,7 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
                 <Input
                   name='apellidos'
                   value={formData.apellidos}
-                  onChange={handleChange}
+                  onChange={handleNombresApellidosChange}
                   autoComplete='off'
                   className='h-8 text-sm'
                 />
@@ -213,7 +238,7 @@ export default function FiliacionForm({ patient }: FiliacionFormProps) {
                 <Input
                   name='nombres'
                   value={formData.nombres}
-                  onChange={handleChange}
+                  onChange={handleNombresApellidosChange}
                   autoComplete='off'
                   className='h-8 text-sm'
                 />

@@ -285,7 +285,7 @@ export default function PacientesPage() {
                   id='nombres'
                   value={formData.nombres}
                   onChange={(e) =>
-                    setFormData({ ...formData, nombres: e.target.value })
+                    setFormData({ ...formData, nombres: e.target.value.toUpperCase() })
                   }
                   placeholder='Juan Carlos'
                 />
@@ -296,7 +296,7 @@ export default function PacientesPage() {
                   id='apellidos'
                   value={formData.apellidos}
                   onChange={(e) =>
-                    setFormData({ ...formData, apellidos: e.target.value })
+                    setFormData({ ...formData, apellidos: e.target.value.toUpperCase() })
                   }
                   placeholder='Pérez García'
                 />
