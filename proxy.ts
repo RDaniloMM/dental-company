@@ -63,6 +63,7 @@ export async function proxy(request: NextRequest) {
   // Rutas públicas que no requieren autenticación
   const publicRoutes = [
     "/",
+    "/privacidad",
     "/admin/login",
     "/admin/sign-up",
     "/admin/forgot-password",
