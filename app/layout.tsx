@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "Dental Company - Tu Sonrisa es nuestra sonrisa.",
     description:
       "Centro odontológico en Tacna con tecnología avanzada. Implantes, ortodoncia, periodoncia y más.",
-    url: defaultUrl,
+    url: siteUrl,
     siteName: "Dental Company",
     locale: "es_PE",
     type: "website",
