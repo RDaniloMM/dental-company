@@ -2,20 +2,16 @@
   "meta": {
     "version": "0.0.25",
     "baseUrl": "https://dental-company-tacna.com",
-    "timestamp": "2026-01-30T05:47:24.852Z",
+    "timestamp": "2026-01-30T06:01:49.984Z",
     "totalPages": 1
   },
   "score": {
-    "overall": 45,
-    "grade": "F",
+    "overall": 86,
+    "grade": "B",
     "categories": [
       {
         "name": "Crawlability",
-        "score": 78
-      },
-      {
-        "name": "Accessibility",
-        "score": 69
+        "score": 79
       },
       {
         "name": "E-E-A-T",
@@ -23,11 +19,7 @@
       },
       {
         "name": "Security",
-        "score": 70
-      },
-      {
-        "name": "Core SEO",
-        "score": 85
+        "score": 80
       },
       {
         "name": "Performance",
@@ -39,7 +31,7 @@
       },
       {
         "name": "Social Media",
-        "score": 71
+        "score": 83
       },
       {
         "name": "Images",
@@ -52,6 +44,14 @@
       {
         "name": "Links",
         "score": 95
+      },
+      {
+        "name": "Accessibility",
+        "score": 100
+      },
+      {
+        "name": "Core SEO",
+        "score": 100
       },
       {
         "name": "Internationalization",
@@ -68,9 +68,9 @@
     ]
   },
   "summary": {
-    "passed": 68,
-    "warnings": 20,
-    "failed": 3
+    "passed": 76,
+    "warnings": 16,
+    "failed": 2
   },
   "issues": [
     {
@@ -155,194 +155,6 @@
           "message": "Only 0% of content has datePublished",
           "affectedPages": [],
           "legacyValue": "Add dates to Article schema"
-        }
-      ]
-    },
-    {
-      "ruleId": "security/leaked-secrets",
-      "name": "Leaked Environment Variables",
-      "description": "Checks for exposed API keys, secrets, and credentials in HTML/JS",
-      "solution": "API keys and secrets exposed in client-side code can be harvested by attackers to access your services, incur charges, or steal data. Move sensitive credentials to server-side code and use environment variables that are NOT exposed to the browser. For frontend apps, use a backend proxy to make authenticated API calls. Rotate any exposed credentials immediately. Consider using secret scanning tools like Gitleaks or TruffleHog in your CI/CD pipeline to prevent future leaks.",
-      "category": "Security",
-      "severity": "error",
-      "checks": [
-        {
-          "name": "leaked-secrets-medium",
-          "status": "warn",
-          "message": "20 potential secret(s) detected (verify manually)",
-          "affectedPages": [],
-          "items": [
-            {
-              "id": "Segment Write Key: create********************rati",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/cfa9b49bee02dc43.js)"
-            },
-            {
-              "id": "Segment Write Key: extrac********************tate",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: extrac********************rmat",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: conver********************port",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: create********************allb",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: prepar********************eque",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: setCac********************thHa",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: cloneP********************chPa",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: fetchS********************ynam",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: conver********************erSt",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: canNew********************reCo",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: readOr********************entE",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: overwr********************Cach",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: reques********************ntry",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "LinkedIn Client Secret: facebo******rnal",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/393752ef7748ec37.js)"
-            },
-            {
-              "id": "Segment Write Key: disabl********************teTr",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/3a30ed70f620e653.js)"
-            },
-            {
-              "id": "Segment Write Key: dynami********************tanc",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/3a30ed70f620e653.js)"
-            },
-            {
-              "id": "Segment Write Key: create********************ntSe",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/3a30ed70f620e653.js)"
-            },
-            {
-              "id": "Segment Write Key: create********************egme",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/3a30ed70f620e653.js)"
-            },
-            {
-              "id": "Segment Write Key: create********************Clie",
-              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/3a30ed70f620e653.js)"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "ruleId": "security/x-frame-options",
-      "name": "X-Frame-Options",
-      "description": "Checks for clickjacking protection header",
-      "solution": "X-Frame-Options prevents your site from being embedded in iframes, protecting against clickjacking attacks. Set: X-Frame-Options: DENY (no framing) or SAMEORIGIN (same origin only). For modern browsers, CSP frame-ancestors is preferred: Content-Security-Policy: frame-ancestors 'self'. Use both for maximum compatibility.",
-      "category": "Security",
-      "severity": "warning",
-      "checks": [
-        {
-          "name": "x-frame-options",
-          "status": "warn",
-          "message": "No clickjacking protection",
-          "affectedPages": [],
-          "legacyValue": "Add X-Frame-Options: DENY or CSP frame-ancestors"
-        }
-      ]
-    },
-    {
-      "ruleId": "security/form-captcha",
-      "name": "Form CAPTCHA",
-      "description": "Checks for CAPTCHA protection on public forms",
-      "solution": "Add CAPTCHA protection (reCAPTCHA, Cloudflare Turnstile, hCaptcha, etc.) to public-facing forms to prevent spam and bot submissions. Contact forms, comment forms, newsletter signups, and registration forms are common targets for automated abuse. Modern CAPTCHA solutions like Turnstile offer invisible protection with minimal user friction.",
-      "category": "Security",
-      "severity": "warning",
-      "checks": [
-        {
-          "name": "form-captcha",
-          "status": "warn",
-          "message": "1 public form(s) without CAPTCHA",
-          "affectedPages": [
-            "https://dental-company-tacna.com/"
-          ],
-          "items": [
-            {
-              "id": "form[0]"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "ruleId": "security/http-to-https",
-      "name": "HTTP to HTTPS Redirect",
-      "description": "Checks whether HTTP URLs redirect to HTTPS",
-      "solution": "Ensure all HTTP URLs redirect to their HTTPS equivalents using permanent (301) redirects. This consolidates link equity and avoids mixed indexing. Configure your server to enforce HTTPS globally and verify that both the homepage and key internal URLs redirect correctly. WARNING: This rule makes external HTTP requests to probe redirect behavior.",
-      "category": "Security",
-      "severity": "warning",
-      "checks": [
-        {
-          "name": "http-to-https",
-          "status": "warn",
-          "message": "1 HTTP URL(s) redirect to HTTPS",
-          "affectedPages": [],
-          "items": [
-            {
-              "id": "http://dental-company-tacna.com/",
-              "label": "http://dental-company-tacna.com/ → https://dental-company-tacna.com/ (308)",
-              "meta": {
-                "statusCode": 308,
-                "chain": {
-                  "sourceUrl": "http://dental-company-tacna.com/",
-                  "finalUrl": "https://dental-company-tacna.com/",
-                  "hops": [
-                    {
-                      "url": "http://dental-company-tacna.com/",
-                      "statusCode": 308,
-                      "type": "http"
-                    },
-                    {
-                      "url": "https://dental-company-tacna.com/",
-                      "statusCode": 200,
-                      "type": "http"
-                    }
-                  ],
-                  "chainLength": 1,
-                  "isLoop": false,
-                  "endsInError": false,
-                  "httpsToHttp": false,
-                  "httpToHttps": true
-                }
-              }
-            }
-          ],
-          "details": {
-            "total": 1,
-            "sampled": 1
-          }
         }
       ]
     },
@@ -486,86 +298,173 @@
       ]
     },
     {
-      "ruleId": "a11y/aria-labels",
-      "name": "ARIA Labels",
-      "description": "Checks that interactive elements have accessible names",
-      "solution": "All interactive elements (buttons, links, inputs) need accessible names for screen readers. Use: visible text content, aria-label for icon-only buttons, aria-labelledby to reference existing text, or the title attribute as a fallback. Icon buttons especially need aria-label: <button aria-label='Close'>×</button>. Test with a screen reader or browser accessibility inspector.",
-      "category": "Accessibility",
+      "ruleId": "security/leaked-secrets",
+      "name": "Leaked Environment Variables",
+      "description": "Checks for exposed API keys, secrets, and credentials in HTML/JS",
+      "solution": "API keys and secrets exposed in client-side code can be harvested by attackers to access your services, incur charges, or steal data. Move sensitive credentials to server-side code and use environment variables that are NOT exposed to the browser. For frontend apps, use a backend proxy to make authenticated API calls. Rotate any exposed credentials immediately. Consider using secret scanning tools like Gitleaks or TruffleHog in your CI/CD pipeline to prevent future leaks.",
+      "category": "Security",
       "severity": "error",
       "checks": [
         {
-          "name": "aria-buttons",
-          "status": "fail",
-          "message": "1 button(s) without accessible names",
-          "affectedPages": [
-            "https://dental-company-tacna.com/"
-          ],
+          "name": "leaked-secrets-medium",
+          "status": "warn",
+          "message": "20 potential secret(s) detected (verify manually)",
+          "affectedPages": [],
           "items": [
             {
-              "id": "md:hidden p-2"
+              "id": "Segment Write Key: create********************rati",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/70ef5e0595f24023.js)"
+            },
+            {
+              "id": "Segment Write Key: extrac********************tate",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: extrac********************rmat",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: conver********************port",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: create********************allb",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: prepar********************eque",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: setCac********************thHa",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: cloneP********************chPa",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: fetchS********************ynam",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: conver********************erSt",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: canNew********************reCo",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: readOr********************entE",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: overwr********************Cach",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: reques********************ntry",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "LinkedIn Client Secret: facebo******rnal",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/269dc890dd37ee5c.js)"
+            },
+            {
+              "id": "Segment Write Key: disabl********************teTr",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/64aa5663928aa193.js)"
+            },
+            {
+              "id": "Segment Write Key: dynami********************tanc",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/64aa5663928aa193.js)"
+            },
+            {
+              "id": "Segment Write Key: create********************ntSe",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/64aa5663928aa193.js)"
+            },
+            {
+              "id": "Segment Write Key: create********************egme",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/64aa5663928aa193.js)"
+            },
+            {
+              "id": "Segment Write Key: create********************Clie",
+              "label": "Found in external-script (https://dental-company-tacna.com/_next/static/chunks/64aa5663928aa193.js)"
             }
           ]
         }
       ]
     },
     {
-      "ruleId": "a11y/heading-order",
-      "name": "Heading Order",
-      "description": "Checks that heading levels don't skip",
-      "solution": "Headings should follow a logical hierarchy without skipping levels. Screen reader users navigate by headings, so skipping from H1 to H3 is confusing. Correct order: H1 -> H2 -> H3 (not H1 -> H3). You can have multiple headings at the same level, and you can go back up (H3 -> H2 is fine). Think of headings as an outline - they should make sense when read alone.",
-      "category": "Accessibility",
+      "ruleId": "security/form-captcha",
+      "name": "Form CAPTCHA",
+      "description": "Checks for CAPTCHA protection on public forms",
+      "solution": "Add CAPTCHA protection (reCAPTCHA, Cloudflare Turnstile, hCaptcha, etc.) to public-facing forms to prevent spam and bot submissions. Contact forms, comment forms, newsletter signups, and registration forms are common targets for automated abuse. Modern CAPTCHA solutions like Turnstile offer invisible protection with minimal user friction.",
+      "category": "Security",
       "severity": "warning",
       "checks": [
         {
-          "name": "heading-order",
+          "name": "form-captcha",
           "status": "warn",
-          "message": "1 heading level skip(s) detected",
+          "message": "1 public form(s) without CAPTCHA",
           "affectedPages": [
             "https://dental-company-tacna.com/"
           ],
           "items": [
             {
-              "id": "H3 after H1"
+              "id": "form[0]"
             }
           ]
         }
       ]
     },
     {
-      "ruleId": "core/meta-description",
-      "name": "Meta Description",
-      "description": "Validates meta description presence and length",
-      "solution": "Meta descriptions should be 120-160 characters and provide a compelling summary of the page. While not a direct ranking factor, good descriptions improve click-through rates from search results. Write unique descriptions for each page that accurately preview the content. Include a call-to-action when appropriate. If missing, search engines will auto-generate snippets which may not represent your page optimally.",
-      "category": "Core SEO",
-      "severity": "error",
-      "checks": [
-        {
-          "name": "meta-description",
-          "status": "warn",
-          "message": "Description too long (256 chars, max 160)",
-          "affectedPages": [
-            "https://dental-company-tacna.com/"
-          ],
-          "legacyValue": "Centro odontológico integral de última generación que combina excelencia clínica, tecnología avanzada y calidez humana. Nos dedicamos a proporcionar tratamientos dentales de la más alta calidad con un enfoque preventivo, personalizado y multidisciplinario."
-        }
-      ]
-    },
-    {
-      "ruleId": "core/canonical",
-      "name": "Canonical URL",
-      "description": "Validates canonical URL presence and format",
-      "solution": "Canonical URLs tell search engines which version of a page is the \"master\" copy, preventing duplicate content issues. Every page should specify a canonical URL, typically pointing to itself. Add a <link rel=\"canonical\" href=\"...\"> tag in the head section. Use absolute URLs and ensure consistency (with or without trailing slash, www vs non-www). For paginated content, point to the main page or use rel=\"prev/next\".",
-      "category": "Core SEO",
+      "ruleId": "security/http-to-https",
+      "name": "HTTP to HTTPS Redirect",
+      "description": "Checks whether HTTP URLs redirect to HTTPS",
+      "solution": "Ensure all HTTP URLs redirect to their HTTPS equivalents using permanent (301) redirects. This consolidates link equity and avoids mixed indexing. Configure your server to enforce HTTPS globally and verify that both the homepage and key internal URLs redirect correctly. WARNING: This rule makes external HTTP requests to probe redirect behavior.",
+      "category": "Security",
       "severity": "warning",
       "checks": [
         {
-          "name": "canonical",
+          "name": "http-to-https",
           "status": "warn",
-          "message": "Missing canonical URL",
-          "affectedPages": [
-            "https://dental-company-tacna.com/"
+          "message": "1 HTTP URL(s) redirect to HTTPS",
+          "affectedPages": [],
+          "items": [
+            {
+              "id": "http://dental-company-tacna.com/",
+              "label": "http://dental-company-tacna.com/ → https://dental-company-tacna.com/ (308)",
+              "meta": {
+                "statusCode": 308,
+                "chain": {
+                  "sourceUrl": "http://dental-company-tacna.com/",
+                  "finalUrl": "https://dental-company-tacna.com/",
+                  "hops": [
+                    {
+                      "url": "http://dental-company-tacna.com/",
+                      "statusCode": 308,
+                      "type": "http"
+                    },
+                    {
+                      "url": "https://dental-company-tacna.com/",
+                      "statusCode": 200,
+                      "type": "http"
+                    }
+                  ],
+                  "chainLength": 1,
+                  "isLoop": false,
+                  "endsInError": false,
+                  "httpsToHttp": false,
+                  "httpToHttps": true
+                }
+              }
+            }
           ],
-          "legacyValue": "null"
+          "details": {
+            "total": 1,
+            "sampled": 1
+          }
         }
       ]
     },

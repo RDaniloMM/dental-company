@@ -1218,12 +1218,14 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
               const hasCurriculum =
                 member.curriculum || curriculumData[member.nombre];
               return (
-                <div
+                <article
                   key={member.id}
                   className={`group text-center ${
                     hasCurriculum ? "cursor-pointer" : ""
                   }`}
                   onClick={() => hasCurriculum && setSelectedMember(member)}
+                  itemScope
+                  itemType='https://schema.org/Dentist'
                 >
                   <div className='relative mb-6 mx-auto w-48 h-48 rounded-full overflow-hidden ring-4 ring-blue-100 group-hover:ring-blue-400 group-hover:shadow-xl transition-all duration-300'>
                     <Image
@@ -1231,6 +1233,7 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
                       alt={member.nombre}
                       fill
                       className='object-cover group-hover:scale-110 transition-transform duration-300'
+                      itemProp='image'
                     />
                     {hasCurriculum && (
                       <div className='absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/20 transition-colors duration-300 flex items-center justify-center'>
@@ -1246,14 +1249,23 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
                         ? "group-hover:text-blue-600 transition-colors"
                         : ""
                     }`}
+                    itemProp='name'
                   >
                     {member.nombre}
                   </h3>
-                  <p className='text-blue-600 font-medium mb-2'>
+                  <p
+                    className='text-blue-600 font-medium mb-2'
+                    itemProp='jobTitle'
+                  >
                     {member.cargo}
                   </p>
-                  <p className='text-gray-500 text-sm'>{member.especialidad}</p>
-                </div>
+                  <p
+                    className='text-gray-500 text-sm'
+                    itemProp='medicalSpecialty'
+                  >
+                    {member.especialidad}
+                  </p>
+                </article>
               );
             })}
           </div>

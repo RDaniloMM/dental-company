@@ -57,6 +57,165 @@ export default function RootLayout({
       lang='es'
       suppressHydrationWarning
     >
+      <head>
+        {/* Schema.org JSON-LD para E-E-A-T */}
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Dentist",
+              name: "Dental Company",
+              description:
+                "Centro odontológico en Tacna con tecnología avanzada. Implantes, ortodoncia, periodoncia y más.",
+              url: "https://dental-company-tacna.com",
+              logo: "https://dental-company-tacna.com/logo.png",
+              image: "https://dental-company-tacna.com/og-image.png",
+              telephone: "+51-952-864-972",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Calle Zela 716",
+                addressLocality: "Tacna",
+                addressRegion: "Tacna",
+                postalCode: "23001",
+                addressCountry: "PE",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: -18.0146,
+                longitude: -70.2536,
+              },
+              openingHoursSpecification: [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                  ],
+                  opens: "09:00",
+                  closes: "13:00",
+                },
+                {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                  ],
+                  opens: "15:00",
+                  closes: "20:00",
+                },
+                {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: "Saturday",
+                  opens: "09:00",
+                  closes: "13:00",
+                },
+              ],
+              priceRange: "$$",
+              medicalSpecialty: [
+                "Periodontics",
+                "Orthodontics",
+                "Dental Implants",
+                "Oral Surgery",
+              ],
+              employee: [
+                {
+                  "@type": "Dentist",
+                  name: "Dr. Ulises Peñaloza",
+                  jobTitle: "Periodoncista e Implantólogo",
+                  description:
+                    "Especialista en periodoncia e implantología con 17 años de experiencia. Doctor en Odontología, Investigador Renacyt.",
+                  knowsAbout: [
+                    "Implantes dentales",
+                    "Regeneración ósea guiada",
+                    "Periodoncia",
+                    "Prótesis sobre implantes",
+                  ],
+                  hasCredential: [
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "degree",
+                      name: "Doctorado en Odontología",
+                    },
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "degree",
+                      name: "Maestría en Odontología con mención en patología",
+                    },
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "certification",
+                      name: "Segunda Especialidad en Periodoncia e Implantología",
+                    },
+                  ],
+                  memberOf: {
+                    "@type": "Organization",
+                    name: "Asociación Peruana de Periodoncia y Osteointegración",
+                  },
+                },
+                {
+                  "@type": "Dentist",
+                  name: "Dra. Gabriela Condori",
+                  jobTitle: "Ortodoncista",
+                  description:
+                    "Especialista en ortodoncia con 10 años de experiencia. Más de 100 casos tratados exitosamente.",
+                  knowsAbout: [
+                    "Ortodoncia",
+                    "Brackets estéticos",
+                    "Ortopedia maxilar",
+                    "Ortodoncia interceptiva",
+                  ],
+                  hasCredential: [
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "degree",
+                      name: "Maestría en Investigación e innovación científica",
+                    },
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "certification",
+                      name: "Segunda Especialidad en Ortodoncia y Ortopedia Maxilar",
+                    },
+                  ],
+                },
+                {
+                  "@type": "Dentist",
+                  name: "Dra. Paola Peñaloza",
+                  jobTitle:
+                    "Odontóloga General y Especialista en Salud Pública",
+                  description:
+                    "17 años de experiencia en odontología general y salud pública bucal.",
+                  knowsAbout: [
+                    "Odontología general",
+                    "Salud pública bucal",
+                    "Epidemiología dental",
+                    "Prevención dental",
+                  ],
+                  hasCredential: [
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "degree",
+                      name: "Maestría en Odontología con mención en patología",
+                    },
+                    {
+                      "@type": "EducationalOccupationalCredential",
+                      credentialCategory: "certification",
+                      name: "Diplomado en Políticas Públicas para el Acceso Universal a Salud Oral",
+                    },
+                  ],
+                },
+              ],
+              sameAs: ["https://www.facebook.com/dentalcompanytacna"],
+            }),
+          }}
+        />
+      </head>
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute='class'
