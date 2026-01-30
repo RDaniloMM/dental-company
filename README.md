@@ -170,24 +170,27 @@ dental_company_web/
 
 Última auditoría con [Squirrel](https://squirrelscan.com) (30 Enero 2026):
 
-| Categoría            | Puntuación |
-| -------------------- | ---------- |
-| Overall              | 58/100 (F) |
-| Accessibility        | 100        |
-| Internationalization | 100        |
-| Links                | 100        |
-| Mobile               | 100        |
-| URL Structure        | 100        |
-| Core SEO             | 97         |
-| Images               | 96         |
-| Content              | 93         |
-| Performance          | 89         |
-| Social Media         | 83         |
-| Security             | 80         |
-| Crawlability         | 79         |
-| Legal Compliance     | 71         |
-| E-E-A-T              | 53         |
-| Structured Data      | 0          |
+| Categoría            | Puntuación     |
+| -------------------- | -------------- |
+| Overall              | **67/100 (D)** |
+| Accessibility        | 100% ✅        |
+| Core SEO             | 100% ✅        |
+| Internationalization | 100% ✅        |
+| Links                | 100% ✅        |
+| Mobile               | 100% ✅        |
+| URL Structure        | 100% ✅        |
+| Content              | 95%            |
+| Images               | 95%            |
+| Social Media         | 93%            |
+| Security             | 89%            |
+| Crawlability         | 86%            |
+| Performance          | 80%            |
+| Legal Compliance     | 80%            |
+| E-E-A-T              | 63%            |
+| Structured Data      | 0%             |
+
+**Páginas auditadas:** 3 (/, /nosotros, /privacidad)  
+**Resultado:** 195 passed, 19 warnings, 5 errors
 
 ## 📄 Documentación Adicional
 
