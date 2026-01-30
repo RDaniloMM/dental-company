@@ -4,9 +4,8 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+// Usar siempre el dominio de producción para metadatos SEO
+const siteUrl = "https://dental-company-tacna.com";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +15,7 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: "Dental Company - Tu Sonrisa es nuestra sonrisa.",
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL(siteUrl),
   description:
     "Centro odontológico en Tacna con tecnología avanzada. Implantes, ortodoncia, periodoncia y más. Más de 10 años de experiencia.",
   alternates: {
