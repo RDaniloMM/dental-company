@@ -1457,6 +1457,14 @@ const Footer = ({ tema }: { tema: Record<string, string> }) => (
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                href='/privacidad'
+                className='text-gray-400 hover:text-white transition-colors'
+              >
+                Política de Privacidad
+              </Link>
+            </li>
           </ul>
         </div>
 
