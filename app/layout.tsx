@@ -18,7 +18,33 @@ export const metadata: Metadata = {
   title: "Dental Company - Tu Sonrisa es nuestra sonrisa.",
   metadataBase: new URL(defaultUrl),
   description:
-    "Centro odontológico integral de última generación que combina excelencia clínica, tecnología avanzada y calidez humana. Nos dedicamos a proporcionar tratamientos dentales de la más alta calidad con un enfoque preventivo, personalizado y multidisciplinario.",
+    "Centro odontológico en Tacna con tecnología avanzada. Implantes, ortodoncia, periodoncia y más. Más de 10 años de experiencia.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Dental Company - Tu Sonrisa es nuestra sonrisa.",
+    description:
+      "Centro odontológico en Tacna con tecnología avanzada. Implantes, ortodoncia, periodoncia y más.",
+    url: defaultUrl,
+    siteName: "Dental Company",
+    locale: "es_PE",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Dental Company - Centro Odontológico",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dental Company - Tu Sonrisa es nuestra sonrisa.",
+    description: "Centro odontológico en Tacna con tecnología avanzada.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
@@ -27,16 +53,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html
+      lang='es'
+      suppressHydrationWarning
+    >
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
+          attribute='class'
+          defaultTheme='system'
           enableSystem
           disableTransitionOnChange
         >
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster
+            richColors
+            position='top-right'
+          />
         </ThemeProvider>
       </body>
     </html>

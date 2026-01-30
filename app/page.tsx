@@ -246,6 +246,8 @@ const Header = ({ isScrolled }: { isScrolled: boolean }) => {
           <button
             className='md:hidden p-2'
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className='h-6 w-6 text-gray-700' />
@@ -344,6 +346,7 @@ const HeroSection = ({
                 src={img.imagen_url}
                 alt={img.alt_text || `Imagen ${index + 1}`}
                 fill
+                sizes='100vw'
                 className='object-cover'
                 priority={index === 0}
               />
@@ -407,9 +410,9 @@ const HeroSection = ({
                       <Icon className='h-5 w-5 text-white' />
                     </div>
                     <div>
-                      <h3 className='text-base font-bold text-white leading-tight'>
+                      <h2 className='text-base font-bold text-white leading-tight'>
                         {card.title}
-                      </h3>
+                      </h2>
                       {card.lines.map((line, i) => (
                         <p
                           key={i}
@@ -836,7 +839,7 @@ const ServiciosSection = ({
   servicios: CMSData["servicios"];
 }) => {
   const [selectedService, setSelectedService] = useState<ServiceDetail | null>(
-    null
+    null,
   );
   const [loadingImages, setLoadingImages] = useState(false);
 
@@ -848,13 +851,13 @@ const ServiciosSection = ({
 
   // Función para cargar imágenes de un servicio
   const loadServiceImages = async (
-    servicioId: string
+    servicioId: string,
   ): Promise<
     Array<{ id: string; imagen_url: string; descripcion?: string }>
   > => {
     try {
       const res = await fetch(
-        `/api/cms/servicio-imagenes?servicioId=${servicioId}`
+        `/api/cms/servicio-imagenes?servicioId=${servicioId}`,
       );
       if (res.ok) {
         return await res.json();
@@ -882,7 +885,7 @@ const ServiciosSection = ({
 
   // Función para obtener los detalles del servicio (del CMS o hardcodeado)
   const getServiceDetails = (
-    service: CMSData["servicios"][0]
+    service: CMSData["servicios"][0],
   ): ServiceDetail => {
     // Si el servicio del CMS tiene detalles, usarlos
     if (service.detalle_completo) {
@@ -898,7 +901,7 @@ const ServiciosSection = ({
     }
     // Sino, buscar en los datos hardcodeados
     const hardcodedService = serviciosDetallados.find(
-      (s) => s.nombre === service.nombre
+      (s) => s.nombre === service.nombre,
     );
     if (hardcodedService) {
       return hardcodedService;
@@ -937,12 +940,12 @@ const ServiciosSection = ({
             displayServices.length === 1
               ? "grid-cols-1 max-w-sm mx-auto"
               : displayServices.length === 2
-              ? "grid-cols-2 max-w-xl mx-auto"
-              : displayServices.length === 3
-              ? "grid-cols-3 max-w-3xl mx-auto"
-              : displayServices.length === 4
-              ? "grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto"
-              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+                ? "grid-cols-2 max-w-xl mx-auto"
+                : displayServices.length === 3
+                  ? "grid-cols-3 max-w-3xl mx-auto"
+                  : displayServices.length === 4
+                    ? "grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto"
+                    : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
           }`}
         >
           {displayServices.map((service, index) => {
@@ -1202,12 +1205,12 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
               displayEquipo.length === 1
                 ? "grid-cols-1 max-w-xs mx-auto"
                 : displayEquipo.length === 2
-                ? "grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto"
-                : displayEquipo.length === 3
-                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto"
-                : displayEquipo.length === 4
-                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto"
-                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto"
+                  ? "grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto"
+                  : displayEquipo.length === 3
+                    ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto"
+                    : displayEquipo.length === 4
+                      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto"
+                      : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto"
             }`}
           >
             {displayEquipo.map((member) => {
@@ -1279,7 +1282,7 @@ const ContactoSection = ({ tema }: { tema: Record<string, string> }) => {
     const mensaje = formData.get("mensaje") as string;
 
     const texto = encodeURIComponent(
-      `Hola doctor, soy ${nombre}.\n*Motivo de la consulta:* ${motivo}\n\n${mensaje}`
+      `Hola doctor, soy ${nombre}.\n*Motivo de la consulta:* ${motivo}\n\n${mensaje}`,
     );
     window.open(`https://wa.me/${whatsappNumber}?text=${texto}`, "_blank");
   };
