@@ -14,9 +14,13 @@ import {
 export const metadata: Metadata = {
   title: "Política de Privacidad | Dental Company",
   description:
-    "Conoce cómo Dental Company protege y maneja tus datos personales. Política de privacidad conforme a la Ley de Protección de Datos Personales del Perú.",
+    "Conoce cómo Dental Company protege y maneja tus datos personales. Política de privacidad conforme a la Ley de Protección de Datos Personales del Perú (Ley 29733).",
   alternates: {
     canonical: "/privacidad",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

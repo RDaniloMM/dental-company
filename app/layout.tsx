@@ -65,13 +65,25 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Dentist",
+              "@id": "https://dental-company-tacna.com/#organization",
               name: "Dental Company",
               description:
                 "Centro odontológico en Tacna con tecnología avanzada. Implantes, ortodoncia, periodoncia y más.",
               url: "https://dental-company-tacna.com",
-              logo: "https://dental-company-tacna.com/logo.png",
-              image: "https://dental-company-tacna.com/og-image.png",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://dental-company-tacna.com/logo.png",
+                width: 200,
+                height: 60,
+              },
+              image: {
+                "@type": "ImageObject",
+                url: "https://dental-company-tacna.com/og-image.png",
+                width: 1200,
+                height: 630,
+              },
               telephone: "+51-952-864-972",
+              email: "d.c.com@hotmail.com",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "Calle Zela 716",

@@ -1,12 +1,13 @@
 import { LoginForm } from "@/components/login-form";
 import VistaCalendario from "../../../../components/calendar/VistaCalendario";
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Iniciar Sesión | Dental Company",
   description:
-    "Accede al sistema de gestión de Dental Company. Panel de administración para odontólogos y personal clínico.",
+    "Accede al sistema de gestión de Dental Company Tacna. Panel de administración para odontólogos y personal clínico autorizado. Gestiona pacientes, citas y tratamientos.",
   robots: {
     index: false,
     follow: false,
@@ -32,7 +33,7 @@ export default function Page() {
       </div>
 
       {/* Contenido */}
-      <div className='relative z-10 flex min-h-screen w-full flex-col lg:flex-row'>
+      <main className='relative z-10 flex min-h-screen w-full flex-col lg:flex-row'>
         {/* Sección de Login */}
         <div className='flex flex-1 items-center justify-center p-6 md:p-10 lg:flex-[4]'>
           <div className='w-full max-w-md'>
@@ -75,7 +76,17 @@ export default function Page() {
             </div>
           </details>
         </div>
-      </div>
+      </main>
+
+      {/* Footer con link de privacidad */}
+      <footer className='absolute bottom-4 left-0 right-0 z-10 text-center'>
+        <Link
+          href='/privacidad'
+          className='text-white/60 hover:text-white/80 text-xs transition-colors'
+        >
+          Política de Privacidad
+        </Link>
+      </footer>
 
       {/* Decoración de fondo */}
       <div className='absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-950/50 to-transparent z-[5]' />

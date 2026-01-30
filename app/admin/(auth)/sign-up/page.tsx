@@ -1,11 +1,12 @@
 import { SignUpForm } from "@/components/sign-up-form";
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Registro de Usuario | Dental Company",
   description:
-    "Crea una cuenta en el sistema de gestión de Dental Company. Registro para personal autorizado.",
+    "Crea una cuenta en el sistema de gestión de Dental Company Tacna. Registro exclusivo para personal autorizado de la clínica odontológica.",
   robots: {
     index: false,
     follow: false,
@@ -31,7 +32,7 @@ export default function Page() {
       </div>
 
       {/* Contenido */}
-      <div className='relative z-10 flex min-h-screen w-full items-center justify-center p-6 md:p-10'>
+      <main className='relative z-10 flex min-h-screen w-full items-center justify-center p-6 md:p-10'>
         <div className='w-full max-w-md'>
           {/* Encabezado decorativo */}
           <div className='text-center mb-6'>
@@ -57,11 +58,17 @@ export default function Page() {
 
           {/* Footer info */}
           <p className='text-center text-white/60 text-xs mt-6'>
-            Al registrarte, aceptas los términos de servicio y la política de
-            privacidad de Dental Company.
+            Al registrarte, aceptas los{" "}
+            <Link
+              href='/privacidad'
+              className='underline hover:text-white/80'
+            >
+              términos y política de privacidad
+            </Link>{" "}
+            de Dental Company.
           </p>
         </div>
-      </div>
+      </main>
 
       {/* Decoración de fondo */}
       <div className='absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-950/50 to-transparent z-[5]' />
