@@ -35,10 +35,8 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Dental Company - Equipo de Especialistas",
+        url: "/logo.png",
+        alt: "Dental Company - Centro Odontológico en Tacna",
       },
     ],
   },
