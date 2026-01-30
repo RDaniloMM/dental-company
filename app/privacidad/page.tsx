@@ -14,9 +14,18 @@ import {
 export const metadata: Metadata = {
   title: "Política de Privacidad | Dental Company",
   description:
-    "Conoce cómo Dental Company protege y maneja tus datos personales. Política de privacidad conforme a la Ley de Protección de Datos Personales del Perú (Ley 29733).",
+    "Conoce cómo Dental Company protege tus datos personales. Política de privacidad conforme a la Ley de Protección de Datos del Perú.",
   alternates: {
     canonical: "/privacidad",
+  },
+  openGraph: {
+    title: "Política de Privacidad | Dental Company",
+    description:
+      "Conoce cómo Dental Company protege tus datos personales. Política de privacidad conforme a la Ley de Protección de Datos del Perú.",
+    url: "https://dental-company-tacna.com/privacidad",
+    siteName: "Dental Company",
+    locale: "es_PE",
+    type: "website",
   },
   robots: {
     index: true,
@@ -40,6 +49,7 @@ export default function PoliticaPrivacidad() {
                 alt='Dental Company Logo'
                 width={140}
                 height={50}
+                priority
                 className='h-12 w-auto'
               />
             </Link>

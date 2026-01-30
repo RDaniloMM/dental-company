@@ -212,6 +212,7 @@ const Header = ({ isScrolled }: { isScrolled: boolean }) => {
               alt='Dental Company Logo'
               width={140}
               height={50}
+              priority
               className='h-12 w-auto'
             />
           </Link>
@@ -715,6 +716,7 @@ const ServicioModal = ({
                         `${servicio.nombre} - Imagen ${index + 1}`
                       }
                       fill
+                      sizes='(max-width: 768px) 100vw, 50vw'
                       className='object-cover'
                     />
                     {img.descripcion && (
@@ -1042,6 +1044,7 @@ const CurriculumModal = ({
               src={member.foto_url || "/dentista.png"}
               alt={member.nombre}
               fill
+              sizes='128px'
               className='object-cover'
             />
           </div>
@@ -1232,6 +1235,7 @@ const EquipoSection = ({ equipo }: { equipo: CMSData["equipo"] }) => {
                       src={member.foto_url || "/dentista.png"}
                       alt={member.nombre}
                       fill
+                      sizes='192px'
                       className='object-cover group-hover:scale-110 transition-transform duration-300'
                       itemProp='image'
                     />
@@ -1414,6 +1418,15 @@ const ContactoSection = ({ tema }: { tema: Record<string, string> }) => {
                 />
                 Enviar por WhatsApp
               </button>
+              <p className='text-xs text-gray-500 text-center mt-4'>
+                Al enviar este formulario, aceptas nuestra{" "}
+                <Link
+                  href='/privacidad'
+                  className='text-blue-600 hover:underline'
+                >
+                  Política de Privacidad
+                </Link>
+              </p>
             </form>
           </div>
         </div>

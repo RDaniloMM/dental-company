@@ -139,10 +139,14 @@ export default function RootLayout({
               employee: [
                 {
                   "@type": "Dentist",
+                  "@id": "https://dental-company-tacna.com/#ulises-penaloza",
                   name: "Dr. Ulises Peñaloza",
                   jobTitle: "Periodoncista e Implantólogo",
                   description:
                     "Especialista en periodoncia e implantología con 17 años de experiencia. Doctor en Odontología, Investigador Renacyt.",
+                  worksFor: {
+                    "@id": "https://dental-company-tacna.com/#organization",
+                  },
                   knowsAbout: [
                     "Implantes dentales",
                     "Regeneración ósea guiada",
@@ -173,10 +177,14 @@ export default function RootLayout({
                 },
                 {
                   "@type": "Dentist",
+                  "@id": "https://dental-company-tacna.com/#gabriela-condori",
                   name: "Dra. Gabriela Condori",
                   jobTitle: "Ortodoncista",
                   description:
                     "Especialista en ortodoncia con 10 años de experiencia. Más de 100 casos tratados exitosamente.",
+                  worksFor: {
+                    "@id": "https://dental-company-tacna.com/#organization",
+                  },
                   knowsAbout: [
                     "Ortodoncia",
                     "Brackets estéticos",
@@ -198,11 +206,15 @@ export default function RootLayout({
                 },
                 {
                   "@type": "Dentist",
+                  "@id": "https://dental-company-tacna.com/#paola-penaloza",
                   name: "Dra. Paola Peñaloza",
                   jobTitle:
                     "Odontóloga General y Especialista en Salud Pública",
                   description:
                     "17 años de experiencia en odontología general y salud pública bucal.",
+                  worksFor: {
+                    "@id": "https://dental-company-tacna.com/#organization",
+                  },
                   knowsAbout: [
                     "Odontología general",
                     "Salud pública bucal",
