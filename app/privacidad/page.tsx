@@ -453,13 +453,35 @@ export default function PoliticaPrivacidad() {
         </div>
       </main>
 
-      {/* Footer simple */}
+      {/* Footer */}
       <footer className='bg-gray-900 text-gray-400 py-8'>
-        <div className='container mx-auto px-4 text-center'>
-          <p>
-            © {new Date().getFullYear()} Dental Company. Todos los derechos
-            reservados.
-          </p>
+        <div className='container mx-auto px-4'>
+          <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
+            <p className='text-sm'>
+              © {new Date().getFullYear()} Dental Company. Todos los derechos
+              reservados.
+            </p>
+            <div className='flex items-center gap-6'>
+              <Link
+                href='/nosotros'
+                className='text-gray-400 hover:text-white text-sm transition-colors'
+              >
+                Nosotros
+              </Link>
+              <Link
+                href='/#contacto'
+                className='text-gray-400 hover:text-white text-sm transition-colors'
+              >
+                Contacto
+              </Link>
+              <Link
+                href='/'
+                className='text-gray-400 hover:text-white text-sm transition-colors'
+              >
+                Inicio
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

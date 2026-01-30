@@ -141,6 +141,7 @@ dental_company_web/
 │   │   ├── (auth)/      # Rutas públicas (login)
 │   │   └── (protected)/ # Rutas protegidas
 │   ├── api/             # API Routes
+│   ├── nosotros/        # Página "Sobre Nosotros" (E-E-A-T)
 │   ├── privacidad/      # Política de privacidad
 │   └── page.tsx         # Landing page pública
 ├── components/

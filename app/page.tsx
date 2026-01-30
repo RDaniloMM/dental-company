@@ -222,7 +222,7 @@ const Header = ({ isScrolled }: { isScrolled: boolean }) => {
             {[
               { href: "#inicio", label: "Inicio" },
               { href: "#servicios", label: "Servicios" },
-              { href: "#nosotros", label: "Nosotros" },
+              { href: "/nosotros", label: "Nosotros" },
               { href: "#contacto", label: "Contacto" },
             ].map((item) => (
               <Link
@@ -264,7 +264,7 @@ const Header = ({ isScrolled }: { isScrolled: boolean }) => {
             {[
               { href: "#inicio", label: "Inicio" },
               { href: "#servicios", label: "Servicios" },
-              { href: "#nosotros", label: "Nosotros" },
+              { href: "/nosotros", label: "Nosotros" },
               { href: "#contacto", label: "Contacto" },
             ].map((item) => (
               <Link
@@ -1460,16 +1460,38 @@ const Footer = ({ tema }: { tema: Record<string, string> }) => (
         <div className='text-center md:text-left'>
           <h4 className='text-lg font-bold mb-6'>Enlaces</h4>
           <ul className='space-y-3'>
-            {["Inicio", "Servicios", "Nosotros", "Contacto"].map((link) => (
-              <li key={link}>
-                <Link
-                  href={`#${link.toLowerCase()}`}
-                  className='text-gray-400 hover:text-white transition-colors'
-                >
-                  {link}
-                </Link>
-              </li>
-            ))}
+            <li>
+              <Link
+                href='#inicio'
+                className='text-gray-400 hover:text-white transition-colors'
+              >
+                Inicio
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='#servicios'
+                className='text-gray-400 hover:text-white transition-colors'
+              >
+                Servicios
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='/nosotros'
+                className='text-gray-400 hover:text-white transition-colors'
+              >
+                Nosotros
+              </Link>
+            </li>
+            <li>
+              <Link
+                href='#contacto'
+                className='text-gray-400 hover:text-white transition-colors'
+              >
+                Contacto
+              </Link>
+            </li>
             <li>
               <Link
                 href='/privacidad'

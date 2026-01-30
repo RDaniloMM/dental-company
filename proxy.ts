@@ -64,6 +64,9 @@ export async function proxy(request: NextRequest) {
   const publicRoutes = [
     "/",
     "/privacidad",
+    "/nosotros",
+    "/sitemap.xml",
+    "/robots.txt",
     "/admin/login",
     "/admin/sign-up",
     "/admin/forgot-password",
