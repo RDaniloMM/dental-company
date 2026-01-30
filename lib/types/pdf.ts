@@ -9,7 +9,7 @@ export interface Filiacion {
   email?: string;
   alerta_medica?: string;
   direccion?: string;
-  sexo?: 'masculino' | 'femenino' | 'no_especifica';
+  sexo?: "masculino" | "femenino" | "no_especifica";
   estado_civil?: string;
   lugar_procedencia?: string;
   recomendado_por?: string;
@@ -22,7 +22,9 @@ export interface AntecedentesQuestion {
   [key: string]: unknown; // Allow dynamic form fields
 }
 
-export type TableCell = string | { content: string; colSpan?: number; styles?: Record<string, unknown> };
+export type TableCell =
+  | string
+  | { content: string; colSpan?: number; styles?: Record<string, unknown> };
 export type TableRow = TableCell[];
 export type TableBody = TableRow[];
 
@@ -45,7 +47,7 @@ export interface Antecedentes {
 
 export interface OdontogramaData {
   existe: boolean;
-  version?: string;
+  version?: number;
   fecha_registro?: string;
   observaciones?: string;
   imagen_base64?: string;
@@ -58,7 +60,7 @@ export interface Seguimiento {
 }
 
 export interface FichaPDFPayload {
-  tipo_reporte?: 'ficha';
+  tipo_reporte?: "ficha";
   numero_historia?: string;
   filiacion?: Filiacion;
   antecedentes?: Antecedentes;
@@ -82,7 +84,7 @@ export interface PagoItem {
 }
 
 export interface PresupuestoPDFPayload {
-  tipo_reporte?: 'presupuesto';
+  tipo_reporte?: "presupuesto";
   paciente_nombre?: string;
   numero_historia?: string;
   fecha_presupuesto?: string;

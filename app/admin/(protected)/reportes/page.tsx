@@ -6,19 +6,58 @@ let captureOdontogramaAsBase64: (() => Promise<string | null>) | null = null;
 const loadCapture = async () => {
   if (!captureOdontogramaAsBase64) {
     // @ts-ignore - Dynamic import resolves at runtime
-    const { captureOdontogramaAsBase64: capture } = await import("@/lib/odontograma-to-image");
+    const { captureOdontogramaAsBase64: capture } =
+      await import("@/lib/odontograma-to-image");
     captureOdontogramaAsBase64 = capture;
   }
   return captureOdontogramaAsBase64;
 };
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Search, Download, Eye, Loader2, User, Calendar, ClipboardList, Stethoscope, FileDown, Printer, AlertCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  FileText,
+  Search,
+  Download,
+  Eye,
+  Loader2,
+  User,
+  Calendar,
+  ClipboardList,
+  Stethoscope,
+  FileDown,
+  Printer,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface Paciente {
@@ -92,7 +131,10 @@ interface PresupuestoResumen {
   costo_total: number | null;
   moneda_id: string | null;
   items_json: unknown;
-  monedas: { codigo: string; simbolo: string } | { codigo: string; simbolo: string }[] | null;
+  monedas:
+    | { codigo: string; simbolo: string }
+    | { codigo: string; simbolo: string }[]
+    | null;
 }
 
 export default function ReportesPage() {
@@ -100,7 +142,9 @@ export default function ReportesPage() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
+  const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(
+    null,
+  );
   const [reporteInfo, setReporteInfo] = useState<ReporteInfo | null>(null);
   const [casos, setCasos] = useState<Caso[]>([]);
   const [casoSeleccionado, setCasoSeleccionado] = useState<string>("");
@@ -108,14 +152,17 @@ export default function ReportesPage() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [tipoReporte, setTipoReporte] = useState("ficha");
   const [presupuestos, setPresupuestos] = useState<PresupuestoResumen[]>([]);
-  const [presupuestoSeleccionado, setPresupuestoSeleccionado] = useState<string>("");
+  const [presupuestoSeleccionado, setPresupuestoSeleccionado] =
+    useState<string>("");
 
   const fetchPacientes = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("pacientes")
-        .select("id, numero_historia, nombres, apellidos, dni, fecha_nacimiento, telefono, email")
+        .select(
+          "id, numero_historia, nombres, apellidos, dni, fecha_nacimiento, telefono, email",
+        )
         .order("apellidos");
 
       if (error) throw error;
@@ -143,16 +190,18 @@ export default function ReportesPage() {
       try {
         const { data, error } = await supabase
           .from("presupuestos")
-          .select("id, nombre, correlativo, fecha_creacion, costo_total, moneda_id, items_json, monedas(codigo, simbolo)")
+          .select(
+            "id, nombre, correlativo, fecha_creacion, costo_total, moneda_id, items_json, monedas(codigo, simbolo)",
+          )
           .eq("caso_id", casoSeleccionado)
           .is("deleted_at", null)
           .order("correlativo", { ascending: true });
 
         if (error) throw error;
-        
+
         const presupuestosData = (data as PresupuestoResumen[]) || [];
         setPresupuestos(presupuestosData);
-        
+
         if (presupuestosData.length > 0) {
           setPresupuestoSeleccionado(presupuestosData[0].id);
         } else {
@@ -177,7 +226,9 @@ export default function ReportesPage() {
     );
   });
 
-  const casosUnicos = casos.filter((caso, idx, arr) => arr.findIndex((c) => c.id === caso.id) === idx);
+  const casosUnicos = casos.filter(
+    (caso, idx, arr) => arr.findIndex((c) => c.id === caso.id) === idx,
+  );
 
   const getHistoriaId = async (pacienteId: string): Promise<string | null> => {
     try {
@@ -204,7 +255,7 @@ export default function ReportesPage() {
       const historiaId = await getHistoriaId(paciente.id);
 
       // Si no tiene historia clínica aún, asumimos datos vacíos para casos
-      const casosQuery = historiaId 
+      const casosQuery = historiaId
         ? supabase
             .from("casos_clinicos")
             .select("id, nombre_caso, estado, fecha_inicio")
@@ -214,8 +265,13 @@ export default function ReportesPage() {
         : Promise.resolve({ data: [], error: null });
 
       const [citasRes, casosRes] = await Promise.all([
-        supabase.from("citas").select("id, estado, fecha_inicio").eq("paciente_id", paciente.id).is("deleted_at", null).order("fecha_inicio", { ascending: false }),
-        casosQuery
+        supabase
+          .from("citas")
+          .select("id, estado, fecha_inicio")
+          .eq("paciente_id", paciente.id)
+          .is("deleted_at", null)
+          .order("fecha_inicio", { ascending: false }),
+        casosQuery,
       ]);
 
       const citas = (citasRes.data as Cita[]) || [];
@@ -226,11 +282,13 @@ export default function ReportesPage() {
         totalCitas: citas.length,
         citasCompletadas: citas.filter((c) => c.estado === "Completada").length,
         totalCasos: casosData.length,
-        casosActivos: casosData.filter((c) => c.estado === "Abierto" || c.estado === "En Progreso").length,
+        casosActivos: casosData.filter(
+          (c) => c.estado === "Abierto" || c.estado === "En Progreso",
+        ).length,
         ultimaCita: citas[0]?.fecha_inicio,
       });
       setCasos(casosData);
-      
+
       if (casosData.length === 1) {
         setCasoSeleccionado(casosData[0].id);
       } else {
@@ -258,19 +316,23 @@ export default function ReportesPage() {
       let pdfPayload: Record<string, unknown> = {
         tipo_reporte: tipoReporte,
         numero_historia: selectedPaciente.numero_historia,
-        caso_id: casoSeleccionado || (casosUnicos.length === 1 ? casosUnicos[0].id : undefined)
+        caso_id:
+          casoSeleccionado ||
+          (casosUnicos.length === 1 ? casosUnicos[0].id : undefined),
       };
 
       if (tipoReporte === "ficha") {
         // Obtener historia_id primero
         const historiaId = await getHistoriaId(selectedPaciente.id);
-        
+
         if (!historiaId) {
-          toast.error("El paciente no tiene historia clínica. Crea una primero en la ficha del paciente.");
+          toast.error(
+            "El paciente no tiene historia clínica. Crea una primero en la ficha del paciente.",
+          );
           setGeneratingPdf(false);
           return;
         }
-        
+
         // Obtener datos completos para Ficha Odontológica
         const { data: pacienteCompleto, error: pacienteError } = await supabase
           .from("pacientes")
@@ -279,12 +341,16 @@ export default function ReportesPage() {
           .single();
 
         if (pacienteError || !pacienteCompleto) {
-          throw new Error("No se pudo obtener los datos completos del paciente");
+          throw new Error(
+            "No se pudo obtener los datos completos del paciente",
+          );
         }
 
         const { data: odontoData } = await supabase
           .from("odontogramas")
-          .select("version, fecha_registro, especificaciones, observaciones, odontograma_data, imagen_base64")
+          .select(
+            "version, fecha_registro, especificaciones, observaciones, odontograma_data, imagen_base64",
+          )
           .eq("paciente_id", selectedPaciente.id)
           .order("version", { ascending: false })
           .limit(1)
@@ -297,13 +363,15 @@ export default function ReportesPage() {
             .from("antecedentes")
             .select("categoria, datos, no_refiere")
             .eq("historia_id", historiaId);
-          
+
           if (antData) {
             (antData || []).forEach((ant) => {
-              const key = ((ant.categoria as string) || '').toLowerCase().replace(/\s+/g, "_");
+              const key = ((ant.categoria as string) || "")
+                .toLowerCase()
+                .replace(/\s+/g, "_");
               antecedentesData[key] = {
                 no_refiere: ant.no_refiere,
-                ...(ant.datos as Record<string, unknown>)
+                ...(ant.datos as Record<string, unknown>),
               };
             });
           }
@@ -323,53 +391,81 @@ export default function ReportesPage() {
         if (casosData && casosData.length > 0) {
           const { data: segData } = await supabase
             .from("seguimientos")
-            .select("fecha, descripcion, tratamientos_realizados_ids, presupuesto_id")
-            .in("caso_id", casosData.map(c => c.id))
+            .select(
+              "fecha, descripcion, tratamientos_realizados_ids, presupuesto_id",
+            )
+            .in(
+              "caso_id",
+              casosData.map((c) => c.id),
+            )
             .is("deleted_at", null)
             .order("fecha", { ascending: false });
 
           if (segData) {
             // Obtener presupuestos para mapear tratamientos
-            const presupuestoIds = [...new Set(segData.map((s: Record<string, unknown>) => s.presupuesto_id as string).filter(Boolean))];
+            const presupuestoIds = [
+              ...new Set(
+                segData
+                  .map(
+                    (s: Record<string, unknown>) => s.presupuesto_id as string,
+                  )
+                  .filter(Boolean),
+              ),
+            ];
             const presupuestosMap = new Map();
-            
+
             if (presupuestoIds.length > 0) {
               const { data: presData } = await supabase
                 .from("presupuestos")
                 .select("id, items_json")
                 .in("id", presupuestoIds);
-              
+
               (presData || []).forEach((p: Record<string, unknown>) => {
                 const items = Array.isArray(p.items_json) ? p.items_json : [];
                 items.forEach((item: Record<string, unknown>, idx: number) => {
                   const key = `${p.id}_${item.procedimiento_id}_${idx}`;
                   presupuestosMap.set(key, {
                     nombre: item.procedimiento_nombre,
-                    descripcion: item.notas || item.descripcion || ""
+                    descripcion: item.notas || item.descripcion || "",
                   });
                 });
               });
             }
 
             seguimientos = segData.map((seg) => {
-              const descripcion = typeof seg.descripcion === 'string' ? seg.descripcion.trim() : '';
-              const tratamientosIds = Array.isArray(seg.tratamientos_realizados_ids) ? (seg.tratamientos_realizados_ids as unknown[]) : [];
+              const descripcion =
+                typeof seg.descripcion === "string"
+                  ? seg.descripcion.trim()
+                  : "";
+              const tratamientosIds = Array.isArray(
+                seg.tratamientos_realizados_ids,
+              )
+                ? (seg.tratamientos_realizados_ids as unknown[])
+                : [];
               const tratamientos = descripcion
                 ? [descripcion]
                 : tratamientosIds
-                    .filter(id => typeof id === 'string' && id.trim().length > 0)
+                    .filter(
+                      (id) => typeof id === "string" && id.trim().length > 0,
+                    )
                     .map((id: string) => {
                       const item = presupuestosMap.get(id);
                       if (item) {
-                        return item.descripcion ? `${item.nombre} (${item.descripcion})` : item.nombre;
+                        return item.descripcion
+                          ? `${item.nombre} (${item.descripcion})`
+                          : item.nombre;
                       }
                       return "";
                     })
                     .filter(Boolean);
 
               return {
-                fecha: new Date(seg.fecha as string | number | Date).toLocaleDateString('es-ES'),
-                tratamientos
+                fecha: seg.fecha
+                  ? new Date(
+                      seg.fecha as string | number | Date,
+                    ).toLocaleDateString("es-ES")
+                  : "Sin fecha",
+                tratamientos,
               };
             });
           }
@@ -379,7 +475,9 @@ export default function ReportesPage() {
         const habitos = pacienteCompleto.habitos || {};
 
         // Capturar imagen del odontograma si existe; si no hay contenedor en esta vista, usar la imagen almacenada
-        let odontoBase64: string | null = (odontogramaReciente as OdontogramaData | null)?.imagen_base64 || null;
+        let odontoBase64: string | null =
+          (odontogramaReciente as OdontogramaData | null)?.imagen_base64 ||
+          null;
         let toastId: string | number | undefined;
         if (odontogramaReciente && !odontoBase64) {
           toastId = toast.loading("Capturando odontograma...");
@@ -407,83 +505,135 @@ export default function ReportesPage() {
             recomendado_por: pacienteCompleto.recomendado_por || "",
           },
           antecedentes: antecedentesData,
-          odontograma: odontogramaReciente ? {
-            existe: true,
-            version: (odontogramaReciente.version as number),
-            fecha_registro: new Date(odontogramaReciente.fecha_registro as string | number | Date).toLocaleDateString('es-ES'),
-            observaciones: (odontogramaReciente.observaciones as string) || "Sin observaciones",
-            // Usar imagen guardada en BD, o intentar capturar, o dejar undefined
-            imagen_base64: ((odontogramaReciente as unknown as Record<string, unknown>).imagen_base64 as string) || odontoBase64 || undefined,
-          } : {
-            existe: false
-          },
-          seguimientos
+          odontograma: odontogramaReciente
+            ? {
+                existe: true,
+                version:
+                  typeof odontogramaReciente.version === "number"
+                    ? odontogramaReciente.version
+                    : 1,
+                fecha_registro: odontogramaReciente.fecha_registro
+                  ? new Date(
+                      odontogramaReciente.fecha_registro as
+                        | string
+                        | number
+                        | Date,
+                    ).toLocaleDateString("es-ES")
+                  : "Sin fecha",
+                observaciones:
+                  (odontogramaReciente.observaciones as string) ||
+                  "Sin observaciones",
+                // Usar imagen guardada en BD, o intentar capturar, o dejar undefined
+                imagen_base64:
+                  ((odontogramaReciente as unknown as Record<string, unknown>)
+                    .imagen_base64 as string) ||
+                  odontoBase64 ||
+                  undefined,
+              }
+            : {
+                existe: false,
+              },
+          seguimientos,
         };
       } else {
         // Obtener datos para Presupuesto
-        const presupuesto = presupuestos.find(p => p.id === presupuestoSeleccionado);
+        const presupuesto = presupuestos.find(
+          (p) => p.id === presupuestoSeleccionado,
+        );
         if (!presupuesto) {
           throw new Error("Presupuesto no encontrado");
         }
 
-        const items = Array.isArray(presupuesto.items_json) ? presupuesto.items_json : [];
-        const monedasDataPres: { codigo: string; simbolo: string } | undefined = Array.isArray(presupuesto.monedas)
-          ? presupuesto.monedas[0]
-          : presupuesto.monedas ?? undefined;
+        const items = Array.isArray(presupuesto.items_json)
+          ? presupuesto.items_json
+          : [];
+        const monedasDataPres: { codigo: string; simbolo: string } | undefined =
+          Array.isArray(presupuesto.monedas)
+            ? presupuesto.monedas[0]
+            : (presupuesto.monedas ?? undefined);
         const monedaSimbolo = monedasDataPres?.simbolo || "S/";
 
         // Obtener pagos relacionados a este presupuesto desde seguimientos
         const { data: segData } = await supabase
           .from("seguimientos")
-          .select("fecha, descripcion, tratamientos_realizados_ids, pago_id, pagos(monto, moneda_id)")
+          .select(
+            "fecha, descripcion, tratamientos_realizados_ids, pago_id, pagos(monto, moneda_id)",
+          )
           .eq("presupuesto_id", presupuestoSeleccionado)
           .is("deleted_at", null)
           .not("pago_id", "is", null)
           .order("fecha", { ascending: false });
 
         const pagos = (segData || []).map((seg) => {
-          const descripcion = typeof seg.descripcion === 'string' ? seg.descripcion.trim() : '';
-          const tratamientosIds = (seg.tratamientos_realizados_ids as string[]) || [];
+          const descripcion =
+            typeof seg.descripcion === "string" ? seg.descripcion.trim() : "";
+          const tratamientosIds =
+            (seg.tratamientos_realizados_ids as string[]) || [];
           const tratamientos = descripcion
             ? [descripcion]
-            : tratamientosIds.map((id: string) => {
-                const item = items.find((it) => `${presupuestoSeleccionado}_${(it.procedimiento_id as string)}_${items.indexOf(it)}` === id);
-                if (item) {
-                  const desc = (item.notas as string) || (item.descripcion as string) || "";
-                  return desc ? `${item.procedimiento_nombre} (${desc})` : (item.procedimiento_nombre as string);
-                }
-                return "";
-              }).filter(Boolean);
+            : tratamientosIds
+                .map((id: string) => {
+                  const item = items.find(
+                    (it) =>
+                      `${presupuestoSeleccionado}_${it.procedimiento_id as string}_${items.indexOf(it)}` ===
+                      id,
+                  );
+                  if (item) {
+                    const desc =
+                      (item.notas as string) ||
+                      (item.descripcion as string) ||
+                      "";
+                    return desc
+                      ? `${item.procedimiento_nombre} (${desc})`
+                      : (item.procedimiento_nombre as string);
+                  }
+                  return "";
+                })
+                .filter(Boolean);
 
           return {
-            fecha: new Date(seg.fecha as string | number | Date).toLocaleDateString('es-ES'),
+            fecha: seg.fecha
+              ? new Date(
+                  seg.fecha as string | number | Date,
+                ).toLocaleDateString("es-ES")
+              : "Sin fecha",
             tratamientos,
-            monto: ((seg.pagos as unknown as Record<string, unknown> | undefined)?.monto as number) || 0
+            monto:
+              ((seg.pagos as unknown as Record<string, unknown> | undefined)
+                ?.monto as number) || 0,
           };
         });
 
         pdfPayload = {
           ...pdfPayload,
           paciente_nombre: `${selectedPaciente.nombres} ${selectedPaciente.apellidos}`,
-          fecha_presupuesto: presupuesto.fecha_creacion ? new Date(presupuesto.fecha_creacion).toLocaleDateString('es-ES') : "",
+          fecha_presupuesto: presupuesto.fecha_creacion
+            ? new Date(presupuesto.fecha_creacion).toLocaleDateString("es-ES")
+            : "",
           correlativo: presupuesto.correlativo,
           items: items.map((item: Record<string, unknown>) => ({
             nombre: item.procedimiento_nombre,
             descripcion: item.notas || item.descripcion || "",
             cantidad: item.cantidad || 1,
-            costo: (item.costo ?? item.precio_unitario ?? 0)
+            costo: item.costo ?? item.precio_unitario ?? 0,
           })),
           moneda_simbolo: monedaSimbolo,
-          pagos
+          pagos,
         };
       }
-      
-      console.log('=================== CLIENT: Iniciando generación de PDF ===================');
-      console.log('[CLIENT] Tipo de reporte:', tipoReporte);
-      console.log('[CLIENT] Payload keys:', Object.keys(pdfPayload));
-      console.log('[CLIENT] Payload size:', JSON.stringify(pdfPayload).length, 'chars');
-      console.log('[CLIENT] URL:', '/api/generate-pdf');
-      
+
+      console.log(
+        "=================== CLIENT: Iniciando generación de PDF ===================",
+      );
+      console.log("[CLIENT] Tipo de reporte:", tipoReporte);
+      console.log("[CLIENT] Payload keys:", Object.keys(pdfPayload));
+      console.log(
+        "[CLIENT] Payload size:",
+        JSON.stringify(pdfPayload).length,
+        "chars",
+      );
+      console.log("[CLIENT] URL:", "/api/generate-pdf");
+
       const requestOptions: RequestInit = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -492,43 +642,59 @@ export default function ReportesPage() {
 
       // Intento 1: endpoint principal
       let response = await fetch("/api/generate-pdf", requestOptions);
-      console.log('[CLIENT] Response received');
-      console.log('[CLIENT] Response status:', response.status);
-      console.log('[CLIENT] Response statusText:', response.statusText);
-      console.log('[CLIENT] Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log("[CLIENT] Response received");
+      console.log("[CLIENT] Response status:", response.status);
+      console.log("[CLIENT] Response statusText:", response.statusText);
+      console.log(
+        "[CLIENT] Response headers:",
+        Object.fromEntries(response.headers.entries()),
+      );
 
       // Si falla (405/HTML fallback), reintenta con endpoint sanitizado
-      const isHtml = (response.headers.get('content-type') || '').includes('text/html');
+      const isHtml = (response.headers.get("content-type") || "").includes(
+        "text/html",
+      );
       if (!response.ok || isHtml || response.status === 405) {
-        console.warn('[CLIENT] Primary endpoint failed, retrying with /api/generate-pdf2');
-        const retry = await fetch('/api/generate-pdf2', requestOptions);
-        console.log('[CLIENT] Retry status:', retry.status);
-        console.log('[CLIENT] Retry headers:', Object.fromEntries(retry.headers.entries()));
+        console.warn(
+          "[CLIENT] Primary endpoint failed, retrying with /api/generate-pdf2",
+        );
+        const retry = await fetch("/api/generate-pdf2", requestOptions);
+        console.log("[CLIENT] Retry status:", retry.status);
+        console.log(
+          "[CLIENT] Retry headers:",
+          Object.fromEntries(retry.headers.entries()),
+        );
         if (retry.ok) {
           response = retry;
-          toast.message('Usando modo seguro para generar PDF');
+          toast.message("Usando modo seguro para generar PDF");
         } else {
-          console.error('[CLIENT] Response not OK');
-          console.error('[CLIENT] Status:', retry.status);
-          console.error('[CLIENT] StatusText:', retry.statusText);
+          console.error("[CLIENT] Response not OK");
+          console.error("[CLIENT] Status:", retry.status);
+          console.error("[CLIENT] StatusText:", retry.statusText);
 
-          let errorDetails = 'Unknown error';
+          let errorDetails = "Unknown error";
           try {
             const clone = retry.clone();
-            const contentType = clone.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
+            const contentType = clone.headers.get("content-type") || "";
+            if (contentType.includes("application/json")) {
               const errorData = await clone.json();
-              console.error('[CLIENT] Error data from server (retry):', errorData);
-              errorDetails = errorData.details || errorData.error || 'Unknown error';
+              console.error(
+                "[CLIENT] Error data from server (retry):",
+                errorData,
+              );
+              errorDetails =
+                errorData.details || errorData.error || "Unknown error";
             } else {
               const text = await clone.text();
-              console.error('[CLIENT] Error response text (retry):', text);
-              errorDetails = text || 'Error parsing server response';
+              console.error("[CLIENT] Error response text (retry):", text);
+              errorDetails = text || "Error parsing server response";
             }
           } catch (e) {
-            console.error('[CLIENT] Error parsing retry response:', e);
+            console.error("[CLIENT] Error parsing retry response:", e);
           }
-          throw new Error(`Error en el servidor (${retry.status}): ${errorDetails}`);
+          throw new Error(
+            `Error en el servidor (${retry.status}): ${errorDetails}`,
+          );
         }
       }
 
@@ -536,9 +702,10 @@ export default function ReportesPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const fileName = tipoReporte === "ficha" 
-        ? `Ficha_${selectedPaciente.nombres}_${selectedPaciente.apellidos}.pdf`
-        : `Presupuesto_${selectedPaciente.nombres}_${selectedPaciente.apellidos}.pdf`;
+      const fileName =
+        tipoReporte === "ficha"
+          ? `Ficha_${selectedPaciente.nombres}_${selectedPaciente.apellidos}.pdf`
+          : `Presupuesto_${selectedPaciente.nombres}_${selectedPaciente.apellidos}.pdf`;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
@@ -548,7 +715,8 @@ export default function ReportesPage() {
       toast.success("PDF generado correctamente");
     } catch (error) {
       console.error("Error generating PDF:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
       console.error("Error details:", errorMessage);
       toast.error(`Error al generar el PDF: ${errorMessage}`);
     } finally {
@@ -572,25 +740,35 @@ export default function ReportesPage() {
     <div className='container mx-auto py-6 space-y-6'>
       <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <div>
-          <h1 className='text-3xl font-bold text-foreground'>Reportes de Pacientes</h1>
-          <p className='text-muted-foreground'>Genera reportes y fichas odontológicas completas</p>
+          <h1 className='text-3xl font-bold text-foreground'>
+            Reportes de Pacientes
+          </h1>
+          <p className='text-muted-foreground'>
+            Genera reportes y fichas odontológicas completas
+          </p>
         </div>
       </div>
 
       <div className='grid gap-4 md:grid-cols-3'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Pacientes</CardTitle>
+            <CardTitle className='text-sm font-medium'>
+              Total Pacientes
+            </CardTitle>
             <User className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>{pacientes.length}</div>
-            <p className='text-xs text-muted-foreground'>Pacientes registrados</p>
+            <p className='text-xs text-muted-foreground'>
+              Pacientes registrados
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Reportes Disponibles</CardTitle>
+            <CardTitle className='text-sm font-medium'>
+              Reportes Disponibles
+            </CardTitle>
             <FileText className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
@@ -605,7 +783,9 @@ export default function ReportesPage() {
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>PDF</div>
-            <p className='text-xs text-muted-foreground'>Descarga estandarizada</p>
+            <p className='text-xs text-muted-foreground'>
+              Descarga estandarizada
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -613,7 +793,9 @@ export default function ReportesPage() {
       <Card>
         <CardHeader>
           <CardTitle>Seleccionar Paciente</CardTitle>
-          <CardDescription>Busca un paciente para visualizar estadísticas y generar documentos</CardDescription>
+          <CardDescription>
+            Busca un paciente para visualizar estadísticas y generar documentos
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='flex gap-4 mb-6'>
@@ -633,8 +815,8 @@ export default function ReportesPage() {
               <Loader2 className='h-8 w-8 animate-spin text-primary' />
             </div>
           ) : filteredPacientes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
+            <div className='flex flex-col items-center justify-center py-8 text-muted-foreground'>
+              <AlertCircle className='h-8 w-8 mb-2 opacity-50' />
               <p>No se encontraron pacientes</p>
             </div>
           ) : (
@@ -653,18 +835,43 @@ export default function ReportesPage() {
                 <TableBody>
                   {filteredPacientes.slice(0, 20).map((paciente) => (
                     <TableRow key={paciente.id}>
-                      <TableCell><Badge variant='secondary' className="font-mono">{paciente.numero_historia || "-"}</Badge></TableCell>
-                      <TableCell><div className='font-medium'>{paciente.nombres} {paciente.apellidos}</div></TableCell>
+                      <TableCell>
+                        <Badge
+                          variant='secondary'
+                          className='font-mono'
+                        >
+                          {paciente.numero_historia || "-"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className='font-medium'>
+                          {paciente.nombres} {paciente.apellidos}
+                        </div>
+                      </TableCell>
                       <TableCell>{paciente.dni || "-"}</TableCell>
-                      <TableCell>{getEdad(paciente.fecha_nacimiento)}</TableCell>
+                      <TableCell>
+                        {getEdad(paciente.fecha_nacimiento)}
+                      </TableCell>
                       <TableCell>
                         <div className='text-sm space-y-1'>
                           {paciente.telefono && <div>{paciente.telefono}</div>}
-                          {paciente.email && <div className='text-muted-foreground text-xs truncate max-w-[150px]' title={paciente.email}>{paciente.email}</div>}
+                          {paciente.email && (
+                            <div
+                              className='text-muted-foreground text-xs truncate max-w-[150px]'
+                              title={paciente.email}
+                            >
+                              {paciente.email}
+                            </div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className='text-center'>
-                        <Button variant="outline" size='sm' onClick={() => handleViewReporte(paciente)} className="hover:bg-primary hover:text-primary-foreground">
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() => handleViewReporte(paciente)}
+                          className='hover:bg-primary hover:text-primary-foreground'
+                        >
                           <Eye className='h-4 w-4 mr-2' /> Ver Reportes
                         </Button>
                       </TableCell>
@@ -675,20 +882,30 @@ export default function ReportesPage() {
             </div>
           )}
           {filteredPacientes.length > 20 && (
-            <p className='text-center text-sm text-muted-foreground mt-4'>Mostrando 20 de {filteredPacientes.length} pacientes. Usa el buscador para filtrar.</p>
+            <p className='text-center text-sm text-muted-foreground mt-4'>
+              Mostrando 20 de {filteredPacientes.length} pacientes. Usa el
+              buscador para filtrar.
+            </p>
           )}
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      >
         <DialogContent className='max-w-3xl'>
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2 text-xl'>
               <FileText className='h-5 w-5 text-primary' />
-              Reportes: {selectedPaciente?.nombres} {selectedPaciente?.apellidos}
+              Reportes: {selectedPaciente?.nombres}{" "}
+              {selectedPaciente?.apellidos}
             </DialogTitle>
             <DialogDescription>
-              HC: <span className="font-mono font-medium text-foreground">{selectedPaciente?.numero_historia || "Sin asignar"}</span>
+              HC:{" "}
+              <span className='font-mono font-medium text-foreground'>
+                {selectedPaciente?.numero_historia || "Sin asignar"}
+              </span>
             </DialogDescription>
           </DialogHeader>
 
@@ -697,23 +914,39 @@ export default function ReportesPage() {
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center border border-blue-100 dark:border-blue-800'>
                   <Calendar className='h-5 w-5 mx-auto mb-2 text-blue-600 dark:text-blue-400' />
-                  <div className='text-2xl font-bold text-blue-700 dark:text-blue-300'>{reporteInfo.totalCitas}</div>
-                  <div className='text-xs text-muted-foreground font-medium uppercase'>Citas totales</div>
+                  <div className='text-2xl font-bold text-blue-700 dark:text-blue-300'>
+                    {reporteInfo.totalCitas}
+                  </div>
+                  <div className='text-xs text-muted-foreground font-medium uppercase'>
+                    Citas totales
+                  </div>
                 </div>
                 <div className='bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center border border-green-100 dark:border-green-800'>
                   <ClipboardList className='h-5 w-5 mx-auto mb-2 text-green-600 dark:text-green-400' />
-                  <div className='text-2xl font-bold text-green-700 dark:text-green-300'>{reporteInfo.citasCompletadas}</div>
-                  <div className='text-xs text-muted-foreground font-medium uppercase'>Completadas</div>
+                  <div className='text-2xl font-bold text-green-700 dark:text-green-300'>
+                    {reporteInfo.citasCompletadas}
+                  </div>
+                  <div className='text-xs text-muted-foreground font-medium uppercase'>
+                    Completadas
+                  </div>
                 </div>
                 <div className='bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center border border-purple-100 dark:border-purple-800'>
                   <Stethoscope className='h-5 w-5 mx-auto mb-2 text-purple-600 dark:text-purple-400' />
-                  <div className='text-2xl font-bold text-purple-700 dark:text-purple-300'>{reporteInfo.totalCasos}</div>
-                  <div className='text-xs text-muted-foreground font-medium uppercase'>Casos</div>
+                  <div className='text-2xl font-bold text-purple-700 dark:text-purple-300'>
+                    {reporteInfo.totalCasos}
+                  </div>
+                  <div className='text-xs text-muted-foreground font-medium uppercase'>
+                    Casos
+                  </div>
                 </div>
                 <div className='bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center border border-orange-100 dark:border-orange-800'>
                   <User className='h-5 w-5 mx-auto mb-2 text-orange-600 dark:text-orange-400' />
-                  <div className='text-2xl font-bold text-orange-700 dark:text-orange-300'>{reporteInfo.casosActivos}</div>
-                  <div className='text-xs text-muted-foreground font-medium uppercase'>Casos activos</div>
+                  <div className='text-2xl font-bold text-orange-700 dark:text-orange-300'>
+                    {reporteInfo.casosActivos}
+                  </div>
+                  <div className='text-xs text-muted-foreground font-medium uppercase'>
+                    Casos activos
+                  </div>
                 </div>
               </div>
 
@@ -721,52 +954,88 @@ export default function ReportesPage() {
                 {casosUnicos.length > 1 && (
                   <div className='space-y-2 pb-3 border-b'>
                     <label className='text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2'>
-                      <AlertCircle className="h-4 w-4" />
+                      <AlertCircle className='h-4 w-4' />
                       Seleccionar Caso *
                     </label>
-                    <Select value={casoSeleccionado} onValueChange={setCasoSeleccionado}>
-                      <SelectTrigger className={`w-full ${!casoSeleccionado && 'border-red-500 border-2'}`}>
+                    <Select
+                      value={casoSeleccionado}
+                      onValueChange={setCasoSeleccionado}
+                    >
+                      <SelectTrigger
+                        className={`w-full ${!casoSeleccionado && "border-red-500 border-2"}`}
+                      >
                         <SelectValue placeholder='Debes seleccionar un caso' />
                       </SelectTrigger>
                       <SelectContent>
                         {casosUnicos.map((caso) => (
-                          <SelectItem key={caso.id} value={caso.id}>
+                          <SelectItem
+                            key={caso.id}
+                            value={caso.id}
+                          >
                             {caso.nombre_caso}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     {!casoSeleccionado && casosUnicos.length > 1 && (
-                      <p className='text-xs text-red-500 dark:text-red-400 font-medium'>Este paciente tiene múltiples casos. Selecciona uno para continuar.</p>
+                      <p className='text-xs text-red-500 dark:text-red-400 font-medium'>
+                        Este paciente tiene múltiples casos. Selecciona uno para
+                        continuar.
+                      </p>
                     )}
                   </div>
                 )}
-                
-                <label className='text-sm font-medium'>Tipo de Reporte a Generar</label>
-                <Select value={tipoReporte} onValueChange={setTipoReporte} disabled={casosUnicos.length > 1 && !casoSeleccionado}>
-                  <SelectTrigger className="w-full"><SelectValue placeholder='Selecciona el tipo' /></SelectTrigger>
+
+                <label className='text-sm font-medium'>
+                  Tipo de Reporte a Generar
+                </label>
+                <Select
+                  value={tipoReporte}
+                  onValueChange={setTipoReporte}
+                  disabled={casosUnicos.length > 1 && !casoSeleccionado}
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Selecciona el tipo' />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='ficha'>Ficha Odontológica</SelectItem>
                     <SelectItem value='presupuesto'>Presupuesto</SelectItem>
                   </SelectContent>
                 </Select>
-                
-                {tipoReporte === 'presupuesto' && presupuestos.length > 0 && (
+
+                {tipoReporte === "presupuesto" && presupuestos.length > 0 && (
                   <div className='space-y-2 mt-3'>
-                    <label className='text-sm font-medium'>Seleccionar Presupuesto</label>
-                    <Select value={presupuestoSeleccionado} onValueChange={setPresupuestoSeleccionado}>
-                      <SelectTrigger className="w-full"><SelectValue placeholder='Elige un presupuesto' /></SelectTrigger>
+                    <label className='text-sm font-medium'>
+                      Seleccionar Presupuesto
+                    </label>
+                    <Select
+                      value={presupuestoSeleccionado}
+                      onValueChange={setPresupuestoSeleccionado}
+                    >
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Elige un presupuesto' />
+                      </SelectTrigger>
                       <SelectContent>
                         {presupuestos.map((pres) => {
                           const presId = pres.id as string;
-                          const correlativo = String(pres.correlativo || "000").padStart(3, "0");
+                          const correlativo = String(
+                            pres.correlativo || "000",
+                          ).padStart(3, "0");
                           const nombre = pres.nombre as string;
-                          const monedasData = Array.isArray(pres.monedas) ? pres.monedas[0] : pres.monedas;
+                          const monedasData = Array.isArray(pres.monedas)
+                            ? pres.monedas[0]
+                            : pres.monedas;
                           const monedaSimb = monedasData?.simbolo || "S/";
-                          const costoTotal = ((pres.costo_total as number) || 0).toFixed(2);
+                          const costoTotal = (
+                            (pres.costo_total as number) || 0
+                          ).toFixed(2);
                           return (
-                            <SelectItem key={presId} value={presId}>
-                              #{correlativo} - {nombre} ({monedaSimb} {costoTotal})
+                            <SelectItem
+                              key={presId}
+                              value={presId}
+                            >
+                              #{correlativo} - {nombre} ({monedaSimb}{" "}
+                              {costoTotal})
                             </SelectItem>
                           );
                         })}
@@ -774,20 +1043,37 @@ export default function ReportesPage() {
                     </Select>
                   </div>
                 )}
-                
-                {tipoReporte === 'presupuesto' && presupuestos.length === 0 && (
-                  <p className='text-sm text-amber-600 dark:text-amber-400 mt-2'>Este paciente no tiene presupuestos registrados</p>
+
+                {tipoReporte === "presupuesto" && presupuestos.length === 0 && (
+                  <p className='text-sm text-amber-600 dark:text-amber-400 mt-2'>
+                    Este paciente no tiene presupuestos registrados
+                  </p>
                 )}
               </div>
 
               {casosUnicos.length > 0 && (
                 <div className='space-y-2'>
-                  <h4 className='text-sm font-medium flex items-center gap-2'><Stethoscope className="h-4 w-4" /> Casos Recientes (últimos 3)</h4>
+                  <h4 className='text-sm font-medium flex items-center gap-2'>
+                    <Stethoscope className='h-4 w-4' /> Casos Recientes (últimos
+                    3)
+                  </h4>
                   <div className='space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar'>
                     {casosUnicos.slice(0, 3).map((caso) => (
-                      <div key={caso.id} className='flex items-center justify-between p-3 bg-muted/40 rounded-md border text-sm hover:bg-muted/60 transition-colors'>
-                        <div className="font-medium">{caso.nombre_caso}</div>
-                        <Badge variant={caso.estado === "Abierto" || caso.estado === "En Progreso" ? "default" : "secondary"}>{caso.estado}</Badge>
+                      <div
+                        key={caso.id}
+                        className='flex items-center justify-between p-3 bg-muted/40 rounded-md border text-sm hover:bg-muted/60 transition-colors'
+                      >
+                        <div className='font-medium'>{caso.nombre_caso}</div>
+                        <Badge
+                          variant={
+                            caso.estado === "Abierto" ||
+                            caso.estado === "En Progreso"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {caso.estado}
+                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -795,14 +1081,37 @@ export default function ReportesPage() {
               )}
 
               <div className='flex flex-col sm:flex-row gap-3 pt-4 border-t'>
-                <Button className='flex-1 shadow-sm' onClick={handleGeneratePdf} disabled={generatingPdf}>
-                  {generatingPdf ? <Loader2 className='h-4 w-4 mr-2 animate-spin' /> : <Download className='h-4 w-4 mr-2' />}
+                <Button
+                  className='flex-1 shadow-sm'
+                  onClick={handleGeneratePdf}
+                  disabled={generatingPdf}
+                >
+                  {generatingPdf ? (
+                    <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                  ) : (
+                    <Download className='h-4 w-4 mr-2' />
+                  )}
                   {generatingPdf ? "Generando..." : "Descargar PDF"}
                 </Button>
-                <Button variant='outline' onClick={() => window.open(`/admin/ficha-odontologica/${selectedPaciente?.numero_historia}`, "_blank")}>
+                <Button
+                  variant='outline'
+                  onClick={() =>
+                    window.open(
+                      `/admin/ficha-odontologica/${selectedPaciente?.numero_historia}`,
+                      "_blank",
+                    )
+                  }
+                >
                   <Eye className='h-4 w-4 mr-2' /> Ir a Ficha
                 </Button>
-                <Button variant='ghost' size="icon" onClick={() => window.print()} title="Imprimir vista rápida"><Printer className='h-4 w-4' /></Button>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  onClick={() => window.print()}
+                  title='Imprimir vista rápida'
+                >
+                  <Printer className='h-4 w-4' />
+                </Button>
               </div>
             </div>
           )}
