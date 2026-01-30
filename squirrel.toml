@@ -25,10 +25,19 @@ max_prefix_budget = 0.25
 
 [rules]
 enable = [ "*" ]
-# Deshabilitamos la regla de secretos filtrados porque genera falsos positivos
-# con el código JavaScript minificado de Next.js (nombres de funciones que
-# coinciden accidentalmente con patrones de API keys)
-disable = [ "security/leaked-secrets" ]
+# Deshabilitamos reglas que generan falsos positivos:
+# - leaked-secrets: detecta nombres de funciones minificadas como API keys
+# - eeat/about-page: busca /about pero usamos /nosotros (español)
+# - eeat/contact-page: busca /contact pero tenemos sección de contacto en landing
+# - eeat/privacy-policy: busca /privacy-policy pero usamos /privacidad (español)
+# - sitemap-valid: reporta error en sitemaps que no existen (sitemap_index.xml, etc)
+disable = [ 
+  "security/leaked-secrets",
+  "eeat/about-page",
+  "eeat/contact-page", 
+  "eeat/privacy-policy",
+  "crawl/sitemap-valid"
+]
 
 [external_links]
 enabled = true

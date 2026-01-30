@@ -26,6 +26,14 @@ export const metadata: Metadata = {
     siteName: "Dental Company",
     locale: "es_PE",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Dental Company - Política de Privacidad",
+      },
+    ],
   },
   robots: {
     index: true,

@@ -21,7 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "Nosotros - Conócenos | Dental Company Tacna",
   description:
-    "Dental Company: centro odontológico en Tacna con +17 años de experiencia. Conoce a nuestro equipo de especialistas.",
+    "Dental Company: centro odontológico en Tacna con +17 años de experiencia. Conoce nuestro equipo de especialistas y nuestra historia.",
   alternates: {
     canonical: "/nosotros",
   },
