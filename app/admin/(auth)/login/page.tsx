@@ -1,10 +1,24 @@
 import { LoginForm } from "@/components/login-form";
 import VistaCalendario from "../../../../components/calendar/VistaCalendario";
 import Image from "next/image";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Iniciar Sesión | Dental Company",
+  description:
+    "Accede al sistema de gestión de Dental Company. Panel de administración para odontólogos y personal clínico.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function Page() {
   return (
     <div className='relative min-h-screen w-full'>
+      {/* H1 oculto para SEO */}
+      <h1 className='sr-only'>Iniciar Sesión - Dental Company</h1>
+
       {/* Fondo con imagen y overlay */}
       <div className='absolute inset-0 z-0'>
         <Image

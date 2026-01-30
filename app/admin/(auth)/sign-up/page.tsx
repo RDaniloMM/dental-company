@@ -1,9 +1,23 @@
 import { SignUpForm } from "@/components/sign-up-form";
 import Image from "next/image";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Registro de Usuario | Dental Company",
+  description:
+    "Crea una cuenta en el sistema de gestión de Dental Company. Registro para personal autorizado.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function Page() {
   return (
     <div className='relative min-h-screen w-full'>
+      {/* H1 oculto para SEO */}
+      <h1 className='sr-only'>Registro de Usuario - Dental Company</h1>
+
       {/* Fondo con imagen y overlay */}
       <div className='absolute inset-0 z-0'>
         <Image
