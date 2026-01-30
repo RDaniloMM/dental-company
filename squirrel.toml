@@ -1,9 +1,9 @@
 [project]
-domains = []
+domains = ["dental-company-tacna.com"]
 
 [crawler]
 max_pages = 100
-coverage = "surface"
+coverage = "full"
 delay_ms = 100
 timeout_ms = 30000
 user_agent = ""
@@ -11,8 +11,12 @@ follow_redirects = true
 concurrency = 5
 per_host_concurrency = 2
 per_host_delay_ms = 200
+# URLs de entrada para comenzar el crawl
 include = []
-exclude = []
+exclude = [
+  "/admin/*",
+  "/api/*"
+]
 allow_query_params = []
 drop_query_prefixes = [ "utm_", "gclid", "fbclid" ]
 respect_robots = true
