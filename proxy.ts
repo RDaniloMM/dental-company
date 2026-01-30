@@ -1,4 +1,4 @@
-  import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
@@ -51,7 +51,7 @@ export async function proxy(request: NextRequest) {
           });
         },
       },
-    }
+    },
   );
 
   const {
@@ -73,7 +73,8 @@ export async function proxy(request: NextRequest) {
   const isApiRoute = pathname.startsWith("/api/");
 
   // Verificar si es una ruta pública
-  const isPublicRoute = publicRoutes.some((route) => pathname === route) || isApiRoute;
+  const isPublicRoute =
+    publicRoutes.some((route) => pathname === route) || isApiRoute;
 
   // Rutas de admin protegidas (excepto auth)
   const isAdminRoute =
