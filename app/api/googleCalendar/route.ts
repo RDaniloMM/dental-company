@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
+  const sameOriginError = requireSameOrigin(req);
+  if (sameOriginError) return sameOriginError;
+
+  const supabase = await createClient();
+  const admin = await requireAdmin(supabase);
+  if (admin.ok === false) return admin.response;
+
   const body = await req.json();
-  const calendarId = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID!;
+  const calendarId = process.env.GOOGLE_CALENDAR_ID || process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID!;
   const accessToken = process.env.GOOGLE_ACCESS_TOKEN!; // 🔐 Token OAuth2
 
   const event = {

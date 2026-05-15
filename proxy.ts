@@ -60,6 +60,24 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  if (user) {
+    const { data: personal } = await supabase
+      .from("personal")
+      .select("activo")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!personal || personal.activo === false) {
+      await supabase.auth.signOut();
+
+      if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/login";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   // Rutas públicas que no requieren autenticación
   const publicRoutes = [
     "/",

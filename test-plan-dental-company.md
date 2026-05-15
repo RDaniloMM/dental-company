@@ -15,7 +15,7 @@ Sistema integral de gestión dental que incluye manejo de pacientes, historias c
 **File:** `tests/auth/login-success.spec.ts`
 
 **Steps:**
-  1. Navegar a https://dental-company-tacna.vercel.app
+  1. Navegar a https://dental-company-tacna.com
   2. Hacer clic en el enlace 'Iniciar sesión' en la página principal
   3. Ingresar nombre de usuario válido en el campo 'Usuario'
   4. Ingresar contraseña válida en el campo 'Contraseña'

@@ -339,10 +339,10 @@ export default function PersonalPage() {
 
     setIsSaving(true);
     try {
-      const supabase = createClient();
       const formData = new FormData(e.currentTarget);
 
       const updates = {
+        id: editingPersona.id,
         nombre_completo: formData.get("nombre_completo") as string,
         rol: formData.get("rol") as "Admin" | "Odontólogo",
         especialidad: (formData.get("especialidad") as string) || null,
@@ -350,14 +350,17 @@ export default function PersonalPage() {
         activo: formData.get("activo") === "true",
       };
 
-      const { error } = await supabase
-        .from("personal")
-        .update(updates)
-        .eq("id", editingPersona.id);
+      const res = await fetch("/api/auth/personal", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
 
-      if (error) {
-        console.error("Error actualizando personal:", error);
-        toast.error(`Error: ${error.message}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Error actualizando personal:", data);
+        toast.error(`Error: ${data.error || "No se pudo actualizar"}`);
       } else {
         toast.success("Personal actualizado correctamente");
         setEditDialogOpen(false);

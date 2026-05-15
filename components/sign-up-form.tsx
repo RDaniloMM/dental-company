@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
@@ -100,7 +99,6 @@ export function SignUpForm({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
@@ -117,52 +115,34 @@ export function SignUpForm({
       return;
     }
 
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+    if (!/^[a-z0-9._-]{3,40}$/.test(username)) {
+      setError("El usuario solo puede usar minúsculas, números, punto, guion y guion bajo (3-40 caracteres)");
+      setIsLoading(false);
+      return;
+    }
+
+    if (
+      password.length < 12 ||
+      !/[a-z]/.test(password) ||
+      !/[A-Z]/.test(password) ||
+      !/\d/.test(password) ||
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
+      setError("La contraseña debe tener 12+ caracteres e incluir minúscula, mayúscula, número y símbolo");
       setIsLoading(false);
       return;
     }
 
     try {
-      const email = `${username}@dental.company`;
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
-        },
+      const response = await fetch("/api/auth/sign-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, inviteCode }),
       });
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Normalizar rol (el código puede devolver "Administrador" pero la tabla usa "Admin")
-        const normalizedRole =
-          assignedRole === "Administrador" ? "Admin" : assignedRole;
-
-        // Crear registro de personal
-        const { error: personalError } = await supabase
-          .from("personal")
-          .insert({
-            id: data.user.id,
-            nombre_completo: username,
-            rol: normalizedRole,
-            email: email,
-            activo: true,
-          });
-
-        if (personalError) {
-          console.warn("Error al crear registro de personal:", personalError);
-        }
-
-        // Marcar código como usado (si aplica)
-        if (!publicRegistration && inviteCode) {
-          await fetch("/api/auth/use-invite", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ codigo: inviteCode, userId: data.user.id }),
-          });
-        }
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "No se pudo crear la cuenta");
       }
 
       router.push("/admin/login");
@@ -311,7 +291,7 @@ export function SignUpForm({
                   id='password'
                   type='password'
                   required
-                  placeholder='Mínimo 6 caracteres'
+                  placeholder='12+ caracteres, mayúscula, número y símbolo'
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={!publicRegistration && !codeVerified}

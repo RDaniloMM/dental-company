@@ -10,7 +10,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "https://dental-company-tacna.vercel.app",
+    baseURL: "https://dental-company-tacna.com",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

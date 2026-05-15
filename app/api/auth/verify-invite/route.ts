@@ -1,23 +1,44 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+import { getClientIp, recordSecurityEvent } from "@/lib/security/events";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const supabase = createAdminClient();
+    const rate = await checkRateLimit(supabase, "verify-invite-ip", ip, {
+      limit: 20,
+      windowMinutes: 15,
+      blockMinutes: 30,
+    });
+
+    if (rate.allowed === false) {
+      const retryAfterSeconds = rate.retryAfterSeconds;
+      await recordSecurityEvent({
+        eventType: "auth.invite.verify_rate_limited",
+        request: req,
+        severity: "warning",
+        metadata: { retryAfterSeconds },
+      });
+      return NextResponse.json(
+        { valid: false, error: "Demasiados intentos. Intenta más tarde." },
+        { status: 429 }
+      );
+    }
+
     const { codigo } = await req.json();
 
-    if (!codigo || typeof codigo !== "string") {
+    if (!codigo || typeof codigo !== "string" || codigo.length > 64) {
       return NextResponse.json(
         { valid: false, error: "Código requerido" },
         { status: 400 }
       );
     }
 
-    const supabase = await createClient();
-
-    // Verificar si el código existe y es válido
     const { data: inviteCode, error } = await supabase
       .from("codigos_invitacion")
-      .select("*")
+      .select("rol_asignado, expira_at, usos_maximos, usos_actuales")
       .eq("codigo", codigo.trim().toUpperCase())
       .eq("activo", true)
       .single();
@@ -29,7 +50,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verificar si el código ha expirado
     if (inviteCode.expira_at && new Date(inviteCode.expira_at) < new Date()) {
       return NextResponse.json(
         { valid: false, error: "El código ha expirado" },
@@ -37,7 +57,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verificar si el código tiene usos disponibles
     if (
       inviteCode.usos_maximos !== null &&
       inviteCode.usos_actuales >= inviteCode.usos_maximos

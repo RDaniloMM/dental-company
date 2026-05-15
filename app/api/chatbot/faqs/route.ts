@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
 import { NextResponse } from "next/server";
 import { generateEmbedding } from "@/lib/rag-utils";
 
@@ -10,6 +12,11 @@ export async function GET(req: Request) {
     const categoria = searchParams.get("categoria");
 
     const supabase = await createClient();
+
+    if (all) {
+      const admin = await requireAdmin(supabase);
+      if (admin.ok === false) return admin.response;
+    }
 
     let query = supabase.from("chatbot_faqs").select("*");
 
@@ -41,15 +48,12 @@ export async function GET(req: Request) {
 // POST - Crear o actualizar FAQ
 export async function POST(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await req.json();
     const { id, pregunta, respuesta, keywords, categoria, prioridad, activo } =
@@ -142,15 +146,12 @@ export async function POST(req: Request) {
 // DELETE - Eliminar FAQ
 export async function DELETE(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

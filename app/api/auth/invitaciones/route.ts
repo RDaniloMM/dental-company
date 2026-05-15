@@ -1,19 +1,19 @@
+import { requireAdmin, normalizeRole } from "@/lib/security/auth";
+import { recordSecurityEvent } from "@/lib/security/events";
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
 
-// Obtener todos los códigos de invitación
+function generateInviteCode() {
+  return `DC-${randomBytes(5).toString("base64url").slice(0, 8).toUpperCase()}`;
+}
+
+// Obtener todos los códigos de invitación (solo admins)
 export async function GET() {
   try {
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { data, error } = await supabase
       .from("codigos_invitacion")
@@ -35,19 +35,12 @@ export async function GET() {
   }
 }
 
-// Crear nuevo código de invitación
-export async function POST(request: Request) {
+// Crear nuevo código de invitación (solo admins)
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await request.json();
     const {
@@ -57,25 +50,32 @@ export async function POST(request: Request) {
       expira_en_dias,
     } = body;
 
-    // Generar código aleatorio si no se proporciona
-    const codigoFinal =
-      codigo ||
-      `DC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const codigoFinal = String(codigo || generateInviteCode())
+      .trim()
+      .toUpperCase();
 
-    const expira_at = expira_en_dias
+    if (!/^[A-Z0-9_-]{4,32}$/.test(codigoFinal.replace(/^DC-/, ""))) {
+      return NextResponse.json(
+        { error: "Código inválido: usa 4-32 caracteres alfanuméricos" },
+        { status: 400 }
+      );
+    }
+
+    const usosMaximos = Math.max(1, Math.min(Number(usos_maximos) || 1, 10));
+    const expiraAt = expira_en_dias
       ? new Date(
-          Date.now() + expira_en_dias * 24 * 60 * 60 * 1000
+          Date.now() + Math.min(Number(expira_en_dias), 30) * 24 * 60 * 60 * 1000
         ).toISOString()
-      : null;
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     const { data, error } = await supabase
       .from("codigos_invitacion")
       .insert({
         codigo: codigoFinal,
-        creado_por: user.id,
-        rol_asignado,
-        usos_maximos,
-        expira_at,
+        creado_por: admin.user.id,
+        rol_asignado: normalizeRole(rol_asignado),
+        usos_maximos: usosMaximos,
+        expira_at: expiraAt,
         activo: true,
       })
       .select()
@@ -95,6 +95,14 @@ export async function POST(request: Request) {
       );
     }
 
+    await recordSecurityEvent({
+      eventType: "auth.invite.created",
+      request,
+      userId: admin.user.id,
+      severity: "warning",
+      metadata: { role: normalizeRole(rol_asignado), usosMaximos },
+    });
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error:", error);
@@ -102,25 +110,18 @@ export async function POST(request: Request) {
   }
 }
 
-// Actualizar código de invitación (activar/desactivar)
-export async function PUT(request: Request) {
+// Actualizar código de invitación (activar/desactivar; solo admins)
+export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await request.json();
     const { id, activo } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    if (!id || typeof activo !== "boolean") {
+      return NextResponse.json({ error: "Parámetros inválidos" }, { status: 400 });
     }
 
     const { error } = await supabase
@@ -136,6 +137,14 @@ export async function PUT(request: Request) {
       );
     }
 
+    await recordSecurityEvent({
+      eventType: "auth.invite.updated",
+      request,
+      userId: admin.user.id,
+      severity: "warning",
+      metadata: { id, activo },
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error:", error);
@@ -143,19 +152,12 @@ export async function PUT(request: Request) {
   }
 }
 
-// Eliminar código de invitación
-export async function DELETE(request: Request) {
+// Eliminar código de invitación (solo admins)
+export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -173,6 +175,14 @@ export async function DELETE(request: Request) {
       console.error("Error eliminando invitación:", error);
       return NextResponse.json({ error: "Error al eliminar" }, { status: 500 });
     }
+
+    await recordSecurityEvent({
+      eventType: "auth.invite.deleted",
+      request,
+      userId: admin.user.id,
+      severity: "warning",
+      metadata: { id },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

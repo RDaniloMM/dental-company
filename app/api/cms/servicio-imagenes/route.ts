@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
 import { uploadImage, deleteImage } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
@@ -16,6 +18,11 @@ export async function GET(req: Request) {
     const all = searchParams.get("all") === "true";
 
     const supabase = await createClient();
+
+    if (all) {
+      const admin = await requireAdmin(supabase);
+      if (admin.ok === false) return admin.response;
+    }
 
     let query = supabase
       .from("cms_servicio_imagenes")
@@ -58,17 +65,12 @@ export async function GET(req: Request) {
  */
 export async function POST(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -176,17 +178,12 @@ export async function POST(req: Request) {
  */
 export async function PUT(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await req.json();
     const { id, descripcion, altText, orden, visible } = body;
@@ -233,17 +230,12 @@ export async function PUT(req: Request) {
  */
 export async function DELETE(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

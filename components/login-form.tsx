@@ -62,20 +62,38 @@ export function LoginForm({
     setError(null);
 
     try {
-      const email = `${username}@dental.company`;
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
       });
-      if (error) throw error;
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Usuario o contraseña incorrectos.");
+      }
+
+      if (data?.session?.access_token && data?.session?.refresh_token) {
+        const { error } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+
+        if (error) {
+          throw error;
+        }
+      }
 
       router.push("/admin/dashboard");
       router.refresh();
     } catch (error: unknown) {
       setError(
         error instanceof Error
-          ? "Usuario o contraseña incorrectos."
+          ? error.message
           : "Ocurrió un error inesperado."
       );
     } finally {

@@ -1,113 +1,153 @@
-import { createClient, User } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 
-// Usar service role para poder buscar en auth.users
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { isValidUsername } from "@/lib/security/auth";
+import { getClientIp, recordSecurityEvent } from "@/lib/security/events";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+import { requireSameOrigin } from "@/lib/security/request-origin";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function POST(request: Request) {
+function getAppBaseUrl() {
+  if (process.env.APP_BASE_URL) return process.env.APP_BASE_URL;
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "https://dental-company-tacna.vercel.app";
+}
+
+async function sendRecoveryEmail(to: string, username: string, actionLink: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY no configurada");
+  }
+
+  const resend = new Resend(apiKey);
+  const clinicName = "Dental Company";
+
+  const { error } = await resend.emails.send({
+    from: `${clinicName} <onboarding@resend.dev>`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #111827;">
+        <h2>Restablece tu contrasena</h2>
+        <p>Hola ${username}, recibimos una solicitud para restablecer tu contrasena.</p>
+        <p>
+          <a href="${actionLink}" style="display:inline-block;padding:12px 18px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:8px;">Crear nueva contrasena</a>
+        </p>
+        <p>Si no solicitaste este cambio, ignora este mensaje.</p>
+      </div>
+    `,
+    subject: "Recuperacion de contrasena",
+    to: [to],
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const genericResponse = NextResponse.json({
+    success: true,
+    message: "Si la cuenta existe, recibiras un correo de recuperacion.",
+  });
+
   try {
-    const { username } = await request.json();
+    const sameOriginError = requireSameOrigin(request);
+    if (sameOriginError) return sameOriginError;
 
-    if (!username) {
-      return NextResponse.json(
-        { error: "El nombre de usuario es requerido" },
-        { status: 400 }
-      );
+    const ip = getClientIp(request);
+    const body = await request.json();
+    const username = String(body.username ?? "").trim().toLowerCase();
+
+    if (!isValidUsername(username)) {
+      return genericResponse;
     }
 
-    // Construir el email de auth basado en el username
-    const authEmail = `${username.toLowerCase().trim()}@dental.company`;
+    const supabaseAdmin = createAdminClient();
+    const [ipRate, userRate] = await Promise.all([
+      checkRateLimit(supabaseAdmin, "forgot-password-ip", ip, {
+        limit: 5,
+        windowMinutes: 30,
+        blockMinutes: 60,
+      }),
+      checkRateLimit(supabaseAdmin, "forgot-password-user", username, {
+        limit: 3,
+        windowMinutes: 30,
+        blockMinutes: 60,
+      }),
+    ]);
 
-    // Buscar el usuario en auth.users
-    const { data: authUsers, error: authError } =
-      await supabaseAdmin.auth.admin.listUsers();
-
-    if (authError) {
-      console.error("Error buscando usuario:", authError);
-      return NextResponse.json(
-        { error: "Error al buscar el usuario" },
-        { status: 500 }
-      );
-    }
-
-    // Verificar que tenemos usuarios
-    const users: User[] = authUsers?.users || [];
-
-    // Encontrar el usuario por email
-    const authUser = users.find((u) => u.email === authEmail);
-
-    if (!authUser) {
-      // No revelar si el usuario existe o no por seguridad
-      return NextResponse.json({
-        success: true,
-        message: "Si el usuario existe, recibirás un correo de recuperación",
+    const blocked = [ipRate, userRate].find(
+      (result): result is Extract<typeof result, { allowed: false }> => !result.allowed
+    );
+    if (blocked) {
+      await recordSecurityEvent({
+        eventType: "auth.forgot_password.rate_limited",
+        request,
+        identifier: username,
+        severity: "warning",
+        metadata: { retryAfterSeconds: blocked.retryAfterSeconds },
       });
+
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta nuevamente mas tarde." },
+        { status: 429 }
+      );
     }
 
-    // Buscar el email real en la tabla personal
     const { data: personal, error: personalError } = await supabaseAdmin
       .from("personal")
-      .select("email")
-      .eq("id", authUser.id)
-      .single();
+      .select("id, email, activo")
+      .eq("nombre_completo", username)
+      .maybeSingle();
 
-    if (personalError || !personal?.email) {
-      return NextResponse.json(
-        {
-          error:
-            "No se encontró un email de recuperación asociado a este usuario. Contacta al administrador.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Enviar el email de recuperación al email real
-    // Primero actualizamos temporalmente el email del usuario
-    const { error: updateError } =
-      await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
-        email: personal.email,
+    if (personalError || !personal?.id || !personal?.email || personal.activo === false) {
+      await recordSecurityEvent({
+        eventType: "auth.forgot_password.user_not_found",
+        request,
+        identifier: username,
+        severity: "warning",
       });
 
-    if (updateError) {
-      console.error("Error actualizando email:", updateError);
-      return NextResponse.json(
-        { error: "Error al procesar la solicitud" },
-        { status: 500 }
-      );
+      return genericResponse;
     }
 
-    // Enviar el reset al email real - SIEMPRE usar URL de producción
-    const PRODUCTION_URL = "https://dental-company-tacna.vercel.app";
-    const { error: sendResetError } =
-      await supabaseAdmin.auth.resetPasswordForEmail(personal.email, {
-        redirectTo: `${PRODUCTION_URL}/auth/callback?type=recovery`,
-      });
-
-    // Restaurar el email original inmediatamente
-    await supabaseAdmin.auth.admin.updateUserById(authUser.id, {
+    const authEmail = `${username}@dental.company`;
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       email: authEmail,
+      options: {
+        redirectTo: `${getAppBaseUrl()}/auth/callback?type=recovery`,
+      },
+      type: "recovery",
     });
 
-    if (sendResetError) {
-      console.error("Error enviando reset:", sendResetError);
-      return NextResponse.json(
-        { error: "Error al enviar el correo de recuperación" },
-        { status: 500 }
-      );
+    const actionLink = data?.properties?.action_link;
+    if (error || !actionLink) {
+      throw new Error(error?.message || "No se pudo generar el enlace de recuperacion");
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Se ha enviado un correo de recuperación a tu email registrado",
+    await sendRecoveryEmail(personal.email, username, actionLink);
+
+    await recordSecurityEvent({
+      eventType: "auth.forgot_password.requested",
+      request,
+      userId: personal.id,
+      identifier: username,
+      severity: "info",
     });
+
+    return genericResponse;
   } catch (error) {
     console.error("Error en forgot-password:", error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+    await recordSecurityEvent({
+      eventType: "auth.forgot_password.error",
+      request,
+      severity: "critical",
+      metadata: { message: error instanceof Error ? error.message : String(error) },
+    });
+
+    return genericResponse;
   }
 }

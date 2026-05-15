@@ -127,19 +127,22 @@ export default function UsuariosPage() {
     if (!editingUser) return;
 
     try {
-      const { error } = await supabase
-        .from("personal")
-        .update({
+      const res = await fetch("/api/auth/personal", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingUser.id,
           nombre_completo: formData.nombre_completo,
           rol: formData.rol,
           especialidad: formData.especialidad,
           telefono: formData.telefono,
-          email: formData.email,
           activo: formData.activo,
-        })
-        .eq("id", editingUser.id);
+        }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "No se pudo actualizar el usuario");
 
       toast.success("Usuario actualizado exitosamente");
       resetForm();
@@ -157,12 +160,15 @@ export default function UsuariosPage() {
     if (!confirm("¿Estás seguro de desactivar este usuario?")) return;
 
     try {
-      const { error } = await supabase
-        .from("personal")
-        .update({ activo: false })
-        .eq("id", userId);
+      const res = await fetch("/api/auth/personal", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activo: false, id: userId }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "No se pudo desactivar el usuario");
 
       toast.success("Usuario desactivado exitosamente");
       loadUsers();

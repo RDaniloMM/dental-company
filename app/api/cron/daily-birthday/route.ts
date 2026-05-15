@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { sendBirthdayEmail } from "@/app/admin/(protected)/notificaciones/actions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getClinicDate } from "@/lib/time";
 
 export async function GET(req: NextRequest) {
-    // Verificar autenticación del Cron Job (opcional pero recomendado)
+    // El cron debe ejecutarse siempre autenticado.
     const authHeader = req.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        // Si no hay CRON_SECRET configurado, permitimos la ejecución (para pruebas iniciales)
-        // PERO en producción debería ser obligatorio.
-        if (process.env.CRON_SECRET) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Obtener pacientes con fecha de nacimiento
     const { data: patients, error } = await supabase

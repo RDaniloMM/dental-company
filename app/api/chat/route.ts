@@ -1,5 +1,8 @@
 import { streamText, UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getClientIp, recordSecurityEvent } from "@/lib/security/events";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import {
   searchFAQsFromDB,
   searchContextoFromDB,
@@ -18,6 +21,37 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const ip = getClientIp(req);
+    const supabaseAdmin = createAdminClient();
+    const rate = await checkRateLimit(supabaseAdmin, "public-chat-ip", ip, {
+      limit: 20,
+      windowMinutes: 10,
+      blockMinutes: 30,
+    });
+
+    if (rate.allowed === false) {
+      await recordSecurityEvent({
+        eventType: "chat.public.rate_limited",
+        request: req,
+        severity: "warning",
+        metadata: { retryAfterSeconds: rate.retryAfterSeconds },
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Demasiadas consultas. Intenta nuevamente en unos minutos.",
+          code: "RATE_LIMITED",
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": String(rate.retryAfterSeconds),
+          },
+        }
+      );
+    }
+
     // Verificar API key
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       console.error("GOOGLE_GENERATIVE_AI_API_KEY no configurada");
@@ -47,6 +81,13 @@ export async function POST(req: Request) {
     // Validar input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Mensajes inválidos" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (messages.length > 20) {
+      return new Response(JSON.stringify({ error: "Demasiados mensajes en una sola solicitud" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });

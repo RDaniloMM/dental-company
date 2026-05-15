@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
 import {
   syncAllFAQEmbeddings,
   updateFAQEmbedding,
@@ -19,16 +21,12 @@ export const maxDuration = 60; // Puede tomar tiempo sincronizar todos
  */
 export async function POST(req: Request) {
   try {
-    // Verificar autenticación - solo admins pueden sincronizar
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const supabase = await createClient();
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await req.json().catch(() => ({}));
     const { type = "all", id } = body;
@@ -109,14 +107,8 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { searchParams } = new URL(req.url);
     const autoSync = searchParams.get("autoSync") === "true";

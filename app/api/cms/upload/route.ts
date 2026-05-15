@@ -1,19 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
 import { NextResponse } from "next/server";
 import { uploadImage, deleteImage } from "@/lib/cloudinary";
 
 export async function POST(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

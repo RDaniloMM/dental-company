@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
 
 export const runtime = "nodejs";
 
@@ -10,6 +12,8 @@ export const runtime = "nodejs";
 export async function GET() {
   try {
     const supabase = await createClient();
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { data, error } = await supabase
       .from("cms_tema")
@@ -51,17 +55,12 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await req.json();
 

@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/security/auth";
+import { requireSameOrigin } from "@/lib/security/request-origin";
 import { NextResponse } from "next/server";
 import { generateEmbedding } from "@/lib/rag-utils";
 
@@ -8,6 +10,11 @@ export async function GET(req: Request) {
     const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const all = searchParams.get("all") === "true";
+
+    if (all) {
+      const admin = await requireAdmin(supabase);
+      if (admin.ok === false) return admin.response;
+    }
 
     let query = supabase
       .from("chatbot_contexto")
@@ -36,15 +43,12 @@ export async function GET(req: Request) {
 // POST - Crear o actualizar contexto
 export async function POST(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await req.json();
     const { id, titulo, contenido, tipo, activo } = body;
@@ -130,15 +134,12 @@ export async function POST(req: Request) {
 // DELETE - Eliminar contexto
 export async function DELETE(req: Request) {
   try {
+    const sameOriginError = requireSameOrigin(req);
+    if (sameOriginError) return sameOriginError;
+
     const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

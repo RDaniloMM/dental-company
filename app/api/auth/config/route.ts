@@ -1,24 +1,26 @@
+import { requireAdmin } from "@/lib/security/auth";
+import { recordSecurityEvent } from "@/lib/security/events";
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// Verificar configuración de seguridad
+// Verificar configuración pública de seguridad. No expone la tabla completa.
 export async function GET() {
   try {
     const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("config_seguridad")
-      .select("clave, valor, descripcion");
+      .select("clave, valor")
+      .in("clave", ["registro_publico_habilitado", "requiere_aprobacion_admin"]);
 
     if (error) {
-      // Si no existe la config, por defecto requerir invitación
+      // Fail closed: por defecto requerir invitación y aprobación.
       return NextResponse.json({
         publicRegistration: false,
         requiresApproval: true,
       });
     }
 
-    // Convertir a objeto
     const config: Record<string, string> = {};
     data?.forEach((item) => {
       config[item.clave] = item.valor;
@@ -26,8 +28,7 @@ export async function GET() {
 
     return NextResponse.json({
       publicRegistration: config["registro_publico_habilitado"] === "true",
-      requiresApproval: config["requiere_aprobacion_admin"] === "true",
-      config: data,
+      requiresApproval: config["requiere_aprobacion_admin"] !== "false",
     });
   } catch (error) {
     console.error("Error verificando config:", error);
@@ -39,24 +40,25 @@ export async function GET() {
 }
 
 // Actualizar configuración de seguridad (solo admins)
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();
-
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const admin = await requireAdmin(supabase);
+    if (admin.ok === false) return admin.response;
 
     const body = await request.json();
     const { clave, valor } = body;
 
-    if (!clave || valor === undefined) {
-      return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
+    const allowedKeys = new Set([
+      "registro_publico_habilitado",
+      "requiere_aprobacion_admin",
+      "max_intentos_login",
+      "duracion_bloqueo_login_minutos",
+      "min_password_length",
+    ]);
+
+    if (!clave || valor === undefined || !allowedKeys.has(String(clave))) {
+      return NextResponse.json({ error: "Parámetro inválido" }, { status: 400 });
     }
 
     const { error } = await supabase.from("config_seguridad").upsert(
@@ -75,6 +77,14 @@ export async function PUT(request: Request) {
         { status: 500 }
       );
     }
+
+    await recordSecurityEvent({
+      eventType: "security.config.updated",
+      request,
+      userId: admin.user.id,
+      severity: "warning",
+      metadata: { clave, valor: String(valor) },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

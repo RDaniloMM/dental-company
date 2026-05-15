@@ -25,8 +25,8 @@ import { Loader } from "@/components/ai-elements/loader";
 
 const models = [
   {
-    name: "Gemini 2.5 Flash Lite",
-    value: "gemini-2.5-flash-lite",
+    name: "Gemini 3.1 Flash Lite",
+    value: "gemini-3.1-flash-lite",
   },
 ];
 
