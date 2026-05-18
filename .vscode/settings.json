@@ -1,4 +1,7 @@
 {
-    "markdown.validate.enabled": true,
-    "git.ignoreLimitWarning": true
+  "markdown.validate.enabled": true,
+  "git.ignoreLimitWarning": true,
+  "chat.tools.terminal.autoApprove": {
+    "pnpm": true
+  }
 }

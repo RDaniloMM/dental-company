@@ -53,6 +53,7 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
+    "@radix-ui/react-visually-hidden": "^1.2.4",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "^2.74.0",
     "ai": "^5.0.106",
