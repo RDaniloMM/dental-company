@@ -5,11 +5,11 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+  "img-src 'self' data: blob: https://ik.imagekit.io https://images.unsplash.com",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "font-src 'self' data: https:",
-  "connect-src 'self' https://*.supabase.co https://api.cloudinary.com https://res.cloudinary.com https://*.googleapis.com https://generativelanguage.googleapis.com",
+  "connect-src 'self' https://*.supabase.co https://upload.imagekit.io https://api.imagekit.io https://ik.imagekit.io https://*.googleapis.com https://generativelanguage.googleapis.com",
   "frame-src 'self' https://*.youtube.com https://*.google.com",
   "object-src 'none'",
 ].join("; ");
@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
+        hostname: "ik.imagekit.io",
         pathname: "/**",
       },
     ],
@@ -71,7 +71,6 @@ const nextConfig: NextConfig = {
     "tokenlens",
     "use-stick-to-bottom",
     "streamdown",
-    "@cloudinary/url-gen",
     "nanoid",
   ],
 };

@@ -1,14 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteGoogleCalendarEvent } from '@/lib/googleCalendar'
-import { v2 as cloudinary } from 'cloudinary'
 import { revalidatePath } from 'next/cache'
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+import { deleteImage } from '@/lib/imagekit'
 
 interface UpdateRequestBody {
   descripcion?: string
@@ -81,20 +75,9 @@ export async function DELETE(
         .eq('seguimiento_id', id)
     
     if (imagenes && imagenes.length > 0) {
-        const carpetasParaBorrar = new Set<string>()
-
         for (const img of imagenes) {
             if (img.public_id) {
-                await cloudinary.uploader.destroy(img.public_id)
-                const partes = img.public_id.split('/')
-                if (partes.length > 1) {
-                    partes.pop() 
-                    const carpetaTipo = partes.join('/')
-                    carpetasParaBorrar.add(carpetaTipo)
-                    partes.pop()
-                    const carpetaSeguimiento = partes.join('/')
-                    carpetasParaBorrar.add(carpetaSeguimiento)
-                }
+                await deleteImage(img.public_id)
             }
         }
 
@@ -104,19 +87,6 @@ export async function DELETE(
             .delete()
             .eq('seguimiento_id', id)
 
-        // Intentar borrar las carpetas vacías en Cloudinary
-        // Cloudinary requiere borrar primero las subcarpetas, luego las padres.
-        // Ordenamos por longitud descendente (las rutas más largas son subcarpetas)
-        const carpetasOrdenadas = Array.from(carpetasParaBorrar).sort((a, b) => b.length - a.length)
-
-        for (const folder of carpetasOrdenadas) {
-            try {
-                await cloudinary.api.delete_folder(folder)
-            } catch (e) {
-                // Si falla (ej: no está vacía por alguna razón), lo ignoramos para no bloquear el proceso
-                console.warn(`No se pudo borrar carpeta Cloudinary: ${folder}`, e)
-            }
-        }
     }
 
     // 2. Borrar Pago (Soft) y RECALCULAR SALDO

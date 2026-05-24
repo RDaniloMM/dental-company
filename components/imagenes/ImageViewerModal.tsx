@@ -9,10 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { cld } from '@/lib/cloudinary-client';
-import { AdvancedImage } from '@cloudinary/react';
-import { quality } from '@cloudinary/url-gen/actions/delivery';
-import { auto } from '@cloudinary/url-gen/qualifiers/quality';
+import Image from 'next/image';
 import { Maximize, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -47,8 +44,6 @@ export default function ImageViewerModal({
 }: ImageViewerModalProps) {
   if (!imageData) return null;
 
-  const image = cld.image(imageData.public_id).delivery(quality(auto()));
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -59,7 +54,13 @@ export default function ImageViewerModal({
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center items-center my-4">
-          <AdvancedImage cldImg={image} className="max-h-[70vh] w-auto" />
+          <Image
+            src={imageData.url}
+            alt={imageData.descripcion || imageData.tipo}
+            width={1200}
+            height={900}
+            className="max-h-[70vh] w-auto object-contain"
+          />
         </div>
         {imageData.descripcion && (
           <p className="text-sm text-muted-foreground mt-2">{imageData.descripcion}</p>

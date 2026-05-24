@@ -2,9 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { cld } from '@/lib/cloudinary-client'
-import { AdvancedImage } from '@cloudinary/react'
-import { thumbnail } from '@cloudinary/url-gen/actions/resize'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,10 +20,6 @@ interface ImageCardProps {
 
 export default function ImageCard ({ imageData, onClick }: ImageCardProps) {
   const { public_id, tipo, fecha_subida, url } = imageData
-
-  const image = cld
-    .image(public_id)
-    .resize(thumbnail().width(300).height(300).gravity('auto'))
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -51,8 +45,11 @@ export default function ImageCard ({ imageData, onClick }: ImageCardProps) {
     >
       <CardContent className='p-0'>
         <div className='relative group'>
-          <AdvancedImage
-            cldImg={image}
+          <Image
+            src={url}
+            alt={tipo}
+            width={300}
+            height={300}
             className='w-full h-full object-cover'
           />
           <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300' />

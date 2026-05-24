@@ -1,13 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
-import type { UploadApiResponse } from 'cloudinary'
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+import { uploadImage, deleteImage } from '@/lib/imagekit'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -35,17 +28,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
     const folder = `dental_company/pacientes/${numeroHistoria}/${casoId}/galeria`
 
-    const uploadResponse = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          { folder, resource_type: 'image' },
-          (error, result) => {
-            if (error) return reject(error)
-            const r = result as UploadApiResponse | undefined
-            if (!r) return reject(new Error('No result from Cloudinary'))
-            resolve({ secure_url: String(r.secure_url || ''), public_id: String(r.public_id || '') })
-          }
-        ).end(buffer)
-    })
+    const uploadResponse = await uploadImage(buffer, folder, `${file.name}_${Date.now()}`, 'paciente')
 
     // Siempre guardamos las nuevas subidas desde la galería en 'imagenes_pacientes'
     const { data, error } = await supabase
@@ -88,7 +71,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!id || !publicId) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
 
-    await cloudinary.uploader.destroy(publicId)
+    await deleteImage(publicId)
 
     // Seleccionar tabla correcta
     const tabla = origen === 'seguimiento' ? 'seguimiento_imagenes' : 'imagenes_pacientes'

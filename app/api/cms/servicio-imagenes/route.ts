@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/security/auth";
 import { requireSameOrigin } from "@/lib/security/request-origin";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { uploadImage, deleteImage } from "@/lib/imagekit";
 
 export const runtime = "nodejs";
 
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
       8
     )}_${sanitizedName}_${timestamp}`;
 
-    // Subir imagen a Cloudinary
+    // Subir imagen a ImageKit
     const folder = "dental_company/servicios";
     const result = await uploadImage(buffer, folder, publicId, "carrusel");
 
@@ -259,11 +259,11 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Eliminar de Cloudinary si tiene public_id
+    // Eliminar de ImageKit si tiene public_id
     if (imagen?.public_id) {
       const deleteResult = await deleteImage(imagen.public_id);
       if (!deleteResult.success) {
-        console.warn("No se pudo eliminar de Cloudinary:", deleteResult.error);
+        console.warn("No se pudo eliminar de ImageKit:", deleteResult.error);
       }
     }
 

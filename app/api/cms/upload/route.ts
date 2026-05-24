@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/security/auth";
 import { requireSameOrigin } from "@/lib/security/request-origin";
 import { NextResponse } from "next/server";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import { uploadImage, deleteImage } from "@/lib/imagekit";
 
 export async function POST(req: Request) {
   try {
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       .substring(0, 20);
     const publicId = `${sanitizedName}_${timestamp}`;
 
-    // Subir a Cloudinary con optimización según tipo
+    // Subir a ImageKit con optimización según tipo
     let folder: string;
     let tipoImagen: "perfil" | "carrusel" | "general" | "paciente";
 

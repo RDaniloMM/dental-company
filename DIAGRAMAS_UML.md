@@ -922,7 +922,7 @@ title Diagrama de Secuencia - Editar Sección CMS
 actor "Administrador" as Admin
 participant "Panel CMS" as CMS
 participant "API" as API
-participant "Cloudinary" as Cloud
+participant "ImageKit" as Cloud
 database "Base de Datos" as DB
 
 == Carga de Datos ==
@@ -1481,7 +1481,7 @@ cloud "Google AI" {
 - **Backend:** Next.js API Routes, Server Actions
 - **Base de Datos:** PostgreSQL (Supabase)
 - **Autenticación:** Supabase Auth con JWT
-- **Almacenamiento de Imágenes:** Cloudinary
+- **Almacenamiento de Imágenes:** ImageKit
 - **IA/Chatbot:** Gemini 2.0 flash lite, pgvector para embeddings
 - **Calendario:** Google Calendar API
 

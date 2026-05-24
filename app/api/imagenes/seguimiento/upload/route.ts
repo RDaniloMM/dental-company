@@ -1,13 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
 import { revalidatePath } from 'next/cache'
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+import { uploadImage, deleteImage } from '@/lib/imagekit'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -36,25 +30,13 @@ export async function POST(request: NextRequest) {
       const tipoImagen = tipos[index] || 'evidencia'
       const folder = `dental_company/pacientes/${numeroHistoria}/${casoId}/${seguimientoId}/${tipoImagen}`
 
-      return new Promise<{ secure_url: string; public_id: string; index: number }>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { folder, resource_type: 'auto' },
-          (error, result) => {
-            if (error || !result) reject(error)
-            else resolve({ 
-                secure_url: result.secure_url, 
-                public_id: result.public_id,
-                index 
-            })
-          }
-        )
-        uploadStream.end(buffer)
-      })
+      const result = await uploadImage(buffer, folder, `${file.name}_${Date.now()}`, 'paciente')
+      return { ...result, index }
     })
 
-    const cloudinaryResults = await Promise.all(uploadPromises)
+    const imageKitResults = await Promise.all(uploadPromises)
 
-    const recordsToInsert = cloudinaryResults.map((result) => ({
+    const recordsToInsert = imageKitResults.map((result) => ({
       caso_id: casoId,
       seguimiento_id: seguimientoId,
       imagen_url: result.secure_url,
@@ -71,7 +53,7 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (error) {
-        await Promise.all(cloudinaryResults.map(r => cloudinary.uploader.destroy(r.public_id)))
+        await Promise.all(imageKitResults.map(r => deleteImage(r.public_id)))
         throw new Error(`Error BD: ${error.message}`)
     }
 
@@ -98,7 +80,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!imagenId) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
 
-    if (publicId) await cloudinary.uploader.destroy(publicId)
+    if (publicId) await deleteImage(publicId)
 
     const { error } = await supabase
       .from('seguimiento_imagenes')

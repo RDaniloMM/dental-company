@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { uploadImage } from "@/lib/cloudinary";
+import { uploadImage } from "@/lib/imagekit";
 
 export async function POST(req: Request) {
   try {
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       .substring(0, 20);
     const publicId = `${sanitizedName}_${timestamp}`;
 
-    // Subir a Cloudinary
+    // Subir a ImageKit
     const folder = `dental_company/pacientes/${pacienteId}`;
     const result = await uploadImage(buffer, folder, publicId, "paciente");
 

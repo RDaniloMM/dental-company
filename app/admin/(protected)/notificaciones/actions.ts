@@ -31,6 +31,7 @@ export async function sendBirthdayEmail(
         }
 
         const resend = new Resend(apiKey);
+        const birthdayImageUrl = process.env.BIRTHDAY_EMAIL_IMAGE_URL;
 
         console.log(`Debug: Intentando enviar a ${email} desde ${fromName}`);
 
@@ -41,7 +42,7 @@ export async function sendBirthdayEmail(
             html: `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
           <div style="text-align: center;">
-            <img src="https://res.cloudinary.com/djmyixye6/image/upload/v1764554761/4a0acaf3-c7ce-491c-b95d-753be0dd7b8a_i3e9r7.jpg" alt="Feliz Cumpleaños" style="max-width: 100%; height: auto; border-radius: 8px;" />
+            ${birthdayImageUrl ? `<img src="${birthdayImageUrl}" alt="Feliz Cumpleaños" style="max-width: 100%; height: auto; border-radius: 8px;" />` : `<h1>¡Feliz Cumpleaños ${name}!</h1>`}
           </div>
         </div>
       `,

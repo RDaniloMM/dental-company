@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { deleteImage } from "@/lib/cloudinary";
+import { deleteImage } from "@/lib/imagekit";
 
 export async function DELETE(
   req: Request,
@@ -33,12 +33,12 @@ export async function DELETE(
       );
     }
 
-    // Eliminar de Cloudinary
+    // Eliminar de ImageKit
     try {
       await deleteImage(imagen.public_id);
-    } catch (cloudinaryError) {
-      console.error("Error eliminando de Cloudinary:", cloudinaryError);
-      // Continuar aunque falle en Cloudinary
+    } catch (imageKitError) {
+      console.error("Error eliminando de ImageKit:", imageKitError);
+      // Continuar aunque falle en ImageKit
     }
 
     // Eliminar de la base de datos

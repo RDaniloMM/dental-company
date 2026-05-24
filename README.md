@@ -69,7 +69,7 @@ Sistema de gestión integral para clínicas odontológicas desarrollado con tecn
 | IA         | Vercel AI SDK, Google Gemini           |
 | Calendario | FullCalendar, Google Calendar API      |
 | PDF        | jsPDF, jspdf-autotable                 |
-| Imágenes   | Cloudinary                             |
+| Imágenes   | ImageKit                               |
 | Testing    | Playwright                             |
 | Deploy     | Vercel                                 |
 
@@ -102,10 +102,11 @@ SUPABASE_SERVICE_ROLE_KEY=
 # Google AI
 GOOGLE_GENERATIVE_AI_API_KEY=
 
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+# ImageKit
+NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT=
+IMAGEKIT_PUBLIC_KEY=
+IMAGEKIT_PRIVATE_KEY=
+BIRTHDAY_EMAIL_IMAGE_URL=
 
 # Google Calendar (opcional)
 GOOGLE_CLIENT_ID=
